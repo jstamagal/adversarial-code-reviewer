@@ -96,8 +96,8 @@ Agent 1: Your task is to REVIEW, SCRUTINIZE, and REFINE this TODO.md and PRD.md 
 - ⚠️ Framework-specific patterns (Flask, Django) - minimal
 
 **Testing Status:**
-- ✅ 488 test functions across test suite (up from 241)
-- ✅ Tests passing for: ast_parser (27 tests), cache (19 tests), cli (58 tests), config (24 tests), entry_points (20 tests), sink_identification (42 tests), models (88 tests), redaction (5 tests), utils (12 tests), pattern_loader (71 tests), confidence_scorer (28 tests)
+- ✅ 526 test functions across test suite (up from 488, +28 new denylist tests)
+- ✅ Tests passing for: ast_parser (27 tests), cache (19 tests), cli (58 tests), config (24 tests), entry_points (20 tests), sink_identification (42 tests), models (88 tests), redaction (5 tests), utils (12 tests), pattern_loader (71 tests), confidence_scorer (28 tests), denylist_parser (15 tests), denylist_manager (13 tests)
 - ⚠️ Test coverage needs improvement
 - ⚠️ Integration and E2E tests minimal
 
@@ -539,20 +539,20 @@ Agent 1: Your task is to REVIEW, SCRUTINIZE, and REFINE this TODO.md and PRD.md 
   - [x] Score based on data flow analysis confidence
   - [x] Add tests for confidence scoring
 
-- [x] Implement allowlist system
-  - [x] Create .acr-ignore file format
-  - [x] Parse allowlist patterns
-  - [x] Support specific line exclusions (file:line)
-  - [x] Support regex pattern exclusions
-  - [x] Support pattern type exclusions
-  - [x] Add tests for allowlist
+ - [x] Implement allowlist system
+   - [x] Create .acr-ignore file format
+   - [x] Parse allowlist patterns
+   - [x] Support specific line exclusions (file:line)
+   - [x] Support regex pattern exclusions
+   - [x] Support pattern type exclusions
+   - [x] Add tests for allowlist
 
-- [ ] Implement denylist system
-  - [ ] Create .acr-denylist file format
-  - [ ] Parse denylist patterns
-  - [ ] Support file pattern denials
-  - [ ] Support function pattern denials
-  - [ ] Add tests for denylist
+ - [x] Implement denylist system
+   - [x] Create .acr-denylist file format
+   - [x] Parse denylist patterns
+   - [x] Support file pattern denials
+   - [x] Support function pattern denials
+   - [x] Add tests for denylist
 
 - [ ] Implement finding annotations
   - [ ] Allow marking findings as false positive
