@@ -14,12 +14,13 @@
 
 """Patterns command implementation."""
 
-from typing import List, Optional
+from pathlib import Path
 
 import click
 from rich.console import Console
 from rich.table import Table
 
+from acr.config.loader import load_config
 from acr.patterns.loader import PatternLoader
 from acr.utils.logger import get_logger
 
@@ -41,13 +42,41 @@ def cli() -> None:
     type=click.Choice(["critical", "high", "medium", "low"]),
     help="Filter by severity",
 )
-@click.pass_context
-def list_cmd(ctx: click.Context, category: str, severity: str) -> None:
+@click.option("--custom-only", is_flag=True, help="List only custom patterns")
+@click.option("--custom-path", type=str, help="Path to custom patterns directory")
+def list_cmd(category: str, severity: str, custom_only: bool, custom_path: str) -> None:
     """List available attack patterns."""
     try:
         loader = PatternLoader()
         patterns_dict = loader.load_patterns()
-        patterns = list(patterns_dict.values())
+        builtin_patterns = dict(patterns_dict)
+
+        custom_patterns_dict = {}
+        if custom_path:
+            custom_patterns_dict = loader.load_patterns(Path(custom_path))
+        else:
+            try:
+                config = load_config()
+                if config.patterns.custom_patterns:
+                    custom_patterns_dict = loader.load_patterns(
+                        Path(config.patterns.custom_patterns)
+                    )
+            except Exception:
+                pass
+
+        all_patterns = {}
+        all_patterns.update(builtin_patterns)
+        all_patterns.update(custom_patterns_dict)
+
+        custom_pattern_ids = set(custom_patterns_dict.keys())
+
+        patterns = list(all_patterns.values())
+
+        if custom_only:
+            patterns = [p for p in patterns if p.id in custom_pattern_ids]
+            if not patterns:
+                click.echo("No custom patterns found.")
+                return
 
         if category:
             patterns = [p for p in patterns if p.category == category]
@@ -64,6 +93,7 @@ def list_cmd(ctx: click.Context, category: str, severity: str) -> None:
         table.add_column("Name", style="green")
         table.add_column("Category", style="yellow")
         table.add_column("Severity", style="bold")
+        table.add_column("Source", style="magenta")
         table.add_column("Description", max_width=60)
 
         for pattern in sorted(patterns, key=lambda p: p.id):
@@ -74,29 +104,39 @@ def list_cmd(ctx: click.Context, category: str, severity: str) -> None:
                 "low": "blue",
             }.get(pattern.severity, "white")
 
+            source = (
+                "[bold magenta]Custom[/bold magenta]"
+                if pattern.id in custom_pattern_ids
+                else "Built-in"
+            )
+
             table.add_row(
                 pattern.id,
                 pattern.name,
                 pattern.category,
                 f"[{severity_color}]{pattern.severity}[/{severity_color}]",
+                source,
                 pattern.description[:60] + "..."
                 if len(pattern.description) > 60
                 else pattern.description,
             )
 
         console.print(table)
-        click.echo(f"\nTotal: {len(patterns)} pattern(s)")
+        custom_count = len([p for p in patterns if p.id in custom_pattern_ids])
+        builtin_count = len(patterns) - custom_count
+        click.echo(
+            f"\nTotal: {len(patterns)} pattern(s) (Built-in: {builtin_count}, Custom: {custom_count})"
+        )
 
     except Exception as e:
         logger.error(f"Failed to list patterns: {e}")
-        raise click.ClickException(f"Failed to list patterns: {e}")
+        raise click.ClickException(f"Failed to list patterns: {e}") from e
 
 
 @cli.command("show")
 @click.argument("pattern_id", type=str)
 @click.option("--verbose", "-v", is_flag=True, help="Show detailed pattern information")
-@click.pass_context
-def show(ctx: click.Context, pattern_id: str, verbose: bool) -> None:
+def show(pattern_id: str, verbose: bool) -> None:
     """Show details of a specific pattern.
 
     PATTERN_ID: Pattern identifier (e.g., sql-injection)
@@ -118,19 +158,19 @@ def show(ctx: click.Context, pattern_id: str, verbose: bool) -> None:
         click.echo(f"CWE: {pattern.cwe_id if pattern.cwe_id else 'N/A'}")
         click.echo(f"OWASP: {pattern.owasp_id if pattern.owasp_id else 'N/A'}")
 
-        click.echo(f"\n[bold]Description:[/bold]")
+        click.echo("\n[bold]Description:[/bold]")
         click.echo(pattern.description)
 
         if verbose and pattern.attack_vector:
-            click.echo(f"\n[bold]Attack Vector:[/bold]")
+            click.echo("\n[bold]Attack Vector:[/bold]")
             click.echo(pattern.attack_vector)
 
         if verbose and pattern.example_payload:
-            click.echo(f"\n[bold]Example Payload:[/bold]")
+            click.echo("\n[bold]Example Payload:[/bold]")
             click.echo(pattern.example_payload)
 
         if verbose and pattern.remediation:
-            click.echo(f"\n[bold]Remediation:[/bold]")
+            click.echo("\n[bold]Remediation:[/bold]")
             if pattern.remediation.description:
                 click.echo(pattern.remediation.description)
             if pattern.remediation.code_before:
@@ -141,10 +181,10 @@ def show(ctx: click.Context, pattern_id: str, verbose: bool) -> None:
                 click.echo(pattern.remediation.code_after)
 
         if verbose and pattern.references:
-            click.echo(f"\n[bold]References:[/bold]")
+            click.echo("\n[bold]References:[/bold]")
             for ref in pattern.references:
                 click.echo(f"  • {ref}")
 
     except Exception as e:
         logger.error(f"Failed to show pattern: {e}")
-        raise click.ClickException(f"Failed to show pattern: {e}")
+        raise click.ClickException(f"Failed to show pattern: {e}") from e

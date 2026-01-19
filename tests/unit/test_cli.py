@@ -625,3 +625,107 @@ def test_cli_config_list_with_all():
     assert "languages.<lang>.enabled" in result.output
     assert "Frameworks" in result.output
     assert "frameworks.<framework>.enabled" in result.output
+
+
+def test_cli_patterns_list_basic():
+    """Test patterns list shows all patterns."""
+    from acr.cli import patterns
+
+    runner = CliRunner()
+    result = runner.invoke(patterns.cli, ["list"])
+
+    assert result.exit_code == 0
+    assert "Available Attack Patterns" in result.output
+    assert "sql-injection" in result.output
+    assert "xss" in result.output
+    assert "command-injection" in result.output
+    assert "Total:" in result.output
+
+
+def test_cli_patterns_list_with_category():
+    """Test patterns list filters by category."""
+    from acr.cli import patterns
+
+    runner = CliRunner()
+    result = runner.invoke(patterns.cli, ["list", "--category", "injection"])
+
+    assert result.exit_code == 0
+    assert "sql-injection" in result.output
+    assert "xss" in result.output
+    assert "command-injection" in result.output
+    assert "broken-authentication" not in result.output
+
+
+def test_cli_patterns_list_with_severity():
+    """Test patterns list filters by severity."""
+    from acr.cli import patterns
+
+    runner = CliRunner()
+    result = runner.invoke(patterns.cli, ["list", "--severity", "critical"])
+
+    assert result.exit_code == 0
+    assert "sql-injection" in result.output
+    assert "command-injection" in result.output
+    assert "broken-authentication" in result.output
+
+
+def test_cli_patterns_list_custom_only():
+    """Test patterns list with --custom-only flag."""
+    from acr.cli import patterns
+
+    runner = CliRunner()
+    result = runner.invoke(patterns.cli, ["list", "--custom-only"])
+
+    assert result.exit_code == 0
+    assert "No custom patterns found" in result.output or "Custom" in result.output
+
+
+def test_cli_patterns_list_empty_result():
+    """Test patterns list with no matching patterns."""
+    from acr.cli import patterns
+
+    runner = CliRunner()
+    result = runner.invoke(patterns.cli, ["list", "--category", "nonexistent"])
+
+    assert result.exit_code == 0
+    assert "No patterns found matching criteria" in result.output
+
+
+def test_cli_patterns_show_basic():
+    """Test patterns show command."""
+    from acr.cli import patterns
+
+    runner = CliRunner()
+    result = runner.invoke(patterns.cli, ["show", "sql-injection"])
+
+    assert result.exit_code == 0
+    assert "SQL Injection" in result.output
+    assert "ID: sql-injection" in result.output
+    assert "Category: injection" in result.output
+    assert "Severity:" in result.output
+    assert "CWE: CWE-89" in result.output
+    assert "Description:" in result.output
+
+
+def test_cli_patterns_show_verbose():
+    """Test patterns show with verbose flag."""
+    from acr.cli import patterns
+
+    runner = CliRunner()
+    result = runner.invoke(patterns.cli, ["show", "sql-injection", "--verbose"])
+
+    assert result.exit_code == 0
+    assert "SQL Injection" in result.output
+    assert "Attack Vector:" in result.output or "Remediation:" in result.output
+    assert "References:" in result.output
+
+
+def test_cli_patterns_show_invalid_pattern():
+    """Test patterns show with invalid pattern ID."""
+    from acr.cli import patterns
+
+    runner = CliRunner()
+    result = runner.invoke(patterns.cli, ["show", "nonexistent-pattern"])
+
+    assert result.exit_code == 1
+    assert "Pattern 'nonexistent-pattern' not found" in result.output

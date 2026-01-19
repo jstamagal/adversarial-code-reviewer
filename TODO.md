@@ -465,11 +465,11 @@ Agent 1: Your task is to REVIEW, SCRUTINIZE, and REFINE this TODO.md and PRD.md 
     - [x] List available options
     - [x] Add tests for config command
 
-- [ ] Implement `acr patterns` command
-  - [ ] List all available patterns
-  - [ ] Show pattern details
-  - [ ] List custom patterns
-  - [ ] Add tests for patterns command
+- [x] Implement `acr patterns` command
+  - [x] List all available patterns
+  - [x] Show pattern details
+  - [x] List custom patterns
+  - [x] Add tests for patterns command
 
 - [x] Implement `acr config validate` command
    - [x] Validate .acrrc.yaml syntax

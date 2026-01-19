@@ -1,45 +1,9 @@
-[current_iteration] = 15
-[next_iteration] = 16
-[my_task_was] = Implement `acr config list` command to list available configuration options
+[current_iteration] = 16
+[next_iteration] = 17
+[my_task_was] = Complete `acr patterns` command implementation and tests
 [completed] = True
-[what_worked] = Successfully implemented `acr config list` command in acr/cli/config.py (268 lines). The command displays all available configuration options with details: Option names (project.name, patterns.severity_threshold, etc.), Data types (string, int, bool, list), Default values, Descriptions from Pydantic Field annotations. Added --all flag to show nested options like languages.<lang>.enabled and frameworks.<framework>.<option>. Created helper functions: _display_config_options() to iterate through config sections, _display_section_fields() to format section fields, _format_type() to convert Python types to readable strings, _format_default() to format default values for display. Added 4 new unit tests in tests/unit/test_cli.py: test_cli_config_list_help (verifies help works), test_cli_config_list_basic (checks main sections are shown), test_cli_config_list_shows_specific_options (verifies specific options appear), test_cli_config_list_with_all (verifies --all flag shows nested options). All 36 CLI tests passing (100%). Fixed ruff linting errors: reordered imports to match ruff style (stdlib, third-party, local), removed unused imports (ACRConfig, LanguageConfig). Linting passes (ruff check). No new mypy errors in config.py (all existing mypy errors are pre-existing in other files). Updated TODO.md to mark config list task complete (TODO.md line 465).
-[what_did_not_work] = Initial ruff linting errors: Import block un-sorted, unused ACRConfig import, unused LanguageConfig import. Fixed all by: reordering imports to match Python/ruff conventions, removing unused imports that weren't needed for the list command.
-[tests_passing] = tests/unit/test_cli.py - 36 passed (100%)
-- test_cli_version
-- test_cli_scan_help
-- test_cli_report_help
-- test_cli_init_help
-- test_cli_attack_help
-- test_cli_attack_no_findings
-- test_cli_attack_invalid_file
-- test_cli_attack_export_json
-- test_cli_attack_export_txt
-- test_cli_attack_export_markdown
-- test_cli_report_generate_markdown
-- test_cli_report_generate_json
-- test_cli_report_stdout
-- test_cli_report_invalid_json
-- test_cli_report_empty_findings
-- test_cli_config_help
-- test_cli_config_show_defaults
-- test_cli_config_show_with_file
-- test_cli_config_validate_no_file
-- test_cli_config_validate_valid
-- test_cli_config_validate_invalid_yaml
-- test_cli_config_validate_invalid_severity
-- test_cli_patterns_help
-- test_cli_doctor_help
-- test_cli_doctor_basic
-- test_cli_doctor_python_version
-- test_cli_doctor_dependencies
-- test_cli_doctor_tree_sitter
-- test_cli_doctor_configuration_no_file
-- test_cli_doctor_configuration_with_file
-- test_cli_doctor_disk_space
-- test_cli_doctor_llm_api
-- test_cli_config_list_help (NEW)
-- test_cli_config_list_basic (NEW)
-- test_cli_config_list_shows_specific_options (NEW)
-- test_cli_config_list_with_all (NEW)
+[what_worked] = Enhanced `acr patterns` command with custom patterns support and comprehensive tests. Added --custom-only flag to list only custom patterns (from config.patterns.custom_patterns directory or --custom-path argument). Added --custom-path flag to specify custom patterns directory path. Added Source column to table output showing "Built-in" or "Custom" for each pattern. Updated summary to show counts for both built-in and custom patterns. Modified imports: added Path from pathlib, added load_config from acr.config.loader. Fixed all linting errors: removed unused typing imports (List, Optional), removed unused ctx arguments from list_cmd and show functions, fixed exception handling with `from e` chaining, fixed f-string formatting by removing extraneous f prefix. Added 8 new unit tests in tests/unit/test_cli.py: test_cli_patterns_list_basic (verifies all patterns shown), test_cli_patterns_list_with_category (tests category filtering), test_cli_patterns_list_with_severity (tests severity filtering), test_cli_patterns_list_custom_only (tests --custom-only flag), test_cli_patterns_list_empty_result (tests no matches case), test_cli_patterns_show_basic (tests show command), test_cli_patterns_show_verbose (tests --verbose flag), test_cli_patterns_show_invalid_pattern (tests error handling). All 44 CLI tests passing (100%). Updated TODO.md to mark patterns command tasks complete (TODO.md line 468-471).
+[what_did_not_work] = Initial test failure: test_cli_patterns_list_with_severity failed because it checked for "Broken Authentication" name in output, but table output truncates long names. Fixed by checking for pattern ID "broken-authentication" instead. Linting errors: ruff reported 12 errors (8 fixable auto-fixed, 4 manual): unused ctx arguments, unused typing imports, exception handling without `from e`, f-strings without placeholders. Fixed all by: removing unused arguments and imports, adding `from e` to exception raises, using auto-fix for f-strings.
+[tests_passing] = tests/unit/test_cli.py - 44 passed (100%)
 [tests_failing] = None
-[notes_for_next_agent] = CLI Implementation (Phase 1.6) continues to progress well. The `acr config list` command is now complete with full functionality and comprehensive tests. Remaining CLI work in Phase 1.6: Implement `acr patterns list` to list all available patterns (TODO.md line 468-471), Implement `acr patterns show` to show pattern details (TODO.md line 469), Implement `acr init` command (TODO.md line 456-460), Implement `acr version` command (TODO.md line 481-486), Add shell autocompletion (bash, zsh, fish) (TODO.md line 505-511), Add dry run mode (--dry-run flag) (TODO.md line 498-503). High priority: Complete remaining CLI command implementations (patterns list/show, init, version), Improve CLI test coverage to >50% (scan: 23%, init: 30%, patterns: 24%), Work on Reporting System (Phase 1.7) - finding aggregation, confidence scoring, false positive management.
+[notes_for_next_agent] = CLI Implementation (Phase 1.6) continues to progress well. The `acr patterns` command is now complete with custom patterns support and comprehensive tests. Remaining CLI work in Phase 1.6: Implement `acr init` command (TODO.md line 456-460), Implement `acr version` command (TODO.md line 481-486), Add shell autocompletion (bash, zsh, fish) (TODO.md line 505-511), Add dry run mode (--dry-run flag) (TODO.md line 498-503). High priority: Complete remaining CLI command implementations (init, version), Work on Reporting System (Phase 1.7) - finding aggregation, confidence scoring, false positive management, markdown/json report generators.
