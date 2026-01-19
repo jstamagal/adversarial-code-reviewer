@@ -30,7 +30,7 @@ class TestPatternLoader:
         patterns = loader.load_patterns()
 
         assert isinstance(patterns, dict)
-        assert len(patterns) >= 12
+        assert len(patterns) >= 13
         assert "sql-injection" in patterns
         assert "xss" in patterns
         assert "command-injection" in patterns
@@ -43,6 +43,7 @@ class TestPatternLoader:
         assert "sensitive_data_exposure" in patterns
         assert "xxe" in patterns
         assert "broken_access_control" in patterns
+        assert "security_misconfiguration" in patterns
 
     def test_sensitive_data_exposure_pattern_loaded(self):
         """Test that sensitive_data_exposure pattern loads correctly."""
@@ -408,3 +409,97 @@ class TestPatternLoader:
             assert isinstance(pattern.affected_frameworks, list)
             assert isinstance(pattern.references, list)
             assert isinstance(pattern.enabled, bool)
+
+    def test_security_misconfiguration_pattern_loaded(self):
+        """Test that security_misconfiguration pattern loads correctly."""
+        loader = PatternLoader()
+        patterns = loader.load_patterns()
+
+        assert "security_misconfiguration" in patterns
+        pattern = patterns["security_misconfiguration"]
+
+        assert pattern.id == "security_misconfiguration"
+        assert pattern.name == "Security Misconfiguration"
+        assert pattern.category == "misconfiguration"
+        assert pattern.severity == SeverityLevel.HIGH
+        assert pattern.cwe_id == "CWE-2"
+        assert "A05:2021" in pattern.owasp_id
+        assert len(pattern.affected_languages) > 0
+        assert "python" in pattern.affected_languages
+        assert "javascript" in pattern.affected_languages
+        assert "typescript" in pattern.affected_languages
+
+    def test_security_misconfiguration_has_templates(self):
+        """Test that security_misconfiguration pattern has detection templates."""
+        loader = PatternLoader()
+        patterns = loader.load_patterns()
+        pattern = patterns["security_misconfiguration"]
+
+        assert len(pattern.templates) > 0
+
+        static_templates = [t for t in pattern.templates if t.get("type") == "static"]
+        data_flow_templates = [t for t in pattern.templates if t.get("type") == "data_flow"]
+
+        assert len(static_templates) > 0
+        assert len(data_flow_templates) > 0
+
+    def test_security_misconfiguration_has_remediation(self):
+        """Test that security_misconfiguration pattern has remediation information."""
+        loader = PatternLoader()
+        patterns = loader.load_patterns()
+        pattern = patterns["security_misconfiguration"]
+
+        assert pattern.remediation is not None
+        assert pattern.remediation.description != ""
+        assert pattern.remediation.code_before is not None
+        assert pattern.remediation.code_after is not None
+
+    def test_security_misconfiguration_has_references(self):
+        """Test that security_misconfiguration pattern has references."""
+        loader = PatternLoader()
+        patterns = loader.load_patterns()
+        pattern = patterns["security_misconfiguration"]
+
+        assert len(pattern.references) > 0
+        assert any("owasp.org" in ref for ref in pattern.references)
+        assert any("cwe.mitre.org" in ref for ref in pattern.references)
+
+    def test_security_misconfiguration_severity(self):
+        """Test that security_misconfiguration has correct severity."""
+        loader = PatternLoader()
+        patterns = loader.load_patterns()
+        pattern = patterns["security_misconfiguration"]
+
+        assert pattern.severity == SeverityLevel.HIGH
+
+    def test_security_misconfiguration_cwe_reference(self):
+        """Test that security_misconfiguration has correct CWE reference."""
+        loader = PatternLoader()
+        patterns = loader.load_patterns()
+        pattern = patterns["security_misconfiguration"]
+
+        assert pattern.cwe_id == "CWE-2"
+
+    def test_security_misconfiguration_description(self):
+        """Test that security_misconfiguration has meaningful description."""
+        loader = PatternLoader()
+        patterns = loader.load_patterns()
+        pattern = patterns["security_misconfiguration"]
+
+        assert len(pattern.description) > 50
+        assert "configuration" in pattern.description.lower()
+        assert "default" in pattern.description.lower()
+
+    def test_security_misconfiguration_remediation_examples(self):
+        """Test that remediation has code examples."""
+        loader = PatternLoader()
+        patterns = loader.load_patterns()
+        pattern = patterns["security_misconfiguration"]
+
+        assert pattern.remediation.code_before is not None
+        assert pattern.remediation.code_after is not None
+        assert "debug" in pattern.remediation.code_before.lower()
+        assert (
+            "helmet" in pattern.remediation.code_after.lower()
+            or "secret" in pattern.remediation.code_after.lower()
+        )
