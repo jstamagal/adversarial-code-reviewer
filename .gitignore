@@ -136,6 +136,11 @@ dmypy.json
 .acrrc.yaml
 .acr-cache/
 
+# Bun package manager
+bun.lock
+node_modules/
+package.json
+
 # Project specific
 PROMPT.md
 SCAFFOLDING_BRIEF.md
