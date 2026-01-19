@@ -60,12 +60,12 @@ Agent 1: Your task is to REVIEW, SCRUTINIZE, and REFINE this TODO.md and PRD.md 
 - ✅ Sensitive data detection (acr/llm/redaction.py with 5 passing tests)
 - ⚠️ Caching foundation - not yet implemented
 
-**Week 2-3: Code Analysis Engine** - 🔄 IN PROGRESS (60% complete)
+**Week 2-3: Code Analysis Engine** - 🔄 IN PROGRESS (70% complete)
 - ✅ AST parsing (acr/core/ast_parser.py complete with 27+ passing tests)
 - ✅ CFG builder (acr/core/cfg_builder.py exists)
-- ✅ DFG builder (acr/core/dfg_builder.py exists)  
+- ✅ DFG builder (acr/core/dfg_builder.py exists)
 - ✅ Taint tracker (acr/core/taint_tracker.py exists)
-- ⚠️ Entry point identification - not yet implemented
+- ✅ Entry point identification (acr/core/entry_points.py with 20 passing tests)
 - ⚠️ Sink identification - not yet implemented
 - ⚠️ Full taint analysis - basic structure exists, needs completion
 
@@ -216,13 +216,13 @@ Agent 1: Your task is to REVIEW, SCRUTINIZE, and REFINE this TODO.md and PRD.md 
   - [ ] Handle function calls and returns
   - [ ] Add tests for DFG
 
-- [ ] Implement entry point identification
-  - [ ] Detect Flask routes
-  - [ ] Detect Django views
-  - [ ] Detect FastAPI endpoints
-  - [ ] Detect public functions
-  - [ ] Detect CLI entry points
-  - [ ] Add tests for entry point detection
+- [x] Implement entry point identification
+  - [x] Detect Flask routes
+  - [x] Detect Django views
+  - [x] Detect FastAPI endpoints
+  - [x] Detect public functions
+  - [x] Detect CLI entry points
+  - [x] Add tests for entry point detection
 
 - [ ] Implement sink identification
   - [ ] Identify SQL execution sinks

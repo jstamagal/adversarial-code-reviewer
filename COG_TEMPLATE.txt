@@ -1,0 +1,9 @@
+[current_iteration] = 0 # **UPDATE THIS**
+[next_iteration] = {current_iteration}+1
+[my_task_was] = STRING{} # The task you began working on
+[completed] = BOOL{} # Whether you completed the task
+[what_worked] = STRING{} # What helped you succeed
+[what_did_not_work] = STRING{} # What the next agent can learn from
+[tests_passing] = STRING{} # Tests related to my task that passed
+[tests_failing] = STRING{} # Tests related to my task that failed
+[notes_for_next_agent] = STRING{} # Notes for the next agent
