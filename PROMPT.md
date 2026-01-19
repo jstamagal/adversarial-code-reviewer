@@ -1,7 +1,6 @@
 # Next Agent Task
 
 **Current Phase**: Week 3-4 - Attack Pattern Implementation
-**Progress**: 9/20 patterns complete (45%)
 
 ## Your ONE Task
 
@@ -49,7 +48,6 @@ Implement **ONE** attack pattern from the list below. Choose the first one you c
 - Must test that pattern loads successfully
 - **Commit ALL files you modified** (YAML + tests + journal)
 - Update journal before exit
-- If you get stuck after 15 minutes, document in journal and exit (let next agent try different pattern)
 
 ## Resources
 - Existing patterns: `acr/patterns/library/*.yaml`
