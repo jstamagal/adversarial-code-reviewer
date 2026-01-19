@@ -16,6 +16,7 @@
 
 import sys
 from pathlib import Path
+
 from click.testing import CliRunner
 
 
@@ -63,8 +64,9 @@ def test_cli_init_help():
 
 def test_cli_init_basic():
     """Test init command creates configuration file."""
-    from acr.cli import init
     import yaml
+
+    from acr.cli import init
 
     runner = CliRunner()
     with runner.isolated_filesystem():
@@ -86,8 +88,9 @@ def test_cli_init_basic():
 
 def test_cli_init_with_project_name():
     """Test init command with custom project name."""
-    from acr.cli import init
     import yaml
+
+    from acr.cli import init
 
     runner = CliRunner()
     with runner.isolated_filesystem():
@@ -116,8 +119,9 @@ def test_cli_init_overwrite_existing():
 
 def test_cli_init_force_overwrite():
     """Test init command overwrites with force flag."""
-    from acr.cli import init
     import yaml
+
+    from acr.cli import init
 
     runner = CliRunner()
     with runner.isolated_filesystem():
@@ -136,8 +140,9 @@ def test_cli_init_force_overwrite():
 
 def test_cli_init_config_structure():
     """Test init command creates valid configuration structure."""
-    from acr.cli import init
     import yaml
+
+    from acr.cli import init
 
     runner = CliRunner()
     with runner.isolated_filesystem():
@@ -183,8 +188,9 @@ def test_cli_init_config_structure():
 
 def test_cli_init_default_patterns():
     """Test init command includes default patterns."""
-    from acr.cli import init
     import yaml
+
+    from acr.cli import init
 
     runner = CliRunner()
     with runner.isolated_filesystem():
@@ -202,8 +208,9 @@ def test_cli_init_default_patterns():
 
 def test_cli_init_default_severity():
     """Test init command sets default severity threshold."""
-    from acr.cli import init
     import yaml
+
+    from acr.cli import init
 
     runner = CliRunner()
     with runner.isolated_filesystem():
