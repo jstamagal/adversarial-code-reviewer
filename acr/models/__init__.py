@@ -14,6 +14,6 @@
 
 """Data models using Pydantic."""
 
-from acr.models import finding, pattern, config
+from acr.models import finding, pattern, config, aggregator
 
-__all__ = ["finding", "pattern", "config"]
+__all__ = ["finding", "pattern", "config", "aggregator"]
