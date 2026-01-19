@@ -62,6 +62,9 @@ class AnalysisConfig(BaseModel):
     max_depth: int = Field(default=10, description="Maximum recursion depth")
     timeout: int = Field(default=300, description="Analysis timeout in seconds")
     parallel: bool = Field(default=False, description="Enable parallel processing")
+    analyze_generated_code: bool = Field(
+        default=False, description="Analyze generated code (default: exclude)"
+    )
 
 
 class ReportingConfig(BaseModel):
@@ -85,6 +88,10 @@ class ExclusionConfig(BaseModel):
     files: List[str] = Field(
         default_factory=lambda: ["*.pyc", "*.pyo"],
         description="File patterns to exclude",
+    )
+    generated_code_patterns: List[str] = Field(
+        default_factory=list,
+        description="Custom regex patterns for generated code detection",
     )
 
 

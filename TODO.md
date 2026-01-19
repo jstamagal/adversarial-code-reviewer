@@ -248,12 +248,12 @@ Agent 1: Your task is to REVIEW, SCRUTINIZE, and REFINE this TODO.md and PRD.md 
      - [x] Document legacy code limitations
      - [x] Add opt-in legacy analysis mode
      - [x] Add tests for legacy code handling
-   - [ ] Implement generated code detection
-    - [ ] Detect common generated code patterns
-    - [ ] Default to excluding generated code
-    - [ ] Allow opt-in for generated code analysis
-    - [ ] Support configurable exclusion patterns
-    - [ ] Add tests for generated code handling
+  - [x] Implement generated code detection
+     - [x] Detect common generated code patterns
+     - [x] Default to excluding generated code
+     - [x] Allow opt-in for generated code analysis
+     - [x] Support configurable exclusion patterns
+     - [x] Add tests for generated code handling
 
 ### 1.4 Attack Pattern System (Weeks 3-4)
 
