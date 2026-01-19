@@ -30,7 +30,7 @@ class TestPatternLoader:
         patterns = loader.load_patterns()
 
         assert isinstance(patterns, dict)
-        assert len(patterns) >= 14
+        assert len(patterns) >= 15
         assert "sql-injection" in patterns
         assert "xss" in patterns
         assert "command-injection" in patterns
@@ -45,6 +45,7 @@ class TestPatternLoader:
         assert "broken_access_control" in patterns
         assert "security_misconfiguration" in patterns
         assert "known_vulnerabilities" in patterns
+        assert "insufficient-logging-monitoring" in patterns
 
     def test_sensitive_data_exposure_pattern_loaded(self):
         """Test that sensitive_data_exposure pattern loads correctly."""
@@ -590,4 +591,94 @@ class TestPatternLoader:
         assert (
             "django" in pattern.remediation.code_before.lower()
             or "flask" in pattern.remediation.code_before.lower()
+        )
+
+    def test_insufficient_logging_monitoring_pattern_loaded(self):
+        """Test that insufficient_logging_monitoring pattern loads correctly."""
+        loader = PatternLoader()
+        patterns = loader.load_patterns()
+
+        assert "insufficient-logging-monitoring" in patterns
+        pattern = patterns["insufficient-logging-monitoring"]
+
+        assert pattern.id == "insufficient-logging-monitoring"
+        assert pattern.name == "Insufficient Logging and Monitoring"
+        assert pattern.category == "logging"
+        assert pattern.severity == SeverityLevel.MEDIUM
+        assert pattern.cwe_id == "CWE-778"
+        assert pattern.owasp_id == "A09:2021-Insufficient Logging and Monitoring"
+        assert len(pattern.affected_languages) > 0
+        assert "python" in pattern.affected_languages
+
+    def test_insufficient_logging_monitoring_has_templates(self):
+        """Test that insufficient_logging_monitoring pattern has detection templates."""
+        loader = PatternLoader()
+        patterns = loader.load_patterns()
+        pattern = patterns["insufficient-logging-monitoring"]
+
+        assert len(pattern.templates) > 0
+
+        static_templates = [t for t in pattern.templates if t.get("type") == "static"]
+        data_flow_templates = [t for t in pattern.templates if t.get("type") == "data_flow"]
+
+        assert len(static_templates) > 0
+        assert len(data_flow_templates) > 0
+
+    def test_insufficient_logging_monitoring_has_remediation(self):
+        """Test that insufficient_logging_monitoring pattern has remediation."""
+        loader = PatternLoader()
+        patterns = loader.load_patterns()
+        pattern = patterns["insufficient-logging-monitoring"]
+
+        assert pattern.remediation is not None
+        assert len(pattern.remediation.description) > 0
+
+    def test_insufficient_logging_monitoring_has_references(self):
+        """Test that insufficient_logging_monitoring has references."""
+        loader = PatternLoader()
+        patterns = loader.load_patterns()
+        pattern = patterns["insufficient-logging-monitoring"]
+
+        assert len(pattern.references) > 0
+        references = pattern.references
+        assert any("owasp.org" in ref for ref in references)
+        assert any("cwe.mitre.org" in ref for ref in references)
+
+    def test_insufficient_logging_monitoring_severity(self):
+        """Test that insufficient_logging_monitoring has correct severity."""
+        loader = PatternLoader()
+        patterns = loader.load_patterns()
+        pattern = patterns["insufficient-logging-monitoring"]
+
+        assert pattern.severity == SeverityLevel.MEDIUM
+
+    def test_insufficient_logging_monitoring_cwe_reference(self):
+        """Test that insufficient_logging_monitoring has correct CWE reference."""
+        loader = PatternLoader()
+        patterns = loader.load_patterns()
+        pattern = patterns["insufficient-logging-monitoring"]
+
+        assert pattern.cwe_id == "CWE-778"
+
+    def test_insufficient_logging_monitoring_description(self):
+        """Test that insufficient_logging_monitoring has meaningful description."""
+        loader = PatternLoader()
+        patterns = loader.load_patterns()
+        pattern = patterns["insufficient-logging-monitoring"]
+
+        assert len(pattern.description) > 50
+        assert "logging" in pattern.description.lower()
+        assert "monitoring" in pattern.description.lower()
+
+    def test_insufficient_logging_monitoring_remediation_examples(self):
+        """Test that remediation has code examples."""
+        loader = PatternLoader()
+        patterns = loader.load_patterns()
+        pattern = patterns["insufficient-logging-monitoring"]
+
+        assert pattern.remediation.code_before is not None
+        assert pattern.remediation.code_after is not None
+        assert (
+            "login" in pattern.remediation.code_before.lower()
+            or "auth" in pattern.remediation.code_before.lower()
         )

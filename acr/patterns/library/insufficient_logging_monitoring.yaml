@@ -1,0 +1,601 @@
+id: insufficient-logging-monitoring
+name: Insufficient Logging and Monitoring
+category: logging
+severity: medium
+cwe: CWE-778
+owasp: A09:2021-Insufficient Logging and Monitoring
+
+description: |
+  Insufficient logging and monitoring occurs when security events are not properly logged,
+  monitored, or alerted on. This can allow attackers to compromise systems without detection,
+  delay incident response, and make forensic investigation difficult.
+
+references:
+  - https://cwe.mitre.org/data/definitions/778.html
+  - https://owasp.org/www-project-web-security-testing-guide/v42/4-Web_Application_Security_Testing/11-Client-side_Testing/03-Testing_for_Cross_Site_Scripting
+  - https://cheatsheetseries.owasp.org/cheatsheets/Logging_Cheat_Sheet.html
+
+affected_languages:
+  - python
+  - javascript
+  - typescript
+  - java
+  - go
+  - ruby
+  - php
+
+affected_frameworks:
+  - flask
+  - django
+  - fastapi
+  - express
+  - nestjs
+  - spring
+  - gin
+
+logging_issues:
+  - No logging on authentication events (login, logout, failed attempts)
+  - No logging on authorization failures
+  - No logging on sensitive operations (data export, bulk delete, admin actions)
+  - No logging on input validation failures
+  - Logs contain sensitive data (passwords, tokens, PII)
+  - No centralized logging or SIEM integration
+  - No alerts for suspicious activity patterns
+  - Logs not protected against tampering
+  - No audit trail for critical operations
+  - Logging levels inappropriate for production (too verbose or too quiet)
+
+detection:
+  static:
+    - pattern: "(@app\\.route.*def.*login\\(.*\\):|def login\\(|def authenticate\\(.*\\):)"
+      description: Authentication endpoint - check for logging
+      confidence: medium
+
+    - pattern: "(@app\\.route.*def.*logout\\(.*\\):|def logout\\(.*\\):)"
+      description: Logout endpoint - check for logging
+      confidence: medium
+
+    - pattern: "(if.*password.*==|if.*authenticate\\(.*\\):)"
+      description: Password check without logging
+      confidence: low
+
+    - pattern: "(except\\s+Exception|except\\s*:)\\s*:\\s*(pass|return)"
+      description: Silent exception handling (no logging)
+      confidence: medium
+
+    - pattern: "(except.*:\\s*print\\()"
+      description: Using print() instead of logging
+      confidence: low
+
+    - pattern: "(\\[DEBUG\\]|\\[INFO\\]|\\[WARNING\\]|\\[ERROR\\])"
+      description: Manual log level strings (should use proper logger)
+      confidence: low
+
+    - pattern: "(app\\.error\\(|app\\.warning\\(|app\\.info\\()"
+      description: Using app logger directly without proper log levels
+      confidence: low
+
+    - pattern: "(return.*status.*200\\s*$)"
+      description: Returning status without logging for potentially sensitive operations
+      confidence: low
+
+    - pattern: "(delete\\(|remove\\(.*\\)|destroy\\()"
+      description: Deletion operation - check for logging
+      confidence: medium
+
+    - pattern: "(\\.(save|create|insert|update)\\(.*\\))"
+      description: Database write operation - check for logging
+      confidence: low
+
+    - pattern: "(requests\\.post|requests\\.get|fetch\\(|axios\\.post|axios\\.get)"
+      description: HTTP request - check for logging
+      confidence: low
+
+    - pattern: "(password.*=.*request\\..*|password.*in.*log|token.*in.*log)"
+      description: Sensitive data potentially in logs
+      confidence: high
+
+    - pattern: "(session\\[.*\\]|cookie\\[.*\\]|request\\.headers\\[.*\\])"
+      description: Session/cookie/header values potentially logged without sanitization
+      confidence: medium
+
+    - pattern: "(log\\.info\\(.*password|log\\.error\\(.*token|logger\\.debug\\(.*secret)"
+      description: Explicit logging of sensitive data
+      confidence: high
+
+    - pattern: "(if.*is_admin|@admin_required|@login_required)"
+      description: Admin or protected endpoint - check for logging
+      confidence: medium
+
+    - pattern: "(bulk_.*\\(|batch_.*\\(|.*_all\\())"
+      description: Bulk operation - check for logging
+      confidence: medium
+
+    - pattern: "(def.*export|def.*download.*file|def.*get_all)"
+      description: Data export or bulk retrieval - check for logging
+      confidence: medium
+
+    - pattern: "(\\[INFO\\]|\\[DEBUG\\]|\\[ERROR\\]|INFO:|DEBUG:|ERROR:)"
+      description: String-based logging (should use proper logger)
+      confidence: low
+
+    - pattern: "(import logging|from logging import)"
+      description: Python logging import - verify proper usage
+      confidence: low
+
+    - pattern: "(logger\\.setLevel\\(logging\\.DEBUG\\))"
+      description: Debug logging in production
+      confidence: medium
+
+    - pattern: "(except.*as.*e):\\s*$"
+      description: Exception caught but not logged
+      confidence: low
+
+    - pattern: "(try:.*\\n.*except.*:.*\\n.*pass)"
+      description: Empty except block (swallows errors)
+      confidence: medium
+
+    - pattern: "(subprocess\\.call|subprocess\\.run|os\\.system)"
+      description: System command execution - check for logging
+      confidence: medium
+
+  data_flow:
+    - source: "request.form, request.json, request.query_string, request.data"
+      sink: "database operations, file writes, external API calls"
+      description: "User input flowing to sinks without logging for audit trail"
+      confidence: medium
+
+remediation:
+  description: Implement comprehensive logging and monitoring with proper levels and sensitive data redaction
+
+  code_before: |
+    @app.route('/login', methods=['POST'])
+    def login():
+        username = request.form.get('username')
+        password = request.form.get('password')
+
+        if authenticate_user(username, password):
+            session['user_id'] = get_user_id(username)
+            return redirect('/dashboard')
+        else:
+            return 'Invalid credentials', 401
+
+  code_after: |
+    import logging
+    logger = logging.getLogger(__name__)
+
+    @app.route('/login', methods=['POST'])
+    def login():
+        username = request.form.get('username')
+
+        if authenticate_user(username, password):
+            user_id = get_user_id(username)
+            session['user_id'] = user_id
+            logger.info(f"Successful login for user: {username}", extra={'user_id': user_id})
+            return redirect('/dashboard')
+        else:
+            logger.warning(f"Failed login attempt for user: {username}", extra={'username': username, 'ip': request.remote_addr})
+            return 'Invalid credentials', 401
+
+  code_after_redaction: |
+    import logging
+    import re
+    logger = logging.getLogger(__name__)
+
+    def redact_sensitive_data(data):
+        """Redact sensitive data before logging."""
+        if isinstance(data, str):
+            data = re.sub(r'password["\']?\s*[:=]\s*["\']?([^"\']+)', 'password=***REDACTED***', data, flags=re.IGNORECASE)
+            data = re.sub(r'token["\']?\s*[:=]\s*["\']?([^"\']{20,})', 'token=***REDACTED***', data, flags=re.IGNORECASE)
+            data = re.sub(r'api[_-]?key["\']?\s*[:=]\s*["\']?([^"\']{20,})', 'api_key=***REDACTED***', data, flags=re.IGNORECASE)
+        return data
+
+    def log_with_redaction(level, message, **kwargs):
+        """Log with automatic sensitive data redaction."""
+        message = redact_sensitive_data(str(message))
+        kwargs = {k: redact_sensitive_data(v) for k, v in kwargs.items()}
+        logger.log(level, message, extra=kwargs)
+
+  code_after_structured: |
+    import logging
+    from pythonjsonlogger import jsonlogger
+    import sys
+
+    # Configure structured logging
+    logger = logging.getLogger(__name__)
+    log_handler = logging.StreamHandler(sys.stdout)
+    formatter = jsonlogger.JsonFormatter('%(asctime)s %(name)s %(levelname)s %(message)s')
+    log_handler.setFormatter(formatter)
+    logger.addHandler(log_handler)
+    logger.setLevel(logging.INFO)
+
+    @app.route('/login', methods=['POST'])
+    def login():
+        username = request.form.get('username')
+
+        if authenticate_user(username, password):
+            user_id = get_user_id(username)
+            session['user_id'] = user_id
+            logger.info(
+                "login_success",
+                extra={
+                    'event': 'login',
+                    'success': True,
+                    'user_id': user_id,
+                    'ip_address': request.remote_addr,
+                    'user_agent': request.headers.get('User-Agent'),
+                    'timestamp': datetime.utcnow().isoformat()
+                }
+            )
+            return redirect('/dashboard')
+        else:
+            logger.warning(
+                "login_failure",
+                extra={
+                    'event': 'login',
+                    'success': False,
+                    'username': username,
+                    'ip_address': request.remote_addr,
+                    'user_agent': request.headers.get('User-Agent'),
+                    'timestamp': datetime.utcnow().isoformat()
+                }
+            )
+            return 'Invalid credentials', 401
+
+examples:
+  vulnerable:
+    - |
+      # auth.py - No logging on authentication
+      @app.route('/login', methods=['POST'])
+      def login():
+          username = request.form.get('username')
+          password = request.form.get('password')
+
+          if verify_credentials(username, password):
+              session['logged_in'] = True
+              session['user'] = username
+              return 'Login successful'
+          return 'Invalid credentials', 401
+
+    - |
+      # admin.py - No logging on sensitive admin operations
+      @app.route('/admin/delete_user/<int:user_id>', methods=['DELETE'])
+      @admin_required
+      def delete_user(user_id):
+          User.query.filter_by(id=user_id).delete()
+          db.session.commit()
+          return 'User deleted', 200
+
+    - |
+      # data.py - Silent exception handling
+      @app.route('/export/data', methods=['GET'])
+      def export_data():
+          try:
+              data = get_all_sensitive_data()
+              return jsonify(data)
+          except Exception as e:
+              return 'Error occurred', 500
+
+    - |
+      # api.py - Logging sensitive data
+      @app.route('/charge', methods=['POST'])
+      def charge_card():
+          card_number = request.json['card_number']
+          cvv = request.json['cvv']
+          logger.info(f"Charging card: {card_number} with CVV: {cvv}")
+          # Process payment...
+
+    - |
+      # auth.py - Using print() instead of logging
+      @app.route('/reset_password', methods=['POST'])
+      def reset_password():
+          email = request.form.get('email')
+          if reset_user_password(email):
+              print(f"Password reset for {email}")
+              return 'Password reset email sent'
+          print(f"Password reset failed for {email}")
+          return 'User not found', 404
+
+    - |
+      # app.py - No logging on authorization failures
+      @app.route('/admin/panel', methods=['GET'])
+      def admin_panel():
+          if not session.get('is_admin'):
+              abort(403)
+          return render_template('admin.html')
+
+    - |
+      # upload.py - No logging on file uploads
+      @app.route('/upload', methods=['POST'])
+      def upload_file():
+          file = request.files['file']
+          filename = secure_filename(file.filename)
+          file.save(os.path.join('/uploads', filename))
+          return 'File uploaded', 200
+
+    - |
+      # api.py - Debug logging in production
+      logger.setLevel(logging.DEBUG)
+
+      @app.route('/api/data', methods=['GET'])
+      def get_data():
+          logger.debug(f"Request headers: {request.headers}")
+          logger.debug(f"Session data: {session}")
+          logger.debug(f"Cookie data: {request.cookies}")
+          return jsonify(get_all_data())
+
+  secure:
+    - |
+      # auth.py - Proper logging with structured data
+      import logging
+      logger = logging.getLogger(__name__)
+
+      @app.route('/login', methods=['POST'])
+      def login():
+          username = request.form.get('username')
+
+          if verify_credentials(username, password):
+              user = get_user(username)
+              session['logged_in'] = True
+              session['user_id'] = user.id
+              session['role'] = user.role
+
+              logger.info(
+                  "User login successful",
+                  extra={
+                      'event': 'login',
+                      'user_id': user.id,
+                      'username': username,
+                      'role': user.role,
+                      'ip': request.remote_addr,
+                      'success': True
+                  }
+              )
+              return 'Login successful'
+          else:
+              logger.warning(
+                  "User login failed",
+                  extra={
+                      'event': 'login',
+                      'username': username,
+                      'ip': request.remote_addr,
+                      'success': False
+                  }
+              )
+              return 'Invalid credentials', 401
+
+    - |
+      # admin.py - Logging sensitive operations
+      @app.route('/admin/delete_user/<int:user_id>', methods=['DELETE'])
+      @admin_required
+      def delete_user(user_id):
+          user = User.query.get(user_id)
+          logger.info(
+              "User deletion requested",
+              extra={
+                  'event': 'user_delete',
+                  'target_user_id': user_id,
+                  'target_username': user.username if user else None,
+                  'actor_user_id': session['user_id'],
+                  'ip': request.remote_addr
+              }
+          )
+          User.query.filter_by(id=user_id).delete()
+          db.session.commit()
+          return 'User deleted', 200
+
+    - |
+      # data.py - Proper exception logging
+      @app.route('/export/data', methods=['GET'])
+      def export_data():
+          try:
+              data = get_all_sensitive_data()
+              return jsonify(data)
+          except Exception as e:
+              logger.error(
+                  "Data export failed",
+                  exc_info=True,
+                  extra={
+                      'event': 'data_export',
+                      'user_id': session.get('user_id'),
+                      'ip': request.remote_addr
+                  }
+              )
+              return 'Error occurred', 500
+
+    - |
+      # api.py - Sensitive data redaction
+      @app.route('/charge', methods=['POST'])
+      def charge_card():
+          card_number = request.json['card_number']
+          logger.info(
+              "Payment attempt",
+              extra={
+                  'event': 'payment',
+                  'card_last4': card_number[-4:],
+                  'amount': request.json['amount'],
+                  'user_id': session.get('user_id')
+              }
+          )
+          # Process payment...
+
+    - |
+      # app.py - Logging authorization failures
+      @app.route('/admin/panel', methods=['GET'])
+      def admin_panel():
+          if not session.get('is_admin'):
+              logger.warning(
+                  "Unauthorized access attempt",
+                  extra={
+                      'event': 'unauthorized_access',
+                      'user_id': session.get('user_id'),
+                      'endpoint': '/admin/panel',
+                      'ip': request.remote_addr
+                  }
+              )
+              abort(403)
+          return render_template('admin.html')
+
+    - |
+      # config.py - Proper logging configuration
+      import logging
+      import logging.handlers
+
+      # Configure log levels appropriately
+      if app.env == 'production':
+          log_level = logging.INFO
+      else:
+          log_level = logging.DEBUG
+
+      # Create rotating file handler
+      file_handler = logging.handlers.RotatingFileHandler(
+          'app.log',
+          maxBytes=10485760,  # 10MB
+          backupCount=5
+      )
+      file_handler.setFormatter(logging.Formatter(
+          '%(asctime)s %(name)s %(levelname)s [%(user_id)s] %(message)s'
+      ))
+
+      # Configure structured logging
+      logger = logging.getLogger(__name__)
+      logger.setLevel(log_level)
+      logger.addHandler(file_handler)
+
+security_recommendations:
+  - Log all authentication events (login, logout, failed attempts)
+  - Log all authorization failures (access denied, privilege escalation attempts)
+  - Log all sensitive operations (data export, bulk delete, admin actions)
+  - Log input validation failures and security exceptions
+  - Never log sensitive data (passwords, tokens, credit cards, full SSNs)
+  - Use structured logging (JSON format) for SIEM integration
+  - Implement log rotation and retention policies
+  - Protect log files from unauthorized access and tampering
+  - Set up alerts for suspicious activity patterns (failed logins, unusual data access)
+  - Use appropriate log levels (DEBUG, INFO, WARNING, ERROR, CRITICAL)
+  - Include contextual information (user ID, IP, timestamp, event type)
+  - Centralize logs using SIEM or log aggregation service
+  - Implement log monitoring and incident response procedures
+  - Regularly review logs for security incidents
+  - Secure log transmission (TLS for remote logging)
+
+llm_prompts:
+  analyze: |
+    Analyze this code for insufficient logging and monitoring issues. Look for:
+
+    1. **Missing authentication logging**:
+       - Login attempts (success/failure)
+       - Logout events
+       - Failed authentication attempts with details
+
+    2. **Missing authorization logging**:
+       - Access denied events
+       - Privilege escalation attempts
+       - Admin operations without audit trail
+
+    3. **Missing sensitive operation logging**:
+       - Data export/bulk operations
+       - Admin actions (user deletion, permission changes)
+       - File uploads/downloads
+       - Database modifications
+
+    4. **Logging sensitive data**:
+       - Passwords, tokens, API keys in logs
+       - Personal information (PII)
+       - Session data or cookies
+
+    5. **Poor logging practices**:
+       - Using print() instead of proper logging
+       - Silent exception handling (except: pass)
+       - Inappropriate log levels in production
+       - Unstructured logging (hard to parse/monitor)
+
+    6. **Missing monitoring/alerting**:
+       - No alerts for repeated failed logins
+       - No monitoring for unusual activity patterns
+       - No SIEM integration
+
+    For each finding:
+    - Identify the type of logging issue
+    - Provide exact vulnerable code location
+    - Explain the security risk (delayed detection, forensic difficulties)
+    - Recommend proper logging approach with examples
+    - Suggest monitoring/alerting strategies
+
+  generate_attack: |
+    Explain the security risks of insufficient logging and monitoring in this code. Describe:
+
+    1. **Attacker exploitation without detection**:
+       - How attackers can remain undetected
+       - Which operations can be performed without logs
+       - Timeline of undetected breach scenarios
+
+    2. **Incident response challenges**:
+       - Difficulties in forensic investigation
+       - Missing timeline reconstruction
+       - Inability to identify attacker actions
+
+    3. **Compliance and legal risks**:
+       - Regulatory violations (GDPR, PCI DSS, HIPAA)
+       - Audit trail requirements
+       - Legal liability for undetected breaches
+
+    4. **Specific attack scenarios**:
+       - Privilege escalation without logging
+       - Data exfiltration undetected
+       - Account takeover without alerting
+       - Brute force attacks without monitoring
+
+    5. **Monitoring bypass opportunities**:
+       - Which security events go unmonitored
+       - How attackers could avoid detection
+       - Critical gaps in security visibility
+
+    6. **Remediation and monitoring strategy**:
+       - Essential logging requirements
+       - Alert thresholds and patterns
+       - SIEM integration recommendations
+       - Log protection and retention
+
+  remediation: |
+    Provide remediation guidance for insufficient logging and monitoring:
+
+    1. **Add authentication logging**:
+       - Login success: user_id, ip, timestamp
+       - Login failure: username, ip, timestamp, reason
+       - Logout events: user_id, timestamp
+
+    2. **Add authorization logging**:
+       - Access denied: user_id, resource, ip, timestamp
+       - Privilege escalation attempts
+       - Admin operations: actor, target, action, timestamp
+
+    3. **Add sensitive operation logging**:
+       - Data exports: user_id, record_count, timestamp
+       - Bulk operations: action, affected_count, actor
+       - File uploads: filename, size, user_id
+
+    4. **Implement log protection**:
+       - Redact sensitive data (passwords, tokens, PII)
+       - Use structured logging (JSON)
+       - Implement log rotation and retention
+       - Protect log files from tampering
+
+    5. **Set up monitoring and alerting**:
+       - Failed login threshold alerts
+       - Unusual data access alerts
+       - Admin operation notifications
+       - Integration with SIEM
+
+    6. **Appropriate log levels**:
+       - DEBUG: Development troubleshooting
+       - INFO: Normal operations (login, data access)
+       - WARNING: Suspicious events (failed auth)
+       - ERROR: System errors
+       - CRITICAL: Security incidents
+
+    Provide code examples showing:
+    - Proper logging setup with configuration
+    - Structured logging with extra fields
+    - Sensitive data redaction before logging
+    - Alert integration patterns
