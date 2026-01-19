@@ -1056,3 +1056,141 @@ def test_cli_scan_dry_run_with_filters():
     assert "Total Findings" in result.output
     assert "Estimated Analysis Time" in result.output
     assert "LLM Integration" in result.output
+
+
+def test_cli_completion_bash():
+    """Test completion script generation for bash."""
+    from acr.cli import completion
+
+    runner = CliRunner()
+    result = runner.invoke(completion.cli, ["--shell", "bash"])
+    assert result.exit_code == 0
+    assert "_ACR_COMPLETE=bash_source acr" in result.output
+    assert "eval" in result.output
+
+
+def test_cli_completion_zsh():
+    """Test completion script generation for zsh."""
+    from acr.cli import completion
+
+    runner = CliRunner()
+    result = runner.invoke(completion.cli, ["--shell", "zsh"])
+    assert result.exit_code == 0
+    assert "_ACR_COMPLETE=zsh_source acr" in result.output
+    assert "eval" in result.output
+
+
+def test_cli_completion_fish():
+    """Test completion script generation for fish."""
+    from acr.cli import completion
+
+    runner = CliRunner()
+    result = runner.invoke(completion.cli, ["--shell", "fish"])
+    assert result.exit_code == 0
+    assert "_ACR_COMPLETE=fish_source acr" in result.output
+    assert "source" in result.output
+
+
+def test_cli_completion_powershell():
+    """Test completion script generation for PowerShell."""
+    from acr.cli import completion
+
+    runner = CliRunner()
+    result = runner.invoke(completion.cli, ["--shell", "powershell"])
+    assert result.exit_code == 0
+    assert "_ACR_COMPLETE=powershell_source acr" in result.output
+    assert "Invoke-Expression" in result.output
+
+
+def test_cli_completion_no_shell():
+    """Test completion command requires shell argument."""
+    from acr.cli import completion
+
+    runner = CliRunner()
+    result = runner.invoke(completion.cli)
+    assert result.exit_code == 1
+    assert "Please specify --shell" in result.output
+
+
+def test_cli_completion_invalid_shell():
+    """Test completion command rejects invalid shell."""
+    from acr.cli import completion
+
+    runner = CliRunner()
+    result = runner.invoke(completion.cli, ["--shell", "invalid"])
+    assert result.exit_code == 2
+
+
+def test_cli_completion_install_bash():
+    """Test completion installation for bash (dry run test)."""
+    from acr.cli import completion
+    from unittest.mock import patch
+    from pathlib import Path
+    import tempfile
+
+    runner = CliRunner()
+
+    with runner.isolated_filesystem():
+        with tempfile.TemporaryDirectory() as tmpdir:
+            custom_path = Path(tmpdir) / "bash_completion_acr"
+
+            result = runner.invoke(
+                completion.cli, ["--install", "--shell", "bash", "--path", str(custom_path)]
+            )
+
+    assert result.exit_code == 0
+    assert "Completion script written" in result.output
+
+
+def test_cli_completion_install_zsh():
+    """Test completion installation for zsh (dry run test)."""
+    from acr.cli import completion
+    from pathlib import Path
+    import tempfile
+
+    runner = CliRunner()
+
+    with runner.isolated_filesystem():
+        with tempfile.TemporaryDirectory() as tmpdir:
+            custom_path = Path(tmpdir) / "zsh_completion_acr"
+
+            result = runner.invoke(
+                completion.cli, ["--install", "--shell", "zsh", "--path", str(custom_path)]
+            )
+
+    assert result.exit_code == 0
+    assert "Completion script written" in result.output
+
+
+def test_cli_completion_install_fish():
+    """Test completion installation for fish (dry run test)."""
+    from acr.cli import completion
+    from pathlib import Path
+    import tempfile
+
+    runner = CliRunner()
+
+    with runner.isolated_filesystem():
+        with tempfile.TemporaryDirectory() as tmpdir:
+            custom_path = Path(tmpdir) / "fish_completion_acr"
+
+            result = runner.invoke(
+                completion.cli, ["--install", "--shell", "fish", "--path", str(custom_path)]
+            )
+
+    assert result.exit_code == 0
+    assert "Completion script written" in result.output
+
+
+def test_cli_completion_help():
+    """Test completion command help message."""
+    from acr.cli import completion
+
+    runner = CliRunner()
+    result = runner.invoke(completion.cli, ["--help"])
+    assert result.exit_code == 0
+    assert "Generate shell completion scripts" in result.output
+    assert "bash" in result.output
+    assert "zsh" in result.output
+    assert "fish" in result.output
+    assert "powershell" in result.output

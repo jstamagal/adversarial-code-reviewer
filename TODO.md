@@ -503,13 +503,13 @@ Agent 1: Your task is to REVIEW, SCRUTINIZE, and REFINE this TODO.md and PRD.md 
    - [x] Show analysis time estimate
    - [x] Add tests for dry run mode
 
-- [ ] Add shell autocompletion
-  - [ ] Generate bash completion script
-  - [ ] Generate zsh completion script
-  - [ ] Generate fish completion script
-  - [ ] Document autocompletion installation
-  - [ ] Test all shells
-  - [ ] Add completion to installation script
+- [x] Add shell autocompletion
+  - [x] Generate bash completion script
+  - [x] Generate zsh completion script
+  - [x] Generate fish completion script
+  - [x] Document autocompletion installation
+  - [x] Test all shells
+  - [x] Add completion to installation script
 
 ### 1.7 Reporting System (Weeks 7-8)
 
