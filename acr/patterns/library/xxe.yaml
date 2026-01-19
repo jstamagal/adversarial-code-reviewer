@@ -1,0 +1,361 @@
+id: xxe
+name: XML External Entity (XXE) Injection
+category: injection
+severity: critical
+cwe: "CWE-611"
+owasp: "A5:2017-Broken Access Control"
+confidence: high
+description: |
+  XXE (XML External Entity) injection is a vulnerability that allows an attacker to interfere with an
+  application's processing of XML data. It often allows an attacker to view files on the application server
+  filesystem, interact with any internal or external system that the application can access, or cause
+  denial of service.
+
+affected_languages:
+  - python
+  - javascript
+  - typescript
+
+affected_frameworks:
+  - generic
+
+references:
+  - "https://owasp.org/www-community/attacks/XML_External_Entity_(XXE)_Processing"
+  - "https://cwe.mitre.org/data/definitions/611.html"
+  - "https://portswigger.net/web-security/xxe"
+
+detection:
+  static:
+  - pattern: |
+      xml\.etree\.ElementTree\.(fromstring|parse|XML)\(
+      description: |
+        Using xml.etree.ElementTree without disabling entity expansion can lead to XXE attacks.
+        The parser allows external entities by default, which can be exploited to read files,
+        perform SSRF attacks, or cause denial of service.
+      severity: critical
+      languages: ["python"]
+      examples:
+        bad: |
+          import xml.etree.ElementTree as ET
+          tree = ET.fromstring(user_input)  # Vulnerable
+        good: |
+          import xml.etree.ElementTree as ET
+          import defusedxml.ElementTree as safeET
+          tree = safeET.fromstring(user_input)  # Safe
+
+  - pattern: |
+      xml\.sax\.make_parser\(\)
+      description: |
+        Using xml.sax without proper configuration can lead to XXE. The SAX parser does not
+        disable external entities by default.
+      severity: critical
+      languages: ["python"]
+      examples:
+        bad: |
+          import xml.sax
+          parser = xml.sax.make_parser()
+          parser.parse(user_input)  # Vulnerable
+        good: |
+          from defusedxml.sax import make_parser
+          parser = make_parser()
+          parser.parse(user_input)  # Safe
+
+  - pattern: |
+      xml\.dom\.minidom\.parse(String|File|Stream)
+      description: |
+        Using xml.dom.minidom without disabling entity expansion is vulnerable to XXE attacks.
+        The minidom parser allows external entities by default.
+      severity: critical
+      languages: ["python"]
+      examples:
+        bad: |
+          from xml.dom import minidom
+          doc = minidom.parseString(user_input)  # Vulnerable
+        good: |
+          from defusedxml.minidom import parseString
+          doc = parseString(user_input)  # Safe
+
+  - pattern: |
+      lxml\.etree\.(fromstring|parse|XML)\(
+      description: |
+        Using lxml.etree without disabling DTDs or entities can lead to XXE attacks.
+        lxml has powerful XML parsing capabilities that can be exploited.
+      severity: critical
+      languages: ["python"]
+      examples:
+        bad: |
+          from lxml import etree
+          tree = etree.fromstring(user_input)  # Vulnerable - DTDs enabled by default
+        good: |
+          from lxml import etree
+          parser = etree.XMLParser(resolve_entities=False, load_dtd=False, no_network=True)
+          tree = etree.fromstring(user_input, parser=parser)  # Safe
+
+  - pattern: |
+      xmlrpc\.client\.(ServerProxy|Server)\(.*\)  # Python 3
+      description: |
+        xmlrpc.client can be vulnerable to XXE if used with untrusted XML data.
+        XML-RPC uses XML for data transmission and may process malicious entities.
+      severity: high
+      languages: ["python"]
+      examples:
+        bad: |
+          import xmlrpc.client
+          server = xmlrpc.client.ServerProxy(user_url)  # May process malicious XML
+        good: |
+          import xmlrpc.client
+          # Validate URL structure before creating proxy
+          if not is_trusted_url(user_url):
+              raise ValueError("Untrusted URL")
+          server = xmlrpc.client.ServerProxy(user_url)
+
+  - pattern: |
+      minidom\.parseString\(|\.parse\(.*
+      description: |
+        DOMParser in JavaScript without security restrictions can be vulnerable to XXE.
+        The DOMParser API allows parsing of XML strings.
+      severity: high
+      languages: ["javascript", "typescript"]
+      examples:
+        bad: |
+          const parser = new DOMParser();
+          const doc = parser.parseFromString(userInput, 'text/xml');  # Vulnerable
+        good: |
+          import { parseString } from 'xml2js';
+          // xml2js has XXE protection by default
+          parseString(userInput, { explicitCharkey: true }, (err, result) => {
+            // Process safely
+          });
+
+  - pattern: |
+      libxmljs\.parseXml\(|\.parseXmlString\(
+      description: |
+        libxmljs in Node.js without disabling entities is vulnerable to XXE.
+        libxmljs is a binding to libxml2 which processes XML with entities enabled by default.
+      severity: critical
+      languages: ["javascript", "typescript"]
+      examples:
+        bad: |
+          const libxmljs = require('libxmljs');
+          const doc = libxmljs.parseXml(userInput);  # Vulnerable
+        good: |
+          const libxmljs = require('libxmljs');
+          const options = { noent: false, dtdload: false, dtdattr: false };
+          const doc = libxmljs.parseXml(userInput, options);  # Safe
+
+  - pattern: |
+      xml2js\.parseString\(.*,\s*\{\s*\}\s*\)
+      description: |
+        xml2js without explicit XXE protection options. While xml2js has some protections,
+        ensure explicit configuration for security.
+      severity: medium
+      languages: ["javascript", "typescript"]
+      examples:
+        bad: |
+          const { parseString } = require('xml2js');
+          parseString(userInput, {}, (err, result) => {});  // Check security settings
+        good: |
+          const { parseString } = require('xml2js');
+          const options = {
+            explicitCharkey: true,
+            strict: true,
+            // xml2js disables XXE by default, but verify in documentation
+          };
+          parseString(userInput, options, (err, result) => {});
+
+  - pattern: |
+      fast-xml-parser\.parse\(.*,\s*\{\s*\}\s*\)
+      description: |
+        fast-xml-parser without security options. Check if stopNodes, ignoreAttributes, and
+        other security features are configured.
+      severity: medium
+      languages: ["javascript", "typescript"]
+      examples:
+        bad: |
+          const XMLParser = require('fast-xml-parser');
+          const parser = new XMLParser();
+          parser.parse(userInput);  # Verify security settings
+        good: |
+          const XMLParser = require('fast-xml-parser');
+          const parser = new XMLParser({
+            ignoreAttributes: false,
+            attributeNamePrefix: '',
+            allowBooleanAttributes: false,
+            parseTagValue: true,
+            parseAttributeValue: true,
+            trimValues: true,
+          });
+          parser.parse(userInput);
+
+  - pattern: |
+      XmlDocument\.load\(|\.loadXML\(.*
+      description: |
+        Using MSXML ActiveXObject in legacy IE environments for XML parsing without
+        disabling DTDs can lead to XXE.
+      severity: high
+      languages: ["javascript"]
+      examples:
+        bad: |
+          var xmlDoc = new ActiveXObject("Msxml2.DOMDocument");
+          xmlDoc.load(userInput);  // Vulnerable
+        good: |
+          var xmlDoc = new ActiveXObject("Msxml2.DOMDocument");
+          xmlDoc.async = false;
+          xmlDoc.validateOnParse = false;
+          xmlDoc.resolveExternals = false;  // Disable external entities
+          xmlDoc.load(userInput);  // Safer
+
+  - pattern: |
+      \.load\(.*\.xml|\.parse\(.*\.xml|\.fromstring\(.*xml
+      description: |
+        General XML parsing patterns. Any code that parses XML without explicit
+        entity disabling may be vulnerable.
+      confidence: medium
+
+  data_flow:
+    - source: "request\\.(body|data|json|form)"
+      sink: "(xml\\.etree|xml\\.sax|xml\\.dom|minidom|lxml)\\.\\w+\\(.*\\)"
+      sanitizers:
+        - "defusedxml\\."
+        - "resolve_entities=False|noent=False|dtdload=False"
+
+remediation:
+  description: |
+    Use defusedxml library for all XML parsing operations in Python. It provides secure
+    replacements for Python's built-in XML modules that disable entity expansion and
+    prevent XXE attacks. For lxml, explicitly disable DTDs, entities, and network access.
+
+    In JavaScript/TypeScript, use xml2js which has XXE protection by default, or
+    explicitly disable entities in other parsers.
+  code_before: |
+    import xml.etree.ElementTree as ET
+    from flask import Flask, request
+
+    app = Flask(__name__)
+
+    @app.route('/parse', methods=['POST'])
+    def parse_xml():
+        user_xml = request.data.decode('utf-8')
+        tree = ET.fromstring(user_xml)  # VULNERABLE TO XXE
+        return str(tree.tag)
+  code_after: |
+    from defusedxml.ElementTree import fromstring
+    from flask import Flask, request
+
+    app = Flask(__name__)
+
+    @app.route('/parse', methods=['POST'])
+    def parse_xml():
+        user_xml = request.data.decode('utf-8')
+        tree = fromstring(user_xml)  # SAFE - XXE prevented
+        return str(tree.tag)
+    description: |
+      Use xml2js which has XXE protection by default, or explicitly disable entities
+      in other parsers. For Node.js, consider using libraries with built-in XXE protection.
+
+      For browser environments, ensure XML parsing is restricted and validate input.
+    code_before: |
+      const express = require('express');
+      const bodyParser = require('body-parser');
+      const { parseString } = require('xml2js');
+
+      const app = express();
+      app.use(bodyParser.text());
+
+      app.post('/parse', (req, res) => {
+          parseString(req.body, (err, result) => {
+              // xml2js is safe by default, but verify in documentation
+              res.json(result);
+          });
+      });
+    code_after: |
+      const express = require('express');
+      const bodyParser = require('body-parser');
+      const { XMLParser } = require('fast-xml-parser');
+
+      const app = express();
+      app.use(bodyParser.text());
+
+      app.post('/parse', (req, res) => {
+          const parser = new XMLParser({
+              ignoreAttributes: false,
+              attributeNamePrefix: '',
+              allowBooleanAttributes: false,
+              parseTagValue: true,
+              parseAttributeValue: true,
+              trimValues: true,
+          });
+          const result = parser.parse(req.body);
+          res.json(result);
+      });
+
+    libxmljs_secure: |
+      const express = require('express');
+      const bodyParser = require('body-parser');
+      const libxmljs = require('libxmljs');
+
+      const app = express();
+      app.use(bodyParser.text());
+
+      app.post('/parse', (req, res) => {
+          const options = {
+              noent: false,  // Disable entity expansion
+              dtdload: false,  # Disable DTD loading
+              dtdattr: false,  # Disable DTD attributes
+              nonet: true  # Disable network access
+          };
+          const doc = libxmljs.parseXml(req.body, options);  # SAFE
+          res.json({ root: doc.root().name() });
+      });
+
+attack_vector: |
+  XXE attacks allow file disclosure (reading /etc/passwd, config files), SSRF
+  (accessing internal network/cloud metadata), denial of service (Billion Laughs),
+  internal port scanning, and data exfiltration via out-of-band techniques.
+
+example_payload: |
+  <?xml version="1.0" encoding="ISO-8859-1"?>
+  <!DOCTYPE foo [
+    <!ELEMENT foo ANY >
+    <!ENTITY xxe SYSTEM "file:///etc/passwd" >
+  ]>
+  <foo>&xxe;</foo>
+
+llm_prompts:
+  analysis: |
+    Analyze the following code for XXE (XML External Entity) injection vulnerabilities.
+    Look for:
+    1. XML parsing functions without entity expansion disabled
+    2. Use of vulnerable parsers (xml.etree, xml.sax, minidom, lxml, DOMParser, libxmljs)
+    3. Missing security configurations (resolve_entities, load_dtd, no_network)
+    4. Direct parsing of user-provided XML data
+    5. Missing use of secure alternatives (defusedxml, xml2js with defaults)
+
+    Code to analyze:
+    {code_snippet}
+
+    Identify:
+    - Specific vulnerable XML parsing locations
+    - User input sources that reach XML parsers
+    - Missing security configurations
+    - Potential attack paths (SSRF, file disclosure, DoS)
+    - Remediation steps
+    - Safe XML parsing alternatives
+
+  attack_generation: |
+    Generate concrete XXE attack payloads for the following code:
+    {code_snippet}
+
+    For each vulnerable XML parsing point, create:
+    1. File disclosure attack payloads (read /etc/passwd, config files)
+    2. SSRF attack payloads (access internal network, cloud metadata)
+    3. Denial of service payloads (Billion Laughs)
+    4. Data exfiltration payloads (out-of-band techniques)
+    5. Blind XXE payloads for non-verbose applications
+
+    Include:
+    - XML payloads with entity definitions
+    - Explanation of what each payload does
+    - Expected impact if successful
+    - Conditions required for exploitation
+    - Mitigation for each attack vector

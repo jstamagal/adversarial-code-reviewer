@@ -69,11 +69,11 @@ Agent 1: Your task is to REVIEW, SCRUTINIZE, and REFINE this TODO.md and PRD.md 
 - ✅ Sink identification (acr/core/sink_identification.py with 42 passing tests)
 - ⚠️ Full taint analysis - basic structure exists, needs completion
 
-**Week 3-4: Attack Pattern System** - 🔄 IN PROGRESS (75% complete)
+**Week 3-4: Attack Pattern System** - 🔄 IN PROGRESS (80% complete)
 - ✅ Pattern schema (acr/patterns/schema.py with Pydantic models)
 - ✅ Pattern loader (acr/patterns/loader.py)
 - ✅ Pattern matcher (acr/patterns/matcher.py)
-- ✅ 10 patterns implemented in acr/patterns/library/:
+- ✅ 11 patterns implemented in acr/patterns/library/:
   1. sql_injection.yaml
   2. command_injection.yaml (includes subprocess shell=True)
   3. xss.yaml
@@ -83,7 +83,8 @@ Agent 1: Your task is to REVIEW, SCRUTINIZE, and REFINE this TODO.md and PRD.md 
   7. insecure_deserialization.yaml (includes pickle)
   8. hardcoded_secrets.yaml
   9. path_traversal.yaml
-  10. sensitive_data_exposure.yaml (NEW: logging, storage, transmission of sensitive data)
+  10. sensitive_data_exposure.yaml (logging, storage, transmission of sensitive data)
+  11. xxe.yaml (XML External Entity injection - NEW)
 - ⚠️ Additional OWASP Top 10 patterns needed
 - ⚠️ Framework-specific patterns (Flask, Django) - minimal
 
