@@ -539,13 +539,13 @@ Agent 1: Your task is to REVIEW, SCRUTINIZE, and REFINE this TODO.md and PRD.md 
   - [x] Score based on data flow analysis confidence
   - [x] Add tests for confidence scoring
 
-- [ ] Implement allowlist system
-  - [ ] Create .acr-ignore file format
-  - [ ] Parse allowlist patterns
-  - [ ] Support specific line exclusions (file:line)
-  - [ ] Support regex pattern exclusions
-  - [ ] Support pattern type exclusions
-  - [ ] Add tests for allowlist
+- [x] Implement allowlist system
+  - [x] Create .acr-ignore file format
+  - [x] Parse allowlist patterns
+  - [x] Support specific line exclusions (file:line)
+  - [x] Support regex pattern exclusions
+  - [x] Support pattern type exclusions
+  - [x] Add tests for allowlist
 
 - [ ] Implement denylist system
   - [ ] Create .acr-denylist file format
