@@ -69,11 +69,11 @@ Agent 1: Your task is to REVIEW, SCRUTINIZE, and REFINE this TODO.md and PRD.md 
 - ✅ Sink identification (acr/core/sink_identification.py with 42 passing tests)
 - ⚠️ Full taint analysis - basic structure exists, needs completion
 
-**Week 3-4: Attack Pattern System** - 🔄 IN PROGRESS (70% complete)
+**Week 3-4: Attack Pattern System** - 🔄 IN PROGRESS (75% complete)
 - ✅ Pattern schema (acr/patterns/schema.py with Pydantic models)
 - ✅ Pattern loader (acr/patterns/loader.py)
 - ✅ Pattern matcher (acr/patterns/matcher.py)
-- ✅ 9 patterns implemented in acr/patterns/library/:
+- ✅ 10 patterns implemented in acr/patterns/library/:
   1. sql_injection.yaml
   2. command_injection.yaml (includes subprocess shell=True)
   3. xss.yaml
@@ -83,12 +83,13 @@ Agent 1: Your task is to REVIEW, SCRUTINIZE, and REFINE this TODO.md and PRD.md 
   7. insecure_deserialization.yaml (includes pickle)
   8. hardcoded_secrets.yaml
   9. path_traversal.yaml
+  10. sensitive_data_exposure.yaml (NEW: logging, storage, transmission of sensitive data)
 - ⚠️ Additional OWASP Top 10 patterns needed
 - ⚠️ Framework-specific patterns (Flask, Django) - minimal
 
 **Testing Status:**
-- ✅ 150 test functions across test suite
-- ✅ Tests passing for: ast_parser (27 tests), cache (19 tests), cli, config (24 tests), entry_points (20 tests), sink_identification (42 tests), models, redaction, utils
+- ✅ 165 test functions across test suite
+- ✅ Tests passing for: ast_parser (27 tests), cache (19 tests), cli, config (24 tests), entry_points (20 tests), sink_identification (42 tests), models, redaction, utils, pattern_loader (15 tests)
 - ⚠️ Test coverage needs improvement
 - ⚠️ Integration and E2E tests minimal
 
@@ -285,7 +286,7 @@ Agent 1: Your task is to REVIEW, SCRUTINIZE, and REFINE this TODO.md and PRD.md 
   - [x] OS Command Injection pattern
   - [x] XSS pattern
   - [x] Broken Authentication pattern
-  - [ ] Sensitive Data Exposure pattern
+  - [x] Sensitive Data Exposure pattern
   - [ ] XXE pattern
   - [ ] Broken Access Control pattern
   - [ ] Security Misconfiguration pattern
