@@ -573,3 +573,55 @@ def test_cli_doctor_llm_api():
     result = runner.invoke(doctor.cli)
 
     assert "LLM API:" in result.output
+
+
+def test_cli_config_list_help():
+    """Test config list command help."""
+    from acr.cli import config
+
+    runner = CliRunner()
+    result = runner.invoke(config.cli, ["list", "--help"])
+    assert result.exit_code == 0
+    assert "List all available configuration options" in result.output
+
+
+def test_cli_config_list_basic():
+    """Test config list shows main options."""
+    from acr.cli import config
+
+    runner = CliRunner()
+    result = runner.invoke(config.cli, ["list"])
+    assert result.exit_code == 0
+    assert "Available Configuration Options" in result.output
+    assert "Project" in result.output
+    assert "Patterns" in result.output
+    assert "Llm" in result.output
+    assert "Analysis" in result.output
+    assert "Reporting" in result.output
+    assert "Exclude" in result.output
+
+
+def test_cli_config_list_shows_specific_options():
+    """Test config list shows specific option details."""
+    from acr.cli import config
+
+    runner = CliRunner()
+    result = runner.invoke(config.cli, ["list"])
+    assert result.exit_code == 0
+    assert "project.name" in result.output
+    assert "patterns.severity_threshold" in result.output
+    assert "llm.provider" in result.output
+    assert "analysis.max_depth" in result.output
+
+
+def test_cli_config_list_with_all():
+    """Test config list --all shows nested options."""
+    from acr.cli import config
+
+    runner = CliRunner()
+    result = runner.invoke(config.cli, ["list", "--all"])
+    assert result.exit_code == 0
+    assert "Languages" in result.output
+    assert "languages.<lang>.enabled" in result.output
+    assert "Frameworks" in result.output
+    assert "frameworks.<framework>.enabled" in result.output

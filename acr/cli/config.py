@@ -22,6 +22,14 @@ import click
 import yaml
 
 from acr.config.loader import find_config_file, load_config
+from acr.config.schema import (
+    AnalysisConfig,
+    ExclusionConfig,
+    LLMConfig,
+    PatternConfig,
+    ProjectConfig,
+    ReportingConfig,
+)
 from acr.config.validator import validate_config
 from acr.utils.logger import get_logger
 
@@ -32,6 +40,22 @@ logger = get_logger(__name__)
 def cli() -> None:
     """Manage ACR configuration."""
     pass
+
+
+@cli.command("list")
+@click.option("--all", "-a", is_flag=True, help="Show all options including nested")
+@click.pass_context
+def list_cmd(_ctx: click.Context, all: bool) -> None:
+    """List all available configuration options."""
+    try:
+        click.echo("[bold]Available Configuration Options:[/bold]")
+        click.echo("")
+
+        _display_config_options(all)
+
+    except Exception as e:
+        logger.error(f"Failed to list options: {e}")
+        raise click.ClickException(f"Failed to list options: {e}") from e
 
 
 @cli.command("show")
@@ -112,6 +136,118 @@ def validate(_ctx: click.Context, config: Optional[str], fix: bool) -> None:
         click.echo("[bold red]❌ Validation failed[/bold red]")
         click.echo(f"Error: {e}")
         sys.exit(1)
+
+
+def _display_config_options(show_all: bool) -> None:
+    """Display all available configuration options.
+
+    Args:
+        show_all: Show all options including nested
+    """
+    sections = [
+        ("project", ProjectConfig),
+        ("patterns", PatternConfig),
+        ("llm", LLMConfig),
+        ("analysis", AnalysisConfig),
+        ("reporting", ReportingConfig),
+        ("exclude", ExclusionConfig),
+    ]
+
+    if show_all:
+        click.echo("[bold]Languages[/bold]")
+        click.echo("  languages.<lang>.enabled (bool, default: True)")
+        click.echo("    Whether the language is enabled for analysis")
+        click.echo("  languages.<lang>.version (string, default: '')")
+        click.echo("    Language version")
+        click.echo("  languages.<lang>.legacy_mode (bool, default: False)")
+        click.echo("    Enable legacy code analysis (Python < 3.8)")
+        click.echo("")
+
+        click.echo("[bold]Frameworks[/bold]")
+        click.echo("  frameworks.<framework>.enabled (bool, default: True)")
+        click.echo("    Whether the framework is enabled")
+        click.echo("  frameworks.<framework>.<option> (varies)")
+        click.echo("    Framework-specific options")
+        click.echo("")
+
+    for section_name, section_class in sections:
+        click.echo(f"[bold]{section_name.title()}[/bold]")
+        _display_section_fields(section_name, section_class)
+        click.echo("")
+
+    click.echo("For more information, see: https://github.com/anomalyco/opencode/docs")
+
+
+def _display_section_fields(section_name: str, model_class: type) -> None:
+    """Display fields for a configuration section.
+
+    Args:
+        section_name: Name of the section
+        model_class: Pydantic model class for the section
+    """
+    if hasattr(model_class, "model_fields"):
+        for field_name, field_info in model_class.model_fields.items():
+            field_type = _format_type(field_info.annotation)
+            default = _format_default(field_info.default, field_info.default_factory)
+            description = field_info.description or ""
+
+            click.echo(f"  {section_name}.{field_name} ({field_type}, default: {default})")
+            if description:
+                click.echo(f"    {description}")
+
+
+def _format_type(type_annotation) -> str:
+    """Format a type annotation for display.
+
+    Args:
+        type_annotation: Type annotation from Pydantic field
+
+    Returns:
+        Formatted type string
+    """
+    if type_annotation is None:
+        return "any"
+
+    type_str = str(type_annotation)
+    if "List" in type_str:
+        return "list"
+    if "Dict" in type_str:
+        return "dict"
+    if "bool" in type_str:
+        return "bool"
+    if "int" in type_str:
+        return "int"
+    if "str" in type_str:
+        return "string"
+
+    return "any"
+
+
+def _format_default(default, default_factory) -> str:
+    """Format a default value for display.
+
+    Args:
+        default: Default value
+        default_factory: Default factory function
+
+    Returns:
+        Formatted default string
+    """
+    if default_factory is not None:
+        if hasattr(default_factory, "__self__"):
+            return "[]"
+        return "[]"
+
+    if default is None:
+        return "None"
+
+    if isinstance(default, bool):
+        return "true" if default else "false"
+
+    if isinstance(default, str):
+        return f'"{default}"'
+
+    return str(default)
 
 
 def _display_config_summary(config) -> None:
