@@ -1,0 +1,355 @@
+id: flask-json-deserialization
+name: Flask JSON Deserialization
+category: deserialization
+severity: critical
+cwe: CWE-502
+owasp: A08:2021-Software and Data Integrity Failures
+
+description: |
+  Insecure JSON deserialization in Flask can lead to remote code execution, data corruption,
+  and security bypasses. JSON data must be validated and deserialized using safe methods.
+  While JSON itself is not vulnerable like pickle, the resulting objects can trigger
+  dangerous operations.
+
+references:
+  - https://owasp.org/www-community/vulnerabilities/Insecure_Deserialization
+  - https://cwe.mitre.org/data/definitions/502.html
+  - https://flask.palletsprojects.io/en/2.3.x/api/#flask.Request.get_json
+
+affected_languages:
+  - python
+
+affected_frameworks:
+  - flask
+
+vulnerability_types:
+  - Unsafe JSON parsing
+  - Type confusion via JSON
+  - Arbitrary object creation via JSON
+  - JSON-based attacks on Python objects
+
+detection:
+  static:
+    - pattern: "json\\.loads\\(\\s*request\\..*\\)"
+      description: Parsing JSON from request without validation
+      confidence: medium
+      requires_language: [python]
+      requires_framework: [flask]
+
+    - pattern: "request\\.get_json\\(\\s*\\)"
+      description: Getting JSON without force=False or validation
+      confidence: low
+      requires_language: [python]
+      requires_framework: [flask]
+
+    - pattern: "json\\.load\\(\\s*request\\..*\\)"
+      description: Loading JSON file-like object from request without validation
+      confidence: high
+      requires_language: [python]
+      requires_framework: [flask]
+
+    - pattern: "json\\.loads\\(\\s*\\w+\\s*\\+\\s*request\\..*\\)"
+      description: Concatenating request data before JSON parsing
+      confidence: medium
+      requires_language: [python]
+      requires_framework: [flask]
+
+    - pattern: "eval\\(\\s*json\\.loads\\(\\s*request\\..*\\)"
+      description: Evaluating JSON from request (code execution)
+      confidence: critical
+      requires_language: [python]
+      requires_framework: [flask]
+
+    - pattern: "exec\\(\\s*json\\.loads\\(\\s*request\\..*\\)"
+      description: Executing JSON from request (code execution)
+      confidence: critical
+      requires_language: [python]
+      requires_framework: [flask]
+
+    - pattern: "type\\(\\s*json\\.loads\\(\\s*request\\..*\\)"
+      description: Using type() on JSON data without validation
+      confidence: low
+      requires_language: [python]
+      requires_framework: [flask]
+
+  data_flow:
+    - source: "request\\.(get_json|data|form|args|values)"
+      sink: "(json\\.load|json\\.loads|eval|exec|pickle)"
+      sanitizers: "(validate|schema|check|sanitize|safe)"
+
+remediation:
+  description: Validate JSON structure and types before processing
+
+  code_before: |
+    from flask import Flask, request, jsonify
+    import json
+
+    app = Flask(__name__)
+
+    @app.route('/api/user', methods=['POST'])
+    def create_user():
+        data = request.get_json()  # No validation
+        user = User(data['name'], data['email'], data['role'])
+        db.session.add(user)
+        db.session.commit()
+        return jsonify(user.to_dict())
+
+    @app.route('/api/config', methods=['POST'])
+    def update_config():
+        config = json.loads(request.data)  # No validation
+        for key, value in config.items():
+            app.config[key] = value
+        return 'Config updated'
+
+  code_after_pydantic: |
+    from flask import Flask, request, jsonify
+    from pydantic import BaseModel, EmailStr, Field, ValidationError
+
+    class UserCreate(BaseModel):
+        name: str = Field(..., min_length=1, max_length=100)
+        email: EmailStr
+        role: str = Field(..., regex='^(user|admin)$')
+
+    @app.route('/api/user', methods=['POST'])
+    def create_user():
+        try:
+            data = UserCreate(**request.get_json())
+        except ValidationError as e:
+            return jsonify({'error': str(e)}), 400
+
+        user = User(data.name, data.email, data.role)
+        db.session.add(user)
+        db.session.commit()
+        return jsonify(user.to_dict())
+
+  code_after_marshmallow: |
+    from flask import Flask, request, jsonify
+    from marshmallow import Schema, fields, validate, ValidationError
+
+    class UserSchema(Schema):
+        name = fields.Str(required=True, validate=validate.Length(min=1, max=100))
+        email = fields.Email(required=True)
+        role = fields.Str(required=True, validate=validate.OneOf(['user', 'admin']))
+
+    class ConfigSchema(Schema):
+        debug = fields.Bool(load_default=False)
+        max_users = fields.Int(load_default=100, validate=validate.Range(min=1, max=10000))
+
+    @app.route('/api/user', methods=['POST'])
+    def create_user():
+        try:
+            data = UserSchema().load(request.get_json())
+        except ValidationError as e:
+            return jsonify({'error': e.messages}), 400
+
+        user = User(data['name'], data['email'], data['role'])
+        db.session.add(user)
+        db.session.commit()
+        return jsonify(user.to_dict())
+
+    @app.route('/api/config', methods=['POST'])
+    def update_config():
+        try:
+            config = ConfigSchema().load(request.get_json())
+        except ValidationError as e:
+            return jsonify({'error': e.messages}), 400
+
+        for key, value in config.items():
+            if key in ALLOWED_CONFIG_KEYS:
+                app.config[key] = value
+        return 'Config updated'
+
+  code_after_manual: |
+    from flask import Flask, request, jsonify, abort
+    import json
+
+    app = Flask(__name__)
+
+    ALLOWED_CONFIG_KEYS = {'debug', 'testing', 'log_level'}
+
+    @app.route('/api/user', methods=['POST'])
+    def create_user():
+        data = request.get_json(force=True)
+
+        if not isinstance(data, dict):
+            return jsonify({'error': 'Invalid JSON structure'}), 400
+
+        required_fields = ['name', 'email', 'role']
+        if not all(field in data for field in required_fields):
+            return jsonify({'error': 'Missing required fields'}), 400
+
+        name = str(data.get('name', ''))
+        email = str(data.get('email', ''))
+        role = str(data.get('role', ''))
+
+        if not name or len(name) < 1 or len(name) > 100:
+            return jsonify({'error': 'Invalid name'}), 400
+
+        if '@' not in email:
+            return jsonify({'error': 'Invalid email'}), 400
+
+        if role not in ['user', 'admin']:
+            return jsonify({'error': 'Invalid role'}), 400
+
+        user = User(name, email, role)
+        db.session.add(user)
+        db.session.commit()
+        return jsonify(user.to_dict())
+
+examples:
+  vulnerable:
+    - |
+      @app.route('/api/user', methods=['POST'])
+      def create_user():
+          data = request.get_json()
+          # No validation - type confusion possible
+          user = User(data['name'], data['email'], data['role'])
+          db.session.add(user)
+          return 'User created'
+
+    - |
+      @app.route('/api/admin', methods=['POST'])
+      def make_admin():
+          config = json.loads(request.data)
+          # Mass assignment - can set any config value
+          app.config['admin'] = config.get('admin', False)
+          return 'Admin set'
+
+    - |
+      @app.route('/api/command', methods=['POST'])
+      def execute():
+          data = json.loads(request.data)
+          # Dangerous - executing code from JSON
+          command = data.get('command')
+          if command:
+              os.system(command)
+          return 'Executed'
+
+    - |
+      @app.route('/api/eval', methods=['POST'])
+      def evaluate():
+          data = json.loads(request.data)
+          # Critical - eval() on user JSON
+          result = eval(data['expression'])
+          return jsonify({'result': result})
+
+  secure:
+    - |
+      from pydantic import BaseModel, Field, constr, EmailStr
+
+      class UserCreate(BaseModel):
+          name: constr(min_length=1, max_length=100)
+          email: EmailStr
+          role: constr(regex='^(user|admin)$')
+
+      @app.route('/api/user', methods=['POST'])
+      def create_user():
+          try:
+              data = UserCreate(**request.get_json(force=True))
+          except ValueError as e:
+              return jsonify({'error': str(e)}), 400
+
+          user = User(data.name, data.email, data.role)
+          db.session.add(user)
+          return 'User created'
+
+    - |
+      from marshmallow import Schema, fields, validate
+
+      class ConfigUpdateSchema(Schema):
+          debug = fields.Bool(load_default=False)
+          log_level = fields.Str(validate=validate.OneOf(['DEBUG', 'INFO', 'WARNING']))
+
+      @app.route('/api/admin', methods=['POST'])
+      def make_admin():
+          try:
+              config = ConfigUpdateSchema().load(request.get_json(force=True))
+          except ValidationError as e:
+              return jsonify({'error': e.messages}), 400
+
+          app.config['debug'] = config['debug']
+          app.config['log_level'] = config.get('log_level', 'INFO')
+          return 'Admin set'
+
+    - |
+      @app.route('/api/command', methods=['POST'])
+      @login_required
+      @admin_required
+      def execute():
+          data = request.get_json(force=True)
+
+          if not isinstance(data, dict):
+              return jsonify({'error': 'Invalid data'}), 400
+
+          command = data.get('command', '')
+
+          # Validate against safe command list
+          SAFE_COMMANDS = {'status', 'restart', 'backup'}
+          if command not in SAFE_COMMANDS:
+              return jsonify({'error': 'Invalid command'}), 400
+
+          result = execute_safe_command(command)
+          return jsonify({'result': result})
+
+attack_vectors:
+  - vector: "Type Confusion via JSON"
+    description: Send unexpected types to trigger undefined behavior
+    impact: Can cause DoS, bypass validation, access internal properties
+
+  - vector: "Mass Assignment via JSON"
+    description: Include fields that shouldn't be set (is_admin, permissions)
+    impact: Can escalate privileges, bypass authorization
+
+  - vector: "Prototype Pollution via JSON"
+    description: Modify object prototype through specially crafted JSON
+    impact: Can bypass validation, access restricted properties
+
+  - vector: "JSON with Malicious Unicode"
+    description: Use homoglyphs or normalization attacks to bypass validation
+    impact: Can inject payloads that bypass filters
+
+  - vector: "JSON Recursion Attack"
+    description: Create deeply nested JSON to cause stack overflow
+    impact: Can cause denial of service
+
+  - vector: "Large JSON Payload Attack"
+    description: Send huge JSON to exhaust memory
+    impact: Can cause denial of service
+
+security_recommendations:
+  - Always validate JSON structure with schemas (Pydantic, Marshmallow)
+  - Use request.get_json(force=True) to enforce JSON content type
+  - Validate all fields and types
+  - Use strict schemas with required fields
+  - Implement field allow-lists (only allow known fields)
+  - Validate ranges and formats (email, URL, numeric)
+  - Set max size limits for JSON payloads
+  - Use JSON schema validation (jsonschema library)
+  - Never directly assign JSON to config or internal state
+  - Log and validate JSON parsing errors
+  - Implement depth limits for nested JSON structures
+
+llm_prompts:
+  analyze: |
+    Analyze this Flask code for JSON deserialization vulnerabilities. Look for:
+    1. Unvalidated JSON parsing from request (request.get_json, json.loads)
+    2. Missing schema validation or type checking
+    3. Mass assignment vulnerabilities
+    4. Direct assignment of JSON to config or state
+    5. Use of eval/exec on JSON data
+    6. Missing field validation or allow-lists
+
+    For each finding:
+    - Identify insecure JSON handling
+    - Explain vulnerabilities (mass assignment, type confusion, DoS)
+    - Assess attack feasibility
+    - Recommend validation libraries (Pydantic, Marshmallow)
+
+  generate_attack: |
+    Generate an attack exploiting insecure JSON deserialization in this Flask app:
+    1. If mass assignment is possible, show privilege escalation payload
+    2. If type confusion is possible, demonstrate exploit
+    3. If eval/exec is used on JSON, provide RCE payload
+    4. If no schema validation exists, show malicious JSON structures
+    5. Provide proof-of-concept request with crafted JSON
+    6. Demonstrate how to bypass validation using edge cases

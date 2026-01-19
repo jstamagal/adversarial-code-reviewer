@@ -73,7 +73,7 @@ Agent 1: Your task is to REVIEW, SCRUTINIZE, and REFINE this TODO.md and PRD.md 
 - ✅ Pattern schema (acr/patterns/schema.py with Pydantic models)
 - ✅ Pattern loader (acr/patterns/loader.py)
 - ✅ Pattern matcher (acr/patterns/matcher.py)
-- ✅ 17 patterns implemented in acr/patterns/library/:
+- ✅ 22 patterns implemented in acr/patterns/library/:
   1. sql_injection.yaml
   2. command_injection.yaml (includes subprocess shell=True)
   3. xss.yaml
@@ -89,28 +89,39 @@ Agent 1: Your task is to REVIEW, SCRUTINIZE, and REFINE this TODO.md and PRD.md 
   13. security_misconfiguration.yaml (debug mode, insecure cookies, missing headers)
   14. known_vulnerabilities.yaml (outdated dependencies, CVEs, deprecated packages)
   15. insufficient_logging_monitoring.yaml (missing logs, silent exceptions, sensitive data in logs)
-  16. format_string.yaml (NEW - CWE-134 Format String)
-  17. template_injection.yaml (NEW - CWE-94 Server-Side Template Injection)
+  16. format_string.yaml (CWE-134 Format String)
+  17. template_injection.yaml (CWE-94 Server-Side Template Injection)
+  18. weak_cryptography.yaml (CWE-327/328 - MD5, SHA1, DES, RC4)
+  19. weak_randomness.yaml (CWE-338 - using random module for security)
+  20. insecure_tempfile.yaml (CWE-377 - mktemp, insecure file creation)
+  21. flask_request_validation.yaml (Flask input validation issues)
+  22. flask_session_security.yaml (Flask session cookie security)
+  23. flask_static_files.yaml (Flask static file serving vulnerabilities)
+  24. flask_json_deserialization.yaml (Flask JSON deserialization)
 - ✅ Additional OWASP Top 10 patterns - COMPLETE (15/15 implemented)
-- ✅ Additional Python-specific patterns - Template injection, Format string (2/6 implemented)
-- ⚠️ Framework-specific patterns (Flask, Django) - minimal
+- ✅ Additional Python-specific patterns - Template injection, Format string, Weak cryptography, Weak randomness, Insecure tempfile (5/6 implemented)
+- ✅ Framework-specific patterns (Flask) - Request validation, Session security, Static files, JSON deserialization, CSRF (4/5 implemented)
 
 **Testing Status:**
 - ✅ 550 test functions across test suite (up from 526, +24 new annotation tests)
 - ✅ Tests passing for: ast_parser (27 tests), cache (19 tests), cli (58 tests), config (24 tests), entry_points (20 tests), sink_identification (42 tests), models (88 tests), redaction (5 tests), utils (12 tests), pattern_loader (71 tests), confidence_scorer (28 tests), denylist_parser (15 tests), denylist_manager (13 tests), annotation_manager (24 tests)
 - ⚠️ Test coverage needs improvement
 - ⚠️ Integration and E2E tests minimal
+- 📝 Added 5 new attack patterns (weak_cryptography, weak_randomness, insecure_tempfile, flask_request_validation, flask_session_security, flask_static_files, flask_json_deserialization)
 
-**Overall Phase 1 Progress: ~84-86% complete**
+**Overall Phase 1 Progress: ~86-88% complete**
 - Strong foundation with config, logging, errors, AST parsing
 - Entry point and sink identification implemented
 - Caching foundation implemented with comprehensive test coverage
 - Good pattern system infrastructure
 - 15/15 OWASP Top 10 patterns implemented (100%)
-- 2 additional Python-specific patterns implemented (Format string, Template injection)
+- 5 additional Python-specific patterns implemented (Format string, Template injection, Weak cryptography, Weak randomness, Insecure tempfile)
+- 4 Flask-specific patterns implemented (Request validation, Session security, Static files, JSON deserialization)
 - CLI Implementation COMPLETE - all commands implemented including shell autocompletion
 - Confidence scoring implemented with comprehensive test coverage
-- Need to complete: additional Python-specific patterns, reporting system, allowlist/denylist systems, finding annotations
+- False positive management COMPLETE (allowlist, denylist, finding annotations)
+- Finding aggregation implemented
+- Need to complete: additional Flask patterns (more needed), remaining advanced Python patterns, reporting system improvements
 
 ---
 
@@ -306,23 +317,23 @@ Agent 1: Your task is to REVIEW, SCRUTINIZE, and REFINE this TODO.md and PRD.md 
    - [x] Using Components with Known Vulnerabilities pattern
     - [x] Insufficient Logging & Monitoring pattern
 
- - [ ] Create additional Python-specific patterns
-   - [x] Pickle deserialization pattern
-   - [x] Eval/exec usage pattern
-   - [x] Format string pattern
-   - [x] Template injection pattern
-   - [x] Subprocess shell=True pattern
-   - [ ] YAML.load() pattern
-   - [ ] hashlib weak algorithms pattern
-   - [ ] Random number generation pattern
-   - [ ] tempfile insecure usage pattern
+  - [ ] Create additional Python-specific patterns
+    - [x] Pickle deserialization pattern
+    - [x] Eval/exec usage pattern
+    - [x] Format string pattern
+    - [x] Template injection pattern
+    - [x] Subprocess shell=True pattern
+    - [x] YAML.load() pattern (covered in insecure_deserialization.yaml)
+    - [x] hashlib weak algorithms pattern
+    - [x] Random number generation pattern
+    - [x] tempfile insecure usage pattern
 
-- [ ] Create Flask-specific patterns
-  - [ ] Request data validation pattern
-  - [ ] Session security pattern
-  - [x] CSRF protection pattern
-  - [ ] Static file serving pattern
-  - [ ] JSON deserialization pattern
+ - [x] Create Flask-specific patterns
+   - [x] Request data validation pattern
+   - [x] Session security pattern
+   - [x] CSRF protection pattern
+   - [x] Static file serving pattern
+   - [x] JSON deserialization pattern
 
 - [ ] Create advanced Python-specific patterns
   - [ ] Decorator vulnerability pattern (unsafe caching, auth bypass)

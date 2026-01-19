@@ -1,0 +1,304 @@
+id: insecure-tempfile
+name: Insecure Temporary File Usage
+category: filesystem
+severity: medium
+cwe: CWE-377
+owasp: A01:2021-Broken Access Control
+
+description: |
+  Using insecure temporary file creation can lead to race conditions, information disclosure,
+  and symlink attacks. Attackers can predict temporary file names and exploit time-of-check
+  to time-of-use (TOCTOU) vulnerabilities.
+
+references:
+  - https://owasp.org/www-community/vulnerabilities/Insecure_Temporary_File
+  - https://cwe.mitre.org/data/definitions/377.html
+  - https://docs.python.org/3/library/tempfile.html
+
+affected_languages:
+  - python
+
+affected_frameworks:
+  - flask
+  - django
+  - fastapi
+
+vulnerability_types:
+  - Predictable temporary file names
+  - Insecure file permissions on temp files
+  - Symlink attacks on temp files
+  - Race conditions in temp file handling
+
+detection:
+  static:
+    - pattern: "tempfile\\.mktemp\\(.*\\)"
+      description: Using deprecated tempfile.mktemp() (insecure, predictable names)
+      confidence: critical
+      requires_language: [python]
+
+    - pattern: "tempfile\\.mkstemp\\(.*\\).*?[^)]+close\\(\\)"
+      description: Creating temp file without setting secure permissions
+      confidence: medium
+      requires_language: [python]
+
+    - pattern: "open\\(['\"][^'\"]*tmp[^'\"]*['\"],\\s*['\"]w['\"]"
+      description: Opening file with 'tmp' in name manually (may be insecure)
+      confidence: low
+      requires_language: [python]
+
+    - pattern: "NamedTemporaryFile\\(delete=False\\)"
+      description: Using NamedTemporaryFile with delete=False may leave files on disk
+      confidence: medium
+      requires_language: [python]
+
+    - pattern: "open\\(os\\.path\\.join\\(['\"]?tmp['\"]?,\\s*[^)]+\\)\\s*['\"]w['\"]"
+      description: Creating temp file manually in /tmp directory
+      confidence: medium
+      requires_language: [python]
+
+    - pattern: "mktemp\\(.*\\)"
+      description: Using system mktemp command (insecure)
+      confidence: critical
+      requires_language: [python]
+
+    - pattern: "chmod\\(.*tempfile.*[0-7]{3}"
+      description: Setting insecure permissions on temp file
+      confidence: high
+      requires_language: [python]
+
+  data_flow:
+    - source: "(tempfile|mktemp|tmp)"
+      sink: "open|write|chmod|chown"
+      sanitizers: "(setuid|setgid|chmod.*0[6-7][0-7][0-7])"
+
+remediation:
+  description: Use secure temporary file creation methods
+
+  code_before: |
+    import tempfile
+    import os
+
+    def create_temp_file(data: str) -> str:
+        filename = tempfile.mktemp(suffix='.tmp')
+        with open(filename, 'w') as f:
+            f.write(data)
+        return filename
+
+    def insecure_mkstemp():
+        fd, filename = tempfile.mkstemp()
+        os.close(fd)  # File exists but not owned!
+        return filename
+
+  code_after: |
+    import tempfile
+
+    def create_temp_file(data: str) -> str:
+        with tempfile.NamedTemporaryFile(
+            mode='w',
+            suffix='.tmp',
+            delete=False
+        ) as f:
+            f.write(data)
+            filename = f.name
+        return filename
+
+    def secure_mkstemp():
+        fd, filename = tempfile.mkstemp()
+        try:
+            with os.fdopen(fd, 'w') as f:
+                f.write("data")
+            return filename
+        except:
+            os.close(fd)
+            os.unlink(filename)
+            raise
+
+  code_after_context: |
+    import tempfile
+    import os
+
+    def create_temp_file(data: str) -> str:
+        with tempfile.NamedTemporaryFile(
+            mode='w',
+            suffix='.tmp',
+            prefix='myapp_',
+            dir='/tmp',
+            delete=False
+        ) as f:
+            f.write(data)
+            os.chmod(f.name, 0o600)  # Secure permissions
+            return f.name
+
+  code_after_atomic: |
+    import tempfile
+    import os
+
+    def atomic_write(filename: str, data: str):
+        fd, temp_path = tempfile.mkstemp(
+            dir=os.path.dirname(filename),
+            prefix=os.path.basename(filename) + '.',
+            suffix='.tmp'
+        )
+        try:
+            os.write(fd, data.encode())
+            os.fsync(fd)  # Ensure data is written to disk
+            os.close(fd)
+            os.rename(temp_path, filename)  # Atomic on POSIX
+        except:
+            try:
+                os.unlink(temp_path)
+            except:
+                pass
+            raise
+
+examples:
+  vulnerable:
+    - |
+      import tempfile
+
+      def save_user_data(data: str):
+          filename = tempfile.mktemp(suffix='.dat')
+          with open(filename, 'w') as f:
+              f.write(data)
+          return filename
+
+    - |
+      import tempfile
+      import os
+
+      def process_file(data: str):
+          fd, filename = tempfile.mkstemp()
+          os.close(fd)
+          with open(filename, 'w') as f:
+              f.write(data)
+          # Attacker could replace file between close and open!
+
+    - |
+      import tempfile
+
+      @app.route('/upload')
+      def upload_file():
+          file = request.files['file']
+          filename = f"/tmp/uploaded_{time.time()}"
+          file.save(filename)
+          return process_file(filename)
+
+    - |
+      import tempfile
+
+      def create_config(content: str):
+          temp = tempfile.mktemp()
+          with open(temp, 'w') as f:
+              f.write(content)
+          os.chmod(temp, 0o666)  # World-writable!
+
+  secure:
+    - |
+      import tempfile
+
+      def save_user_data(data: str):
+          with tempfile.NamedTemporaryFile(
+              mode='w',
+              suffix='.dat',
+              delete=False
+          ) as f:
+              f.write(data)
+              return f.name
+
+    - |
+      import tempfile
+      import os
+
+      def process_file(data: str):
+          fd, filename = tempfile.mkstemp()
+          try:
+              with os.fdopen(fd, 'w') as f:
+                  f.write(data)
+              return filename
+          except:
+              os.close(fd)
+              os.unlink(filename)
+              raise
+
+    - |
+      import tempfile
+
+      @app.route('/upload')
+      def upload_file():
+          file = request.files['file']
+          with tempfile.NamedTemporaryFile(
+              mode='wb',
+              delete=False,
+              prefix='upload_'
+          ) as f:
+              file.save(f.name)
+              return process_file(f.name)
+
+    - |
+      import tempfile
+      import os
+
+      def create_config(content: str):
+          with tempfile.NamedTemporaryFile(
+              mode='w',
+              prefix='config_',
+              delete=False
+          ) as f:
+              f.write(content)
+              os.chmod(f.name, 0o600)  # Owner-only
+              return f.name
+
+attack_vectors:
+  - vector: "Symlink Attack (TOCTOU)"
+    description: Replace temp file with symlink to sensitive file between creation and use
+    impact: Can overwrite arbitrary files, read sensitive data, gain privileges
+
+  - vector: "Race Condition"
+    description: Access predictable temp file before legitimate application
+    impact: Can steal or modify temporary data, cause denial of service
+
+  - vector: "Information Disclosure"
+    description: Read world-readable temporary files containing sensitive data
+    impact: Can access confidential data in temp files
+
+  - vector: "Predictable File Names"
+    description: Guess temp file names created with predictable algorithms
+    impact: Can access, modify, or delete temporary files
+
+  - vector: "Privilege Escalation"
+    description: Replace setuid temp file with malicious code
+    impact: Can execute code with elevated privileges
+
+security_recommendations:
+  - Use tempfile.NamedTemporaryFile() instead of mktemp()
+  - Use tempfile.mkstemp() with proper error handling
+  - Always use context managers (with statements)
+  - Set secure permissions (0o600 for sensitive files)
+  - Use delete=False only when explicitly needed
+  - Use atomic file operations when possible
+  - Consider using tempfile.SpooledTemporaryFile() for memory efficiency
+  - Never manually construct temp file paths
+  - Use secure temporary directory for sensitive operations
+
+llm_prompts:
+  analyze: |
+    Analyze this code for insecure temporary file usage. Look for:
+    1. Use of deprecated tempfile.mktemp()
+    2. Manual temp file creation with predictable names
+    3. Insecure file permissions on temp files
+    4. Race conditions between creation and use
+    5. Time-of-check to time-of-use (TOCTOU) vulnerabilities
+
+    For each finding:
+    - Identify insecure temp file creation method
+    - Explain potential race conditions or symlink attacks
+    - Assess impact (information disclosure, file overwrite, privilege escalation)
+    - Provide secure alternatives (NamedTemporaryFile, mkstemp)
+
+  generate_attack: |
+    Generate an attack exploiting insecure tempfile usage:
+    1. If temp file names are predictable, create symlink race condition exploit
+    2. If permissions are weak, demonstrate reading sensitive temp files
+    3. If TOCTOU is possible, show file replacement attack
+    4. Provide proof-of-concept exploit script
+    5. Explain timing and conditions for successful attack

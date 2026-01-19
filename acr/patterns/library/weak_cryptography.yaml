@@ -1,0 +1,223 @@
+id: weak-cryptography
+name: Weak Cryptographic Algorithms
+category: cryptography
+severity: medium
+cwe: CWE-327
+owasp: A02:2021-Cryptographic Failures
+
+description: |
+  Using weak or broken cryptographic algorithms can allow attackers to break encryption,
+  forge signatures, or collide hashes. Modern applications should use strong, well-vetted
+  cryptographic algorithms.
+
+references:
+  - https://owasp.org/www-community/attacks/Weak_Cryptography
+  - https://cwe.mitre.org/data/definitions/327.html
+  - https://cwe.mitre.org/data/definitions/328.html
+
+affected_languages:
+  - python
+
+affected_frameworks:
+  - flask
+  - django
+  - fastapi
+
+vulnerability_types:
+  - MD5 hash usage
+  - SHA1 hash usage
+  - DES encryption
+  - RC4 encryption
+
+detection:
+  static:
+    - pattern: "hashlib\\.md5\\(.*\\)"
+      description: Using MD5 hash (broken, collisions possible)
+      confidence: high
+      requires_language: [python]
+
+    - pattern: "hashlib\\.sha1\\(.*\\)"
+      description: Using SHA1 hash (deprecated, collisions possible)
+      confidence: high
+      requires_language: [python]
+
+    - pattern: "\\bimport\\s+hashlib[\\s\\S]*?md5"
+      description: Importing MD5 from hashlib
+      confidence: medium
+      requires_language: [python]
+
+    - pattern: "\\bimport\\s+Crypto\\.Cipher\\.DES"
+      description: Using DES encryption (weak, 56-bit key)
+      confidence: high
+      requires_language: [python]
+
+    - pattern: "\\bimport\\s+Crypto\\.Cipher\\.ARC4"
+      description: Using RC4 encryption (weak, broken)
+      confidence: high
+      requires_language: [python]
+
+    - pattern: "\\bimport\\s+cryptography\\.hazmat\\.primitives\\.ciphers\\.algorithms\\.DES"
+      description: Using DES encryption (weak, 56-bit key)
+      confidence: high
+      requires_language: [python]
+
+    - pattern: "hashlib\\.new\\(['\"]md5['\"]"
+      description: Creating MD5 hash via new()
+      confidence: high
+      requires_language: [python]
+
+    - pattern: "hashlib\\.new\\(['\"]sha1['\"]"
+      description: Creating SHA1 hash via new()
+      confidence: high
+      requires_language: [python]
+
+  data_flow:
+    - source: "request.(json|form|args|values|body|data|headers)"
+      sink: "(md5|sha1|hashlib|hash)"
+      sanitizers: []
+
+remediation:
+  description: Replace weak algorithms with strong cryptographic primitives
+
+  code_before: |
+    import hashlib
+
+    def hash_password(password: str) -> str:
+        return hashlib.md5(password.encode()).hexdigest()
+
+    def hash_file(filename: str) -> str:
+        with open(filename, 'rb') as f:
+            return hashlib.sha1(f.read()).hexdigest()
+
+  code_after: |
+    import hashlib
+    import secrets
+
+    def hash_password(password: str) -> str:
+        salt = secrets.token_hex(16)
+        return hashlib.pbkdf2_hmac('sha256', password.encode(), salt.encode(), 100000).hex()
+
+    def hash_file(filename: str) -> str:
+        with open(filename, 'rb') as f:
+            return hashlib.sha256(f.read()).hexdigest()
+
+  code_after_hmac: |
+    import hmac
+    import hashlib
+
+    def create_signature(data: str, secret: str) -> str:
+        return hmac.new(secret.encode(), data.encode(), hashlib.sha256).hexdigest()
+
+  code_after_pbkdf2: |
+    import hashlib
+    import os
+
+    def derive_key(password: str, salt: bytes) -> bytes:
+        return hashlib.pbkdf2_hmac('sha256', password.encode(), salt, 100000)
+
+examples:
+  vulnerable:
+    - |
+      import hashlib
+
+      @app.route('/hash')
+      def hash_endpoint():
+          data = request.args.get('data')
+          return hashlib.md5(data.encode()).hexdigest()
+
+    - |
+      import hashlib
+
+      def generate_checksum(filename: str) -> str:
+          with open(filename, 'rb') as f:
+              return hashlib.sha1(f.read()).hexdigest()
+
+    - |
+      from Crypto.Cipher import DES
+
+      def encrypt_data(key: bytes, data: bytes) -> bytes:
+          cipher = DES.new(key, DES.MODE_ECB)
+          return cipher.encrypt(data)
+
+    - |
+      import hashlib
+
+      def create_session_id(user_id: str) -> str:
+          return hashlib.md5(f"{user_id}:{time.time()}".encode()).hexdigest()
+
+  secure:
+    - |
+      import hashlib
+
+      @app.route('/hash')
+      def hash_endpoint():
+          data = request.args.get('data')
+          return hashlib.sha256(data.encode()).hexdigest()
+
+    - |
+      import hashlib
+
+      def generate_checksum(filename: str) -> str:
+          with open(filename, 'rb') as f:
+              return hashlib.sha256(f.read()).hexdigest()
+
+    - |
+      from Crypto.Cipher import AES
+
+      def encrypt_data(key: bytes, data: bytes) -> bytes:
+          cipher = AES.new(key, AES.MODE_GCM)
+          ciphertext, tag = cipher.encrypt_and_digest(data)
+          return cipher.nonce + tag + ciphertext
+
+    - |
+      import secrets
+
+      def create_session_id(user_id: str) -> str:
+          return secrets.token_hex(32)
+
+attack_vectors:
+  - vector: "MD5 Collision Attack"
+    description: Generate two different inputs with same MD5 hash to bypass checks
+    impact: Can bypass integrity checks, create fraudulent certificates
+
+  - vector: "SHA1 Collision Attack"
+    description: Generate two different inputs with same SHA1 hash (Shattered attack)
+    impact: Can bypass digital signatures, create fraudulent documents
+
+  - vector: "DES Brute Force"
+    description: Brute force DES encryption (2^56 keys, feasible with modern hardware)
+    impact: Can decrypt sensitive data in hours/days
+
+  - vector: "RC4 Key Recovery"
+    description: Exploit RC4 biases to recover encryption key
+    impact: Can decrypt intercepted communications
+
+security_recommendations:
+  - Use SHA-256 or SHA-3 instead of MD5/SHA1
+  - Use AES-256 instead of DES/RC4 for encryption
+  - Use PBKDF2, bcrypt, or Argon2 for password hashing
+  - Use HMAC for message authentication
+  - Never use MD5 or SHA1 for security-critical operations
+  - Use secrets module for generating random values
+  - Use modern authenticated encryption modes (GCM, CCM)
+
+llm_prompts:
+  analyze: |
+    Analyze this code for weak cryptographic algorithms. Look for:
+    1. MD5 or SHA1 hash usage
+    2. DES or RC4 encryption
+    3. Weak password hashing algorithms
+    4. Insecure random number generation
+
+    For each finding:
+    - Identify the weak algorithm used
+    - Explain the security implications (collisions, breakage, brute force)
+    - Provide secure alternative algorithms
+    - Note if it's acceptable for non-security uses (checksums, caching)
+
+  generate_attack: |
+    Generate an attack exploiting weak cryptography in this code:
+    1. If MD5/SHA1 is used, demonstrate collision attack
+    2. If DES/RC4 is used, explain brute force approach
+    3. If weak password hashing is used, demonstrate rainbow table attack
+    4. Provide proof-of-concept code or tool references

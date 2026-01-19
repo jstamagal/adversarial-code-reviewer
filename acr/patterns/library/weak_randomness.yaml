@@ -1,0 +1,250 @@
+id: weak-randomness
+name: Weak Random Number Generation
+category: cryptography
+severity: high
+cwe: CWE-338
+owasp: A02:2021-Cryptographic Failures
+
+description: |
+  Using predictable random number generators (PRNGs) for security-sensitive operations
+  can allow attackers to guess or predict values. This can lead to session hijacking,
+  token prediction, and cryptographic failures.
+
+references:
+  - https://owasp.org/www-community/vulnerabilities/Use_of_a_broken_or_risky_cryptographic_algorithm
+  - https://cwe.mitre.org/data/definitions/338.html
+  - https://docs.python.org/3/library/random.html
+
+affected_languages:
+  - python
+
+affected_frameworks:
+  - flask
+  - django
+  - fastapi
+
+vulnerability_types:
+  - Using random module for security
+  - Predictable session tokens
+  - Predictable password reset tokens
+  - Weak cryptographic nonces
+
+detection:
+  static:
+    - pattern: "random\\.random\\(.*\\)"
+      description: Using random.random() for security (not cryptographically secure)
+      confidence: high
+      requires_language: [python]
+      contexts:
+        - session
+        - token
+        - password
+        - key
+        - nonce
+
+    - pattern: "random\\.randint\\(.*\\)"
+      description: Using random.randint() for security (not cryptographically secure)
+      confidence: high
+      requires_language: [python]
+      contexts:
+        - session
+        - token
+        - password
+        - key
+        - nonce
+
+    - pattern: "random\\.choice\\(.*\\)"
+      description: Using random.choice() for security (not cryptographically secure)
+      confidence: medium
+      requires_language: [python]
+      contexts:
+        - session
+        - token
+        - password
+        - key
+        - nonce
+
+    - pattern: "random\\.shuffle\\(.*\\)"
+      description: Using random.shuffle() for security (not cryptographically secure)
+      confidence: medium
+      requires_language: [python]
+
+    - pattern: "random\\.sample\\(.*\\)"
+      description: Using random.sample() for security (not cryptographically secure)
+      confidence: medium
+      requires_language: [python]
+
+    - pattern: "\\bimport\\s+random[\\s\\S]*?(session|token|password|key|nonce|secret)"
+      description: Importing random module for security-sensitive operations
+      confidence: high
+      requires_language: [python]
+
+    - pattern: "os\\.urandom\\(\\d+\\)"
+      description: Using os.urandom() directly (may produce insufficient entropy)
+      confidence: low
+      requires_language: [python]
+
+  data_flow:
+    - source: "random\\.(random|randint|choice|shuffle|sample)"
+      sink: "(session|token|password|key|nonce|secret|auth)"
+      sanitizers: []
+
+remediation:
+  description: Replace weak random with cryptographically secure random number generators
+
+  code_before: |
+    import random
+
+    def generate_session_token():
+        return ''.join(random.choice(string.ascii_letters) for _ in range(32))
+
+    def generate_password_reset_token():
+        return random.randint(100000, 999999)
+
+    def generate_api_key():
+        return secrets.token_hex(16)  # Using secrets, but let's show wrong way first
+        # Wrong way:
+        # return ''.join(random.choice(string.hexdigits) for _ in range(32))
+
+  code_after: |
+    import secrets
+    import string
+
+    def generate_session_token():
+        return secrets.token_urlsafe(32)
+
+    def generate_password_reset_token():
+        return secrets.token_hex(16)
+
+    def generate_api_key():
+        return secrets.token_hex(32)
+
+  code_after_uuid: |
+    import uuid
+
+    def generate_unique_id():
+        return str(uuid.uuid4())
+
+  code_after_crypto: |
+    import os
+    import binascii
+
+    def generate_key(length: int = 32) -> str:
+        return binascii.hexlify(os.urandom(length)).decode()
+
+examples:
+  vulnerable:
+    - |
+      import random
+      import string
+
+      @app.route('/session')
+      def create_session():
+          token = ''.join(random.choices(string.ascii_letters + string.digits, k=32))
+          session['token'] = token
+          return jsonify({'token': token})
+
+    - |
+      import random
+
+      def reset_password(email: str):
+          token = random.randint(100000, 999999)
+          send_email(email, f"Reset code: {token}")
+          return token
+
+    - |
+      import random
+
+      def generate_csrf_token():
+          return secrets.token_hex(16)  # Oops, meant to use random
+          # Wrong way:
+          return ''.join(random.choice(string.hexdigits) for _ in range(32))
+
+    - |
+      import random
+
+      def generate_nonce():
+          return random.random()
+
+  secure:
+    - |
+      import secrets
+
+      @app.route('/session')
+      def create_session():
+          token = secrets.token_urlsafe(32)
+          session['token'] = token
+          return jsonify({'token': token})
+
+    - |
+      import secrets
+
+      def reset_password(email: str):
+          token = secrets.token_hex(16)
+          send_email(email, f"Reset code: {token}")
+          return token
+
+    - |
+      import secrets
+
+      def generate_csrf_token():
+          return secrets.token_hex(32)
+
+    - |
+      import secrets
+
+      def generate_nonce():
+          return secrets.token_hex(16)
+
+attack_vectors:
+  - vector: "Session Token Prediction"
+    description: Predict session IDs by seeding PRNG or analyzing patterns
+    impact: Can hijack user sessions, bypass authentication
+
+  - vector: "Password Reset Token Brute Force"
+    description: Guess password reset tokens if they have low entropy
+    impact: Can reset arbitrary user passwords, take over accounts
+
+  - vector: "CSRF Token Prediction"
+    description: Predict CSRF tokens to perform cross-site request forgery
+    impact: Can perform unauthorized actions on behalf of users
+
+  - vector: "API Key Prediction"
+    description: Guess API keys if generated with weak randomness
+    impact: Can access unauthorized API resources, data theft
+
+  - vector: "Nonce Reuse/Prediction"
+    description: Predict nonces for replay attacks
+    impact: Can replay cryptographic operations, bypass security checks
+
+security_recommendations:
+  - Use secrets module for security-sensitive random values
+  - Use secrets.token_hex() for hex-encoded tokens
+  - Use secrets.token_urlsafe() for URL-safe tokens
+  - Use secrets.token_bytes() for raw bytes
+  - Use uuid.uuid4() for unique identifiers
+  - Never use random module for security operations
+  - Use secrets.randbelow() for random integers
+  - Ensure sufficient entropy (minimum 128 bits)
+
+llm_prompts:
+  analyze: |
+    Analyze this code for weak random number generation. Look for:
+    1. Use of random module for security-sensitive operations
+    2. Generation of session tokens, passwords, keys, or nonces
+    3. Predictable random number sources
+    4. Insufficient entropy in generated values
+
+    For each finding:
+    - Identify the weak random source (random module, time-based, etc.)
+    - Explain why it's predictable and insecure
+    - Assess the attack feasibility (entropy analysis)
+    - Provide secure alternative (secrets module, os.urandom)
+
+  generate_attack: |
+    Generate an attack exploiting weak randomness in this code:
+    1. If session tokens are vulnerable, demonstrate token prediction
+    2. If password reset tokens are weak, show brute force approach
+    3. If CSRF tokens are predictable, demonstrate forgery attack
+    4. Calculate entropy and estimate attack feasibility
+    5. Provide proof-of-concept prediction script if applicable

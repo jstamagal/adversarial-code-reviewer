@@ -1,0 +1,324 @@
+id: flask-session-security
+name: Flask Session Security
+category: session-management
+severity: high
+cwe: CWE-613
+owasp: A07:2021-Identification and Authentication Failures
+
+description: |
+  Insecure Flask session configuration can lead to session hijacking, privilege escalation,
+  and unauthorized access. Sessions must use secure cookies with appropriate timeouts,
+  HTTPS-only flags, and strong cryptographic signatures.
+
+references:
+  - https://owasp.org/www-community/attacks/Session_Hijacking
+  - https://cwe.mitre.org/data/definitions/613.html
+  - https://flask.palletsprojects.com/en/2.3.x/config/#SESSION_COOKIE_SECURE
+
+affected_languages:
+  - python
+
+affected_frameworks:
+  - flask
+
+vulnerability_types:
+  - Insecure session cookies
+  - Weak session secret keys
+  - Session fixation
+  - Missing cookie security flags
+
+detection:
+  static:
+    - pattern: "app\\.config\\[['\"]SESSION_COOKIE_SECURE['\"]\\]\\s*=\\s*False"
+      description: Session cookies sent over HTTP (not HTTPS-only)
+      confidence: critical
+      requires_language: [python]
+      requires_framework: [flask]
+
+    - pattern: "SESSION_COOKIE_SECURE\\s*=\\s*False"
+      description: Session cookies sent over HTTP
+      confidence: critical
+      requires_language: [python]
+      requires_framework: [flask]
+
+    - pattern: "app\\.config\\[['\"]SESSION_COOKIE_HTTPONLY['\"]\\]\\s*=\\s*False"
+      description: Session cookies accessible to JavaScript (XSS vulnerability)
+      confidence: high
+      requires_language: [python]
+      requires_framework: [flask]
+
+    - pattern: "SESSION_COOKIE_HTTPONLY\\s*=\\s*False"
+      description: Session cookies accessible to JavaScript
+      confidence: high
+      requires_language: [python]
+      requires_framework: [flask]
+
+    - pattern: "app\\.config\\[['\"]PERMANENT_SESSION_LIFETIME['\"]\\]\\s*=\\s*\\d+\\s*\\*\\s*\\d+\\s*\\*\\s*\\d+"
+      description: Session lifetime too long (months or years)
+      confidence: medium
+      requires_language: [python]
+      requires_framework: [flask]
+
+    - pattern: "app\\.config\\[['\"]SESSION_COOKIE_SECURE['\"]\\].*?[^=]"
+      description: SESSION_COOKIE_SECURE not explicitly set (defaults to False)
+      confidence: high
+      requires_language: [python]
+      requires_framework: [flask]
+
+    - pattern: "app\\.secret_key\\s*=\\s*['\"]\\w{3,20}['\"]"
+      description: Weak/short secret key (predictable, vulnerable to brute force)
+      confidence: high
+      requires_language: [python]
+      requires_framework: [flask]
+
+    - pattern: "app\\.secret_key\\s*=\\s*['\"](?=[^'\"]{0,32}$)[^'\"]+['\"]"
+      description: Secret key too short (less than 32 characters)
+      confidence: medium
+      requires_language: [python]
+      requires_framework: [flask]
+
+    - pattern: "session\\['?\\w+['?\\]\\s*=\\s*[^\\s]"
+      description: Setting session data without user authentication validation
+      confidence: low
+      requires_language: [python]
+      requires_framework: [flask]
+
+    - pattern: "session\\.clear\\(\\)[^;]*(?<!auth|login)"
+      description: Clearing session without proper logout procedure
+      confidence: low
+      requires_language: [python]
+      requires_framework: [flask]
+
+  data_flow:
+    - source: "session"
+      sink: "(user|admin|privileged|role|permission)"
+      sanitizers: "(authenticate|login|verify|check)"
+
+remediation:
+  description: Configure secure session cookies with appropriate settings
+
+  code_before: |
+    from flask import Flask, session, request
+
+    app = Flask(__name__)
+    app.secret_key = 'my-secret-key'  # Weak, hardcoded key
+
+    @app.route('/login')
+    def login():
+        session['user_id'] = request.form['username']
+        return 'Logged in'
+
+  code_after: |
+    import os
+    from flask import Flask, session, request
+
+    app = Flask(__name__)
+    app.secret_key = os.urandom(32)  # Generate secure random key
+    # or: app.secret_key = os.environ.get('SECRET_KEY')
+
+    # Secure session cookie settings
+    app.config.update(
+        SESSION_COOKIE_SECURE=True,  # HTTPS only
+        SESSION_COOKIE_HTTPONLY=True,  # Not accessible via JavaScript
+        SESSION_COOKIE_SAMESITE='Lax',  # CSRF protection
+        PERMANENT_SESSION_LIFETIME=3600  # 1 hour
+    )
+
+    @app.route('/login')
+    def login():
+        # Authenticate user first
+        user = authenticate_user(request.form['username'], request.form['password'])
+        if user:
+            session['user_id'] = user.id
+            session['authenticated'] = True
+            session['ip'] = request.remote_addr
+        return 'Logged in'
+
+  code_after_redis: |
+    import redis
+    from flask import Flask, session
+
+    app = Flask(__name__)
+    app.secret_key = os.environ['SECRET_KEY']
+
+    # Use Redis for server-side sessions
+    app.config['SESSION_TYPE'] = 'redis'
+    app.config['SESSION_REDIS'] = redis.from_url('redis://localhost:6379')
+
+    app.config.update(
+        SESSION_COOKIE_SECURE=True,
+        SESSION_COOKIE_HTTPONLY=True,
+        SESSION_COOKIE_SAMESITE='Lax',
+        PERMANENT_SESSION_LIFETIME=3600
+    )
+
+examples:
+  vulnerable:
+    - |
+      app = Flask(__name__)
+      app.secret_key = 'secret'  # Weak, predictable
+
+      @app.route('/admin')
+      def admin():
+          if session.get('is_admin'):
+              return 'Admin panel'
+          return 'Access denied'
+
+    - |
+      app = Flask(__name__)
+      app.secret_key = 'hardcoded-key-12345'
+
+      # Insecure cookie settings (defaults)
+      # SESSION_COOKIE_SECURE = False (HTTP/HTTPS)
+      # SESSION_COOKIE_HTTPONLY = False (JS accessible)
+
+      @app.route('/login')
+      def login():
+          session['user'] = request.form['username']
+          return redirect('/dashboard')
+
+    - |
+      app = Flask(__name__)
+      app.secret_key = 'my-app-key'
+
+      app.config['PERMANENT_SESSION_LIFETIME'] = 365 * 24 * 60 * 60  # 1 year!
+
+      @app.route('/set_permanent')
+      def set_permanent():
+          session.permanent = True
+          return 'Session permanent'
+
+    - |
+      app = Flask(__name__)
+      app.secret_key = 'dev-key'
+
+      @app.route('/set_admin')
+      def set_admin():
+          session['is_admin'] = True  # No authentication!
+          return 'You are now admin'
+
+  secure:
+    - |
+      import os
+      from flask import Flask, session
+
+      app = Flask(__name__)
+      app.secret_key = os.environ.get('SECRET_KEY') or os.urandom(32)
+
+      app.config.update(
+          SESSION_COOKIE_SECURE=True,
+          SESSION_COOKIE_HTTPONLY=True,
+          SESSION_COOKIE_SAMESITE='Lax',
+          PERMANENT_SESSION_LIFETIME=3600
+      )
+
+      @app.route('/admin')
+      def admin():
+          if session.get('authenticated') and session.get('is_admin'):
+              return 'Admin panel'
+          return 'Access denied'
+
+    - |
+      import os
+      from flask import Flask, session
+
+      app = Flask(__name__)
+      app.secret_key = os.environ['SECRET_KEY']
+
+      app.config.update(
+          SESSION_COOKIE_SECURE=True,
+          SESSION_COOKIE_HTTPONLY=True,
+          SESSION_COOKIE_SAMESITE='Strict',
+          PERMANENT_SESSION_LIFETIME=1800
+      )
+
+      @app.route('/login')
+      def login():
+          user = authenticate(request.form)
+          if user:
+              session['user_id'] = user.id
+              session['authenticated'] = True
+              session['role'] = user.role
+          return redirect('/dashboard')
+
+    - |
+      import os
+      from flask_session import Session
+
+      app = Flask(__name__)
+      app.secret_key = os.environ['SECRET_KEY']
+
+      # Server-side sessions with Redis
+      app.config['SESSION_TYPE'] = 'redis'
+      app.config['SESSION_REDIS'] = redis.from_url('redis://localhost:6379')
+
+      app.config.update(
+          SESSION_COOKIE_SECURE=True,
+          SESSION_COOKIE_HTTPONLY=True,
+          SESSION_COOKIE_SAMESITE='Lax',
+          PERMANENT_SESSION_LIFETIME=3600
+      )
+
+      Session(app)
+
+attack_vectors:
+  - vector: "Session Fixation"
+    description: Force user to use attacker-provided session ID
+    impact: Can hijack user session after login, unauthorized access
+
+  - vector: "Session Hijacking via Network Sniffing"
+    description: Intercept insecure session cookies over HTTP
+    impact: Can steal session tokens, impersonate users
+
+  - vector: "XSS Steals Session Cookies"
+    description: Use XSS to read non-HttpOnly session cookies
+    impact: Can steal active sessions, account takeover
+
+  - vector: "Brute Force Session Secret"
+    description: Guess weak or short session secret keys
+    impact: Can forge session cookies, impersonate any user
+
+  - vector: "Privilege Escalation via Session Manipulation"
+    description: Modify session data to elevate privileges
+    impact: Can gain admin access, bypass authorization
+
+  - vector: "Session Replay Attack"
+    description: Reuse captured session cookie after expiration
+    impact: Can regain access to expired sessions, bypass logout
+
+security_recommendations:
+  - Always use HTTPS for production (SESSION_COOKIE_SECURE=True)
+  - Enable HttpOnly flag to prevent XSS access (SESSION_COOKIE_HTTPONLY=True)
+  - Use SameSite cookie attribute (Strict or Lax)
+  - Generate secret key with cryptographically secure random (os.urandom or secrets)
+  - Store secret key in environment variables, not in code
+  - Keep session lifetime short (hours, not days/months)
+  - Implement session expiration and timeout
+  - Use server-side sessions (Redis, database) for better control
+  - Invalidate sessions on logout and password change
+  - Regenerate session ID after login to prevent fixation
+
+llm_prompts:
+  analyze: |
+    Analyze this Flask code for session security issues. Look for:
+    1. Insecure session cookie settings (not HTTPS-only, not HttpOnly)
+    2. Weak or hardcoded secret keys
+    3. Missing SameSite cookie attribute
+    4. Excessive session lifetime
+    5. Direct session manipulation without authentication
+    6. Missing session validation and regeneration
+
+    For each finding:
+    - Identify insecure session configuration
+    - Explain vulnerability (hijacking, fixation, XSS access)
+    - Assess attack feasibility
+    - Recommend secure settings and session management practices
+
+  generate_attack: |
+    Generate an attack exploiting insecure Flask session configuration:
+    1. If session cookies are insecure (HTTP), show network sniffing attack
+    2. If secret key is weak, demonstrate session forgery
+    3. if HttpOnly is disabled, show XSS cookie stealing payload
+    4. If session fixation is possible, provide fixation attack steps
+    5. If session lifetime is excessive, explain long-term hijacking risk
+    6. Provide proof-of-concept exploit if applicable
