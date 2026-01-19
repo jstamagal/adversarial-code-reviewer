@@ -440,12 +440,12 @@ Agent 1: Your task is to REVIEW, SCRUTINIZE, and REFINE this TODO.md and PRD.md 
   - [ ] Add progress reporting
   - [ ] Add tests for scan command
 
-- [ ] Implement `acr attack` command
-  - [ ] Generate attacks for specific file
-  - [ ] Generate attacks for specific function
-  - [ ] Show attack details
-  - [ ] Export attack payloads
-  - [ ] Add tests for attack command
+- [x] Implement `acr attack` command
+   - [x] Generate attacks for specific file
+   - [x] Generate attacks for specific function
+   - [x] Show attack details
+   - [x] Export attack payloads
+   - [x] Add tests for attack command
 
 - [ ] Implement `acr report` command
   - [ ] Generate report in specified format

@@ -20,7 +20,7 @@ from typing import Optional
 import click
 from click.testing import CliRunner
 
-from acr.cli import scan, report, init, config, patterns, version
+from acr.cli import scan, attack, report, init, config, patterns, version
 
 
 def cli() -> None:
@@ -46,6 +46,7 @@ def main(ctx: click.Context, verbose: bool, quiet: bool, config: Optional[str]) 
 
 
 main.add_command(scan.cli, name="scan")
+main.add_command(attack.cli, name="attack")
 main.add_command(report.cli, name="report")
 main.add_command(init.cli, name="init")
 main.add_command(config.cli, name="config")
