@@ -424,34 +424,34 @@ Agent 1: Your task is to REVIEW, SCRUTINIZE, and REFINE this TODO.md and PRD.md 
 
 ### 1.6 CLI Implementation (Weeks 5-6)
 
-- [ ] Implement CLI framework
-  - [ ] Set up Click CLI framework
-  - [ ] Implement main command group
-  - [ ] Implement global options (--verbose, --quiet, --config)
-  - [ ] Implement help system
-  - [ ] Add tests for CLI framework
+- [x] Implement CLI framework
+  - [x] Set up Click CLI framework
+  - [x] Implement main command group
+  - [x] Implement global options (--verbose, --quiet, --config)
+  - [x] Implement help system
+  - [x] Add tests for CLI framework
 
-- [ ] Implement `acr scan` command
-  - [ ] Scan directory or single file
-  - [ ] Filter by severity
-  - [ ] Filter by category
-  - [ ] Support file exclusion patterns
-  - [ ] Configure max recursion depth
-  - [ ] Add progress reporting
-  - [ ] Add tests for scan command
+- [x] Implement `acr scan` command
+  - [x] Scan directory or single file
+  - [x] Filter by severity
+  - [x] Filter by category
+  - [x] Support file exclusion patterns
+  - [x] Configure max recursion depth
+  - [x] Add progress reporting
+  - [x] Add tests for scan command (exists but low coverage)
 
 - [x] Implement `acr attack` command
    - [x] Generate attacks for specific file
    - [x] Generate attacks for specific function
-   - [x] Show attack details
-   - [x] Export attack payloads
-   - [x] Add tests for attack command
+    - [x] Show attack details
+    - [x] Export attack payloads
+    - [x] Add tests for attack command
 
-- [ ] Implement `acr report` command
-  - [ ] Generate report in specified format
-  - [ ] Output to file or stdout
-  - [ ] Include/exclude specific sections
-  - [ ] Add tests for report command
+- [x] Implement `acr report` command
+   - [x] Generate report in specified format
+   - [x] Output to file or stdout
+   - [x] Include/exclude specific sections
+   - [x] Add tests for report command
 
 - [ ] Implement `acr init` command
   - [ ] Create .acrrc.yaml template
