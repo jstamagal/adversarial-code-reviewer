@@ -976,3 +976,83 @@ def test_cli_patterns_show_invalid_pattern():
 
     assert result.exit_code == 1
     assert "Pattern 'nonexistent-pattern' not found" in result.output
+
+
+def test_cli_scan_dry_run_with_findings():
+    """Test dry run mode displays analysis information with findings."""
+    from acr import __main__
+
+    runner = CliRunner()
+
+    with runner.isolated_filesystem():
+        with open("test.py", "w") as f:
+            f.write("import os\nos.system('user_input')")
+
+        result = runner.invoke(__main__.main, ["scan", "--dry-run", "."])
+
+    assert result.exit_code == 0
+    assert "Dry run mode" in result.output
+    assert "Dry Run Analysis Information" in result.output
+    assert "Total Findings" in result.output
+    assert "Estimated Analysis Time" in result.output
+    assert "LLM Integration" in result.output
+
+
+def test_cli_scan_dry_run_estimates_llm_cost():
+    """Test dry run mode estimates LLM costs when LLM is enabled."""
+    from acr import __main__
+
+    runner = CliRunner()
+
+    with runner.isolated_filesystem():
+        with open(".acrrc.yaml", "w") as f:
+            f.write(
+                "llm:\n  enabled: true\n  provider: anthropic\n  model: claude-3-5-sonnet-20241022"
+            )
+
+        with open("test.py", "w") as f:
+            f.write("import os\nos.system('user_input')")
+
+        result = runner.invoke(__main__.main, ["scan", "--dry-run", "."])
+
+    assert result.exit_code == 0
+    assert "Estimated LLM Cost" in result.output
+    assert "USD" in result.output
+
+
+def test_cli_scan_dry_run_no_findings():
+    """Test dry run mode with no findings."""
+    from acr import __main__
+
+    runner = CliRunner()
+
+    with runner.isolated_filesystem():
+        with open("safe.py", "w") as f:
+            f.write("print('Hello, world!')")
+
+        result = runner.invoke(__main__.main, ["scan", "--dry-run", "."])
+
+    assert result.exit_code == 0
+    assert "Dry run mode" in result.output
+    assert "Total Findings" in result.output
+    assert "0" in result.output
+
+
+def test_cli_scan_dry_run_with_filters():
+    """Test dry run mode respects severity and category filters."""
+    from acr import __main__
+
+    runner = CliRunner()
+
+    with runner.isolated_filesystem():
+        with open("test.py", "w") as f:
+            f.write("import os\nos.system('user_input')")
+
+        result = runner.invoke(__main__.main, ["scan", "--dry-run", "--severity", "critical", "."])
+
+    assert result.exit_code == 0
+    assert "Dry run mode" in result.output
+    assert "Dry Run Analysis Information" in result.output
+    assert "Total Findings" in result.output
+    assert "Estimated Analysis Time" in result.output
+    assert "LLM Integration" in result.output

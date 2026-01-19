@@ -496,12 +496,12 @@ Agent 1: Your task is to REVIEW, SCRUTINIZE, and REFINE this TODO.md and PRD.md 
    - [x] Provide diagnostic summary
    - [x] Add tests for doctor command
 
-- [ ] Add dry run mode
-  - [ ] Implement --dry-run flag
-  - [ ] Preview findings without writing reports
-  - [ ] Show estimated LLM costs
-  - [ ] Show analysis time estimate
-  - [ ] Add tests for dry run mode
+ - [x] Add dry run mode
+   - [x] Implement --dry-run flag
+   - [x] Preview findings without writing reports
+   - [x] Show estimated LLM costs
+   - [x] Show analysis time estimate
+   - [x] Add tests for dry run mode
 
 - [ ] Add shell autocompletion
   - [ ] Generate bash completion script

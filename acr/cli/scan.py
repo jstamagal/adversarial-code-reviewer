@@ -16,7 +16,7 @@
 
 import sys
 from pathlib import Path
-from typing import Optional
+from typing import Optional, Tuple
 
 import click
 from rich.console import Console
@@ -28,6 +28,22 @@ from acr.models.finding import Finding
 
 
 console = Console()
+
+
+LLM_PRICING = {
+    "anthropic": {
+        "claude-3-5-sonnet-20241022": 0.015,
+        "claude-3-5-haiku-20241022": 0.001,
+        "claude-3-opus-20240229": 0.015,
+        "claude-3-sonnet-20240229": 0.003,
+    },
+    "openai": {
+        "gpt-4o": 0.01,
+        "gpt-4o-mini": 0.00015,
+        "gpt-4-turbo": 0.03,
+        "gpt-4": 0.06,
+    },
+}
 
 
 @click.command()
@@ -91,6 +107,7 @@ def cli(
 
     if dry_run:
         console.print(f"[yellow]Dry run mode - {len(findings)} findings detected[/yellow]")
+        _display_dry_run_info(findings, config, path, verbose)
         if findings:
             _display_findings_summary(findings, verbose)
         return
@@ -263,3 +280,106 @@ def _set_exit_code(findings: list) -> None:
     }
 
     sys.exit(exit_codes.get(highest_severity, 0))
+
+
+def _estimate_llm_cost(findings: list, config) -> Tuple[float, str]:
+    """Estimate LLM costs for analyzing findings.
+
+    Args:
+        findings: List of findings
+        config: ACR configuration
+
+    Returns:
+        Tuple of (estimated_cost, currency)
+    """
+    if not config.llm.enabled or not findings:
+        return 0.0, "USD"
+
+    avg_tokens_per_finding = 800
+    total_tokens = len(findings) * avg_tokens_per_finding
+
+    provider = config.llm.provider
+    model = config.llm.model
+
+    pricing_table = LLM_PRICING.get(provider, {})
+    cost_per_1k_tokens = pricing_table.get(model, 0.01)
+
+    estimated_cost = (total_tokens / 1000) * cost_per_1k_tokens
+    return estimated_cost, "USD"
+
+
+def _estimate_analysis_time(findings: list, path: str, config) -> Tuple[float, str]:
+    """Estimate analysis time.
+
+    Args:
+        findings: List of findings
+        path: Path being scanned
+        config: ACR configuration
+
+    Returns:
+        Tuple of (estimated_seconds, unit)
+    """
+    path_obj = Path(path)
+    if path_obj.is_file():
+        file_count = 1
+    else:
+        file_count = len(list(path_obj.rglob("*.py")))
+
+    base_time_per_file = 0.3
+    time_per_finding = 0.15
+
+    static_analysis_time = (file_count * base_time_per_file) + (len(findings) * time_per_finding)
+
+    if config.llm.enabled and findings:
+        avg_llm_response_time = 5.0
+        llm_time = len(findings) * avg_llm_response_time
+        total_time = static_analysis_time + llm_time
+    else:
+        total_time = static_analysis_time
+
+    if total_time > 60:
+        return total_time / 60, "minutes"
+    return total_time, "seconds"
+
+
+def _display_dry_run_info(findings: list, config, path: str, verbose: bool) -> None:
+    """Display dry run information including cost and time estimates.
+
+    Args:
+        findings: List of findings
+        config: ACR configuration
+        path: Path being scanned
+        verbose: Whether to show verbose output
+    """
+    info_table = Table(title="Dry Run Analysis Information")
+    info_table.add_column("Metric", style="bold")
+    info_table.add_column("Value")
+
+    info_table.add_row("Total Findings", str(len(findings)))
+    info_table.add_row("LLM Integration", "Enabled" if config.llm.enabled else "Disabled")
+
+    if config.llm.enabled:
+        estimated_cost, currency = _estimate_llm_cost(findings, config)
+        cost_str = f"${estimated_cost:.4f}" if estimated_cost > 0 else "$0.00"
+        info_table.add_row(f"Estimated LLM Cost ({currency})", cost_str)
+
+    estimated_time, time_unit = _estimate_analysis_time(findings, path, config)
+    info_table.add_row(f"Estimated Analysis Time", f"{estimated_time:.2f} {time_unit}")
+
+    console.print(info_table)
+
+    if config.llm.enabled and len(findings) > 0:
+        estimated_cost, _ = _estimate_llm_cost(findings, config)
+        if estimated_cost > 1.00:
+            console.print(
+                f"\n[yellow]⚠ Warning: Estimated LLM cost exceeds $1.00. "
+                f"Consider using --severity or --category filters to reduce scope.[/yellow]"
+            )
+    elif len(findings) == 0:
+        console.print(
+            "\n[green]✓ No findings detected. Run scan again without --dry-run to generate reports.[/green]"
+        )
+    else:
+        console.print(
+            "\n[dim]Run scan again without --dry-run to generate reports and exit codes.[/dim]"
+        )
