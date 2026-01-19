@@ -28,6 +28,7 @@ pytest tests/ -v
 
 ## Rules
 - Do ONE thing, then exit
+- Commit what you did
 - Always update journal/JOURNAL.md before exiting
 - Don't read old archived journals
-- Keep it simple
+- Once Week 1-2 implementation is done OR progress stalled and needs intervention delete CIRCUIT_BREAKER.txt
