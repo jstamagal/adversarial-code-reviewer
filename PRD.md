@@ -78,6 +78,55 @@ An AI-powered tool that:
 - Mixed Content Issues
 - Man-in-the-Middle Opportunities
 
+**Advanced Python Patterns** (Phase 1-2):
+- Decorator vulnerabilities (unsafe caching, authorization bypass)
+- Metaclass abuse (__getattr__, __getattribute__ overrides)
+- Advanced dynamic execution (__import__ with vars, importlib, compile, types.FunctionType)
+- Async code vulnerabilities (event loop blocking, cancellation issues, resource cleanup)
+- Generator vulnerabilities (StopIteration leaks, generator exhaustion, yield from safety)
+- Reflection abuse (getattr on builtins, __dict__ manipulation)
+
+**ORM-Specific Patterns** (Phase 2+):
+- Django ORM vulnerabilities (user.filter bypass, exclude() authorization bypass)
+- SQLAlchemy vulnerabilities (raw SQL injection, session.flush() bypass)
+- MongoDB injection ($where, $ne operators)
+- Generic ORM issues (mass assignment, foreign object traversal, N+1 queries)
+
+**Cloud Security Patterns** (Phase 4+):
+- AWS SDK misconfigurations (hardcoded credentials, S3 bucket issues, IAM policies)
+- Azure SDK issues (storage key exposure, RBAC issues)
+- GCP client library vulnerabilities (service account keys, IAM roles)
+- Cloud-specific logging issues (sensitive data in logs)
+
+**Container Security Patterns** (Phase 4+):
+- Dockerfile analysis (privileged containers, root user, insecure layers)
+- Kubernetes manifest analysis (RBAC issues, privilege escalation, secret management)
+- Container escape patterns in code
+
+**Infrastructure-as-Code Patterns** (Phase 4+):
+- Terraform security misconfigurations
+- CloudFormation exposed resources
+- IaC-specific best practices violations
+
+**API Security Patterns** (Phase 2+):
+- API key validation issues
+- JWT manipulation
+- OAuth2 implementation issues
+- Rate limiting bypass
+- API parameter pollution
+- Mass assignment vulnerabilities
+- API versioning issues
+- OpenAPI spec inconsistencies
+
+**Web Security Patterns** (Phase 1+):
+- Clickjacking (X-Frame-Options, CSP)
+- Mixed Content (HTTP vs HTTPS)
+- MIME type confusion
+- Host header injection
+- Open redirect
+- Stored XSS via file upload
+- Reflected XSS in headers
+
 **Implementation Requirements**:
 - Extensible pattern format (YAML/JSON)
 - Pattern metadata: name, description, severity, category, affected languages/frameworks
@@ -143,6 +192,37 @@ An AI-powered tool that:
 - State manipulation attacks
 - Cache poisoning sequences
 - Session manipulation chains
+
+#### 2.1.5 Advanced Analysis Scenarios
+**Description**: Handle complex real-world codebase structures and edge cases.
+
+**Monorepo Analysis** (Phase 2+):
+- Detect monorepo structure (Nx, Turborepo, Bazel, workspaces)
+- Support per-package configuration
+- Analyze shared dependencies across packages
+- Support build system integration
+- Generate per-package reports or aggregate reports
+
+**Multi-Language Codebase Analysis** (Phase 2+):
+- Detect all languages in codebase
+- Analyze cross-language vulnerabilities (e.g., XSS from Python to JavaScript)
+- Correlate API endpoint definitions across languages
+- Shared API contract validation (OpenAPI, GraphQL schemas)
+- Unified vulnerability reporting across languages
+
+**Legacy Code Support** (Phase 1+):
+- Officially support Python 3.8+ (explicit minimum version)
+- Provide warnings for Python < 3.8
+- Document known limitations with legacy code
+- Provide opt-in legacy analysis mode for older Python versions
+- Graceful degradation when encountering unsupported syntax
+
+**Generated Code Analysis** (Phase 1+):
+- Detect common generated code patterns (protobuf, OpenAPI stubs, etc.)
+- Default to excluding generated code
+- Allow opt-in for analyzing generated code
+- Support configurable patterns for auto-excluding generated files
+- Document best practices for generated code analysis
 
 ### 2.2 Language and Framework Support
 
@@ -552,7 +632,8 @@ adversarial-code-reviewer/
 **Dependencies**:
 - tree-sitter (parsing)
 - tree-sitter-languages (language grammars)
-- astor or astroid (Python AST manipulation)
+- astor (Python AST code generation/modification)
+- astroid (Python AST analysis and inference, used by pylint)
 - networkx (graph algorithms for CFG/DFG)
 - Jinja2 (templating)
 - PyYAML (configuration)
@@ -564,7 +645,7 @@ adversarial-code-reviewer/
 - pydantic (validation)
 - openai (OpenAI API)
 - anthropic (Anthropic API)
-- diskcache or joblib (caching, Phase 2+)
+- diskcache (caching, Phase 2+)
 - keyring (secure credential storage)
 
 **Optional Dependencies**:
@@ -810,11 +891,38 @@ adversarial-code-reviewer/
 - Supply chain security: verify all dependencies, use signed releases
 - ACR itself should be designed to not be a vector for supply chain attacks
 
-### 6.3 Supply Chain Security
+### 6.3.1 Supply Chain Security
 - All dependencies are vetted for security vulnerabilities
 - Signed releases with GPG keys
 - Reproducible builds
 - SBOM (Software Bill of Materials) for each release
+
+### 6.3.2 LLM Security
+**Prompt Injection Protection**:
+- Sanitize code snippets before sending to LLM
+- Filter out suspicious patterns (prompts embedded in code)
+- Use system prompts to prevent jailbreaking
+- Monitor LLM outputs for injection attempts
+- Add rate limiting to prevent prompt flooding
+- Implement input validation for LLM prompts
+
+**Model Abuse Prevention**:
+- Limit number of LLM calls per scan
+- Implement LLM call caching aggressively
+- Use cheaper models where appropriate
+- Add cost estimation before scan
+- Warn users about potential LLM costs
+- Implement prompt optimization to reduce token count
+- Detect and prevent recursive LLM calls
+
+**Sensitive Data Leakage Prevention**:
+- Verify sensitive data is fully redacted before LLM calls
+- Use multiple regex patterns for detection
+- Add entropy-based detection for keys/tokens
+- Add user-configurable redaction patterns
+- Log redaction events for audit
+- Test redaction with known vulnerable patterns
+- Fallback to static analysis if redaction fails
 
 ### 6.4 Access Control
 - No authentication required for CLI tool
@@ -1091,6 +1199,54 @@ adversarial-code-reviewer/
 
 **Risk**: ACR may miss critical vulnerabilities
 **Mitigation**: Transparency about limitations, encourage complementary tools
+
+### 11.4 Alternative Approaches Considered
+
+**Approach 1: Pure LLM-based Analysis**
+**Rejected**: Too expensive, too slow, inconsistent results
+**Selected**: Hybrid approach - static analysis for speed, LLM for intelligence
+
+**Approach 2: All-at-Once Implementation**
+**Rejected**: Too risky, no early feedback
+**Selected**: Phased approach with MVP in 12-14 weeks
+
+**Approach 3: Web-Based Dashboard First**
+**Rejected**: Adds complexity, dev resources needed
+**Selected**: CLI first, web dashboard in roadmap
+
+**Approach 4: Single-Language Support Forever**
+**Rejected**: Limits market, competitive advantage is multi-language
+**Selected**: Multi-language support in phased approach
+
+**Approach 5: Rust or Go for Core**
+**Considered**: Could provide better performance
+**Rejected**: Python has richer ecosystem for LLM integration, better developer availability
+**Selected**: Python for core, Rust/Go as supported languages to analyze
+
+**Approach 6: WebAssembly for Pattern Matching**
+**Considered**: Could be faster than Python for pattern matching
+**Status**: Under evaluation for Phase 5+ optimization
+**Selected**: Python for initial implementation, consider WASM for performance bottlenecks
+
+**Approach 7: Fine-Tuned LLMs**
+**Considered**: Cheaper than API calls to GPT-4/Claude, can be deployed locally
+**Status**: Under evaluation for Phase 5+ optimization
+**Selected**: Prompt-based approach for MVP, consider fine-tuning for production
+
+**Approach 8: Graph Database for Findings**
+**Considered**: Better for complex queries and relationship tracking
+**Status**: Under evaluation for Phase 5+ enterprise deployments
+**Selected**: In-memory graph (networkx) for MVP, consider Neo4j for enterprise
+
+**Approach 9: Database vs. Flat Files for Findings**
+**Considered**: Better querying and aggregation for large teams
+**Status**: Under evaluation for Phase 5+ enterprise deployments
+**Selected**: Flat files (.acr-state) for MVP, consider SQLite/PostgreSQL for enterprise
+
+**Approach 10: Symbolic Execution**
+**Considered**: Could find edge cases that static analysis misses
+**Status**: Optional feature for Phase 4, high complexity
+**Selected**: Marked as optional/experimental due to complexity and performance concerns
 
 ## 12. Future Roadmap (Post-Phase 5)
 

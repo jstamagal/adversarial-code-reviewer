@@ -167,6 +167,20 @@ Agent 1: Your task is to REVIEW, SCRUTINIZE, and REFINE this TODO.md and PRD.md 
   - [ ] Detect taint reaching sinks
   - [ ] Add tests for taint analysis
 
+- [ ] Implement advanced analysis scenarios
+  - [ ] Implement legacy code support
+    - [ ] Detect Python version
+    - [ ] Warn on Python < 3.8
+    - [ ] Document legacy code limitations
+    - [ ] Add opt-in legacy analysis mode
+    - [ ] Add tests for legacy code handling
+  - [ ] Implement generated code detection
+    - [ ] Detect common generated code patterns
+    - [ ] Default to excluding generated code
+    - [ ] Allow opt-in for generated code analysis
+    - [ ] Support configurable exclusion patterns
+    - [ ] Add tests for generated code handling
+
 ### 1.4 Attack Pattern System (Weeks 3-4)
 
 - [ ] Design attack pattern schema
@@ -223,6 +237,53 @@ Agent 1: Your task is to REVIEW, SCRUTINIZE, and REFINE this TODO.md and PRD.md 
   - [ ] Static file serving pattern
   - [ ] JSON deserialization pattern
 
+- [ ] Create advanced Python-specific patterns
+  - [ ] Decorator vulnerability pattern (unsafe caching, auth bypass)
+  - [ ] Metaclass abuse pattern (__getattr__, __getattribute__)
+  - [ ] Extended dynamic execution patterns (__import__ with vars, importlib, compile, types.FunctionType)
+  - [ ] Async code vulnerability patterns (event loop blocking, cancellation issues)
+  - [ ] Generator vulnerability patterns (StopIteration, generator exhaustion)
+
+- [ ] Create web security patterns
+  - [ ] Clickjacking pattern (X-Frame-Options, CSP)
+  - [ ] Mixed Content pattern
+  - [ ] MIME type confusion pattern
+  - [ ] Host header injection pattern
+  - [ ] Open redirect pattern
+  - [ ] Stored XSS via file upload pattern
+  - [ ] Reflected XSS in headers pattern
+
+- [ ] Create ORM-specific patterns
+  - [ ] Django ORM user.filter bypass pattern
+  - [ ] Django ORM exclude() authorization bypass pattern
+  - [ ] SQLAlchemy raw SQL injection pattern
+  - [ ] SQLAlchemy session.flush() bypass pattern
+  - [ ] MongoDB injection pattern ($where, $ne operators)
+  - [ ] Generic ORM mass assignment pattern
+  - [ ] Generic ORM foreign object traversal pattern
+  - [ ] Add tests for ORM patterns
+
+- [ ] Create API security patterns
+  - [ ] API key validation pattern
+  - [ ] JWT manipulation pattern
+  - [ ] OAuth2 implementation pattern
+  - [ ] Rate limiting bypass pattern
+  - [ ] API parameter pollution pattern
+  - [ ] Mass assignment pattern
+  - [ ] API versioning issue pattern
+  - [ ] OpenAPI spec inconsistency pattern
+  - [ ] Add tests for API patterns
+
+- [ ] Create additional OWASP patterns
+  - [ ] SSRF (Server-Side Request Forgery) pattern
+  - [ ] Header injection pattern
+  - [ ] HTTP Request Smuggling pattern
+  - [ ] HTTP Response Splitting pattern
+  - [ ] Log injection pattern
+  - [ ] ReDoS (Regular Expression DoS) pattern
+  - [ ] Integer Overflow/Underflow pattern
+  - [ ] Add tests for additional patterns
+
 ### 1.5 LLM Integration (Weeks 4-5)
 
 - [ ] Implement LLM client abstraction
@@ -252,6 +313,29 @@ Agent 1: Your task is to REVIEW, SCRUTINIZE, and REFINE this TODO.md and PRD.md 
   - [ ] Configure cache TTL
   - [ ] Implement cache invalidation
   - [ ] Add tests for caching
+
+- [ ] Implement LLM security
+  - [ ] Implement prompt injection protection
+    - [ ] Sanitize code snippets before LLM calls
+    - [ ] Filter suspicious patterns
+    - [ ] Add system prompts for jailbreak prevention
+    - [ ] Monitor LLM outputs for injection
+    - [ ] Add rate limiting for prompts
+    - [ ] Add tests for prompt injection protection
+  - [ ] Implement model abuse prevention
+    - [ ] Limit LLM calls per scan
+    - [ ] Add LLM cost estimation
+    - [ ] Warn users about potential costs
+    - [ ] Implement prompt optimization
+    - [ ] Detect recursive LLM calls
+    - [ ] Add tests for abuse prevention
+  - [ ] Enhance sensitive data redaction
+    - [ ] Add multiple regex patterns
+    - [ ] Add entropy-based detection
+    - [ ] Add user-configurable patterns
+    - [ ] Log redaction events
+    - [ ] Test redaction with known patterns
+    - [ ] Add tests for redaction verification
 
 ### 1.6 CLI Implementation (Weeks 5-6)
 
@@ -394,11 +478,26 @@ Agent 1: Your task is to REVIEW, SCRUTINIZE, and REFINE this TODO.md and PRD.md 
 
 ### 1.8 Testing (Weeks 7-8)
 
-- [ ] Create test fixtures
-  - [ ] Create vulnerable Python code samples
-  - [ ] Create vulnerable Flask app samples
-  - [ ] Create expected findings for samples
-  - [ ] Create configuration test cases
+- [ ] Create baseline codebases
+  - [ ] Create baseline vulnerable Python codebases:
+    - [ ] Simple (100 LOC)
+    - [ ] Medium (1k LOC)
+    - [ ] Complex (10k LOC)
+  - [ ] Create baseline Flask applications with known vulnerabilities
+  - [ ] Create secure Python code samples (for negative testing)
+  - [ ] Create secure Flask applications (for negative testing)
+  - [ ] Document measurement methodology
+  - [ ] Establish baseline performance metrics
+
+- [ ] Create comprehensive edge case test suites
+  - [ ] Create test suite for code with circular imports
+  - [ ] Create test suite for decorator-heavy code
+  - [ ] Create test suite for metaclass usage
+  - [ ] Create test suite for async/await patterns
+  - [ ] Create test suite for generator functions
+  - [ ] Create test suite for reflection-heavy code
+  - [ ] Create test suite for obfuscated code
+  - [ ] Create test suite for __getattr__/__getattribute__ abuse
 
 - [ ] Write unit tests
   - [ ] Test configuration management (target: 90% coverage)
@@ -422,11 +521,16 @@ Agent 1: Your task is to REVIEW, SCRUTINIZE, and REFINE this TODO.md and PRD.md 
   - [ ] Test CLI with all options
   - [ ] Test report generation for various findings
 
+- [ ] Write negative tests
+  - [ ] Verify no false positives on secure code
+  - [ ] Test baseline secure code samples
+  - [ ] Measure false positive rate
+
 - [ ] Performance benchmarking
   - [ ] Benchmark analysis speed
   - [ ] Benchmark memory usage
   - [ ] Benchmark LLM response time
-  - [ ] Establish baseline metrics
+  - [ ] Compare with baseline metrics
 
 ### 1.9 Documentation (Week 8)
 
@@ -498,6 +602,18 @@ Agent 1: Your task is to REVIEW, SCRUTINIZE, and REFINE this TODO.md and PRD.md 
   - [ ] Test package installation
   - [ ] Upload to PyPI (test first, then production)
 
+- [ ] Create Docker image (optional)
+  - [ ] Create Dockerfile for ACR
+  - [ ] Test Docker image
+  - [ ] Document Docker usage
+  - [ ] Publish to Docker Hub (optional)
+
+- [ ] Test cross-platform installation
+  - [ ] Test installation on Linux
+  - [ ] Test installation on macOS
+  - [ ] Test installation on Windows
+  - [ ] Document platform-specific issues
+
 ### 1.12 Buffer and Polish (Weeks 11-12)
 
 - [ ] Address remaining issues
@@ -528,6 +644,34 @@ Agent 1: Your task is to REVIEW, SCRUTINIZE, and REFINE this TODO.md and PRD.md 
 - [ ] Adjust priorities based on feedback
 - [ ] Set up Phase 2 development branch
 - [ ] Update performance benchmarks from Phase 1
+
+### 2.0.5 Advanced Analysis Scenarios (Week 13)
+
+- [ ] Implement monorepo analysis
+  - [ ] Detect monorepo structure (Nx, Turborepo, Bazel, workspaces)
+  - [ ] Support per-package configuration
+  - [ ] Analyze shared dependencies
+  - [ ] Support build system integration
+  - [ ] Generate per-package reports
+  - [ ] Add tests for monorepo analysis
+
+- [ ] Implement multi-language codebase analysis
+  - [ ] Detect all languages in codebase
+  - [ ] Analyze cross-language vulnerabilities
+  - [ ] Correlate API endpoint definitions
+  - [ ] Validate shared API contracts
+  - [ ] Generate unified reports
+  - [ ] Add tests for multi-language analysis
+
+- [ ] Implement pattern update mechanism
+  - [ ] Create `acr patterns update` command
+  - [ ] Fetch patterns from remote repository
+  - [ ] Validate updated patterns
+  - [ ] Support pattern versioning
+  - [ ] Support custom pattern repositories
+  - [ ] Add auto-update mode (opt-in)
+  - [ ] Notify users of pattern updates
+  - [ ] Add tests for pattern updates
 
 ### 2.1 Performance Optimization (Weeks 13-14)
 
@@ -772,8 +916,13 @@ Agent 1: Your task is to REVIEW, SCRUTINIZE, and REFINE this TODO.md and PRD.md 
 - [ ] Implement dependency scanning
   - [ ] Parse requirements.txt for Python dependencies
   - [ ] Parse package.json for Node.js dependencies
+  - [ ] Parse pom.xml for Java dependencies
+  - [ ] Parse go.mod for Go dependencies
+  - [ ] Parse Cargo.toml for Rust dependencies
   - [ ] Integrate with OSV database API
   - [ ] Integrate with CVE database API
+  - [ ] Integrate with Snyk API (optional)
+  - [ ] Integrate with Dependabot API (optional)
   - [ ] Cache vulnerability database locally
   - [ ] Add tests for dependency scanning
 
@@ -783,7 +932,16 @@ Agent 1: Your task is to REVIEW, SCRUTINIZE, and REFINE this TODO.md and PRD.md 
   - [ ] Include affected versions in findings
   - [ ] Suggest safe version upgrades
   - [ ] Cross-reference code usage with dependencies
+  - [ ] Generate SBOM (Software Bill of Materials)
   - [ ] Add tests for vulnerability reporting
+
+- [ ] Implement advanced supply chain analysis
+  - [ ] Detect dependency confusion vulnerabilities
+  - [ ] Detect typosquatting attacks
+  - [ ] Analyze transitive dependencies
+  - [ ] Check package authenticity (signatures, checksums)
+  - [ ] Supply chain risk scoring
+  - [ ] Add tests for supply chain analysis
 
 - [ ] Add dependency update recommendations
   - [ ] Generate upgrade path recommendations
@@ -1151,8 +1309,6 @@ Agent 1: Your task is to REVIEW, SCRUTINIZE, and REFINE this TODO.md and PRD.md 
 
 ### 4.2 Java/Kotlin Support (If Selected, Weeks 35-39)
 
-### 4.1 Java/Kotlin Support (Weeks 19-20)
-
 - [ ] Implement Java analyzer
   - [ ] Integrate tree-sitter for Java
   - [ ] Create AST node visitor
@@ -1243,6 +1399,69 @@ Agent 1: Your task is to REVIEW, SCRUTINIZE, and REFINE this TODO.md and PRD.md 
   - [ ] Introspection exposure pattern
   - [ ] Field suggestion abuse pattern
   - [ ] Add tests for GraphQL patterns
+
+### 4.5.5 Cloud Security Patterns (Weeks 40-41)
+
+- [ ] Implement AWS SDK security patterns
+  - [ ] Detect hardcoded AWS credentials
+  - [ ] Detect S3 bucket ACL issues
+  - [ ] Detect overly permissive IAM policies
+  - [ ] Detect cloud logging of sensitive data
+  - [ ] Add tests for AWS patterns
+
+- [ ] Implement Azure SDK security patterns
+  - [ ] Detect storage account key exposure
+  - [ ] Detect RBAC issues
+  - [ ] Detect key vault misconfigurations
+  - [ ] Add tests for Azure patterns
+
+- [ ] Implement GCP SDK security patterns
+  - [ ] Detect service account key exposure
+  - [ ] Detect IAM role issues
+  - [ ] Detect Cloud Storage misconfigurations
+  - [ ] Add tests for GCP patterns
+
+### 4.5.6 Container Security Patterns (Weeks 41)
+
+- [ ] Implement Dockerfile analysis
+  - [ ] Detect privileged container usage
+  - [ ] Detect root user usage
+  - [ ] Detect insecure layers
+  - [ ] Detect missing security options
+  - [ ] Add tests for Dockerfile analysis
+
+- [ ] Implement Kubernetes manifest analysis
+  - [ ] Detect RBAC issues
+  - [ ] Detect privilege escalation
+  - [ ] Detect secret management issues
+  - [ ] Detect pod security context issues
+  - [ ] Add tests for Kubernetes analysis
+
+- [ ] Implement container escape pattern detection
+  - [ ] Detect dangerous mount configurations
+  - [ ] Detect privileged capabilities
+  - [ ] Detect container escape attempts
+  - [ ] Add tests for container escape patterns
+
+### 4.5.7 Infrastructure-as-Code Analysis (Weeks 41-42)
+
+- [ ] Implement Terraform security analysis
+  - [ ] Parse Terraform configurations
+  - [ ] Detect security misconfigurations
+  - [ ] Validate IaC best practices
+  - [ ] Add tests for Terraform analysis
+
+- [ ] Implement CloudFormation analysis
+  - [ ] Parse CloudFormation templates
+  - [ ] Detect exposed resources
+  - [ ] Validate security configurations
+  - [ ] Add tests for CloudFormation analysis
+
+- [ ] Implement Azure Resource Manager analysis
+  - [ ] Parse ARM templates
+  - [ ] Detect security issues
+  - [ ] Validate best practices
+  - [ ] Add tests for ARM analysis
 
 ### 4.6 Advanced Stateful Analysis (Weeks 40-42)
 
@@ -1395,6 +1614,39 @@ Agent 1: Your task is to REVIEW, SCRUTINIZE, and REFINE this TODO.md and PRD.md 
 - [ ] Identify optimization opportunities
 - [ ] Plan plugin system architecture
 - [ ] Set up Phase 5 development branch
+
+### 5.0.5 Alternative Approach Evaluations (Week 49)
+
+- [ ] Evaluate WebAssembly for pattern matching
+  - [ ] Research WASM compilation for Python patterns
+  - [ ] Benchmark Python vs. WASM performance
+  - [ ] Evaluate for large-scale scanning
+  - [ ] Document as optional optimization
+  - [ ] Decide on implementation approach
+
+- [ ] Evaluate fine-tuned LLMs
+  - [ ] Research fine-tuning smaller models (Llama, Mistral)
+  - [ ] Create training dataset from vulnerability reports
+  - [ ] Compare fine-tuned model vs. prompt-based performance
+  - [ ] Evaluate deployment strategies (local vs. cloud)
+  - [ ] Consider hybrid approach (fine-tuned + prompt-based)
+  - [ ] Document findings
+
+- [ ] Evaluate graph database for findings storage
+  - [ ] Research Neo4j for findings storage
+  - [ ] Enable complex relationship queries
+  - [ ] Support persistent cross-scan graph storage
+  - [ ] Benchmark vs. flat files
+  - [ ] Consider for enterprise deployments
+  - [ ] Document findings
+
+- [ ] Evaluate database storage for findings
+  - [ ] Evaluate SQLite for local storage
+  - [ ] Evaluate PostgreSQL for team deployments
+  - [ ] Design migration path from flat files
+  - [ ] Support both flat files and database
+  - [ ] Better support for trend analysis
+  - [ ] Document findings
 
 ### 5.1 Advanced Performance Optimization (Weeks 49-52)
 
