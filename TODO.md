@@ -485,15 +485,15 @@ Agent 1: Your task is to REVIEW, SCRUTINIZE, and REFINE this TODO.md and PRD.md 
   - [ ] Show dependency versions
   - [ ] Add tests for version command
 
-- [ ] Implement `acr doctor` diagnostics command
-  - [ ] Check Python version
-  - [ ] Check dependency versions
-  - [ ] Check tree-sitter installation
-  - [ ] Check configuration validity
-  - [ ] Check LLM API connectivity
-  - [ ] Check disk space
-  - [ ] Provide diagnostic summary
-  - [ ] Add tests for doctor command
+ - [x] Implement `acr doctor` diagnostics command
+   - [x] Check Python version
+   - [x] Check dependency versions
+   - [x] Check tree-sitter installation
+   - [x] Check configuration validity
+   - [x] Check LLM API connectivity
+   - [x] Check disk space
+   - [x] Provide diagnostic summary
+   - [x] Add tests for doctor command
 
 - [ ] Add dry run mode
   - [ ] Implement --dry-run flag

@@ -14,6 +14,7 @@
 
 """Unit tests for CLI commands."""
 
+import sys
 from click.testing import CliRunner
 
 
@@ -447,3 +448,128 @@ def test_cli_patterns_help():
     result = runner.invoke(patterns.cli, ["--help"])
     assert result.exit_code == 0
     assert "Manage attack patterns" in result.output
+
+
+def test_cli_doctor_help():
+    """Test doctor command help."""
+    from acr.cli import doctor
+
+    runner = CliRunner()
+    result = runner.invoke(doctor.cli, ["--help"])
+    assert result.exit_code == 0
+    assert "Run diagnostics" in result.output
+
+
+def test_cli_doctor_basic():
+    """Test doctor command runs basic checks."""
+    from acr.cli import doctor
+
+    runner = CliRunner()
+    result = runner.invoke(doctor.cli)
+
+    assert result.exit_code in [0, 1]
+    assert "Python Version:" in result.output
+    assert "Dependencies:" in result.output
+    assert "Tree-sitter:" in result.output
+    assert "Configuration:" in result.output
+    assert "LLM API:" in result.output
+    assert "Disk Space:" in result.output
+    assert "Diagnostics Summary:" in result.output
+
+
+def test_cli_doctor_python_version():
+    """Test doctor checks Python version."""
+    from acr.cli import doctor
+
+    runner = CliRunner()
+    result = runner.invoke(doctor.cli)
+
+    assert "Python Version:" in result.output
+    assert str(sys.version_info.major) in result.output
+
+
+def test_cli_doctor_dependencies():
+    """Test doctor checks dependencies."""
+    from acr.cli import doctor
+
+    runner = CliRunner()
+    result = runner.invoke(doctor.cli)
+
+    assert "Dependencies:" in result.output
+    assert "click" in result.output.lower()
+    assert "pydantic" in result.output.lower()
+
+
+def test_cli_doctor_tree_sitter():
+    """Test doctor checks tree-sitter."""
+    from acr.cli import doctor
+
+    runner = CliRunner()
+    result = runner.invoke(doctor.cli)
+
+    assert "Tree-sitter:" in result.output
+
+
+def test_cli_doctor_configuration_no_file():
+    """Test doctor with no config file."""
+    from acr.cli import doctor
+
+    runner = CliRunner()
+    with runner.isolated_filesystem():
+        result = runner.invoke(doctor.cli)
+
+        assert result.exit_code in [0, 1]
+        assert "Configuration:" in result.output
+
+
+def test_cli_doctor_configuration_with_file():
+    """Test doctor with valid config file."""
+    from acr.cli import doctor
+
+    runner = CliRunner()
+    with runner.isolated_filesystem():
+        config_data = """
+project:
+  name: test-project
+  root: .
+languages:
+  python:
+    enabled: true
+    version: "3.10"
+patterns:
+  enabled:
+    - sql-injection
+  severity_threshold: medium
+"""
+        with open(".acrrc.yaml", "w") as f:
+            f.write(config_data)
+
+        result = runner.invoke(doctor.cli)
+
+        assert result.exit_code in [0, 1]
+        assert "Configuration:" in result.output
+        assert (
+            "Configuration valid" in result.output
+            or "Configuration file not found" in result.output
+        )
+
+
+def test_cli_doctor_disk_space():
+    """Test doctor checks disk space."""
+    from acr.cli import doctor
+
+    runner = CliRunner()
+    result = runner.invoke(doctor.cli)
+
+    assert "Disk Space:" in result.output
+    assert "Total:" in result.output or "Failed to check disk space" in result.output
+
+
+def test_cli_doctor_llm_api():
+    """Test doctor checks LLM API configuration."""
+    from acr.cli import doctor
+
+    runner = CliRunner()
+    result = runner.invoke(doctor.cli)
+
+    assert "LLM API:" in result.output

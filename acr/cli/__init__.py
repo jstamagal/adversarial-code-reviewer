@@ -14,6 +14,6 @@
 
 """CLI commands for ACR."""
 
-from acr.cli import scan, attack, report, init, config, patterns, version
+from acr.cli import scan, attack, report, init, config, patterns, version, doctor
 
-__all__ = ["scan", "attack", "report", "init", "config", "patterns", "version"]
+__all__ = ["scan", "attack", "report", "init", "config", "patterns", "version", "doctor"]
