@@ -69,11 +69,11 @@ Agent 1: Your task is to REVIEW, SCRUTINIZE, and REFINE this TODO.md and PRD.md 
 - ✅ Sink identification (acr/core/sink_identification.py with 42 passing tests)
 - ⚠️ Full taint analysis - basic structure exists, needs completion
 
-**Week 3-4: Attack Pattern System** - 🔄 IN PROGRESS (96% complete)
+**Week 3-4: Attack Pattern System** - 🔄 IN PROGRESS (97% complete)
 - ✅ Pattern schema (acr/patterns/schema.py with Pydantic models)
 - ✅ Pattern loader (acr/patterns/loader.py)
 - ✅ Pattern matcher (acr/patterns/matcher.py)
-- ✅ 16 patterns implemented in acr/patterns/library/:
+- ✅ 17 patterns implemented in acr/patterns/library/:
   1. sql_injection.yaml
   2. command_injection.yaml (includes subprocess shell=True)
   3. xss.yaml
@@ -90,17 +90,18 @@ Agent 1: Your task is to REVIEW, SCRUTINIZE, and REFINE this TODO.md and PRD.md 
   14. known_vulnerabilities.yaml (outdated dependencies, CVEs, deprecated packages)
   15. insufficient_logging_monitoring.yaml (missing logs, silent exceptions, sensitive data in logs)
   16. format_string.yaml (NEW - CWE-134 Format String)
+  17. template_injection.yaml (NEW - CWE-94 Server-Side Template Injection)
 - ✅ Additional OWASP Top 10 patterns - COMPLETE (15/15 implemented)
-- ✅ Additional Python-specific pattern - Format string (1/6 implemented)
+- ✅ Additional Python-specific patterns - Template injection, Format string (2/6 implemented)
 - ⚠️ Framework-specific patterns (Flask, Django) - minimal
 
 **Testing Status:**
 - ✅ 234 test functions across test suite
-- ✅ Tests passing for: ast_parser (27 tests), cache (19 tests), cli, config (24 tests), entry_points (20 tests), sink_identification (42 tests), models, redaction, utils, pattern_loader (63 tests)
+- ✅ Tests passing for: ast_parser (27 tests), cache (19 tests), cli, config (24 tests), entry_points (20 tests), sink_identification (42 tests), models, redaction, utils, pattern_loader (71 tests)
 - ⚠️ Test coverage needs improvement
 - ⚠️ Integration and E2E tests minimal
 
-**Overall Phase 1 Progress: ~79-83% complete**
+**Overall Phase 1 Progress: ~80-84% complete**
 - Strong foundation with config, logging, errors, AST parsing
 - Entry point and sink identification implemented
 - Caching foundation implemented with comprehensive test coverage
@@ -303,16 +304,16 @@ Agent 1: Your task is to REVIEW, SCRUTINIZE, and REFINE this TODO.md and PRD.md 
    - [x] Using Components with Known Vulnerabilities pattern
     - [x] Insufficient Logging & Monitoring pattern
 
-- [ ] Create additional Python-specific patterns
-  - [x] Pickle deserialization pattern
-  - [x] Eval/exec usage pattern
-  - [x] Format string pattern
-  - [ ] Template injection pattern
-  - [x] Subprocess shell=True pattern
-  - [ ] YAML.load() pattern
-  - [ ] hashlib weak algorithms pattern
-  - [ ] Random number generation pattern
-  - [ ] tempfile insecure usage pattern
+ - [ ] Create additional Python-specific patterns
+   - [x] Pickle deserialization pattern
+   - [x] Eval/exec usage pattern
+   - [x] Format string pattern
+   - [x] Template injection pattern
+   - [x] Subprocess shell=True pattern
+   - [ ] YAML.load() pattern
+   - [ ] hashlib weak algorithms pattern
+   - [ ] Random number generation pattern
+   - [ ] tempfile insecure usage pattern
 
 - [ ] Create Flask-specific patterns
   - [ ] Request data validation pattern

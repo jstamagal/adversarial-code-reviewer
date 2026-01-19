@@ -30,7 +30,7 @@ class TestPatternLoader:
         patterns = loader.load_patterns()
 
         assert isinstance(patterns, dict)
-        assert len(patterns) >= 16
+        assert len(patterns) >= 17
         assert "sql-injection" in patterns
         assert "xss" in patterns
         assert "command-injection" in patterns
@@ -47,6 +47,7 @@ class TestPatternLoader:
         assert "security_misconfiguration" in patterns
         assert "known_vulnerabilities" in patterns
         assert "insufficient-logging-monitoring" in patterns
+        assert "template-injection" in patterns
 
     def test_sensitive_data_exposure_pattern_loaded(self):
         """Test that sensitive_data_exposure pattern loads correctly."""
@@ -769,3 +770,94 @@ class TestPatternLoader:
         assert pattern.remediation.code_before is not None
         assert pattern.remediation.code_after is not None
         assert "format" in pattern.remediation.code_after.lower()
+
+    def test_template_injection_pattern_loaded(self):
+        """Test that template_injection pattern loads correctly."""
+        loader = PatternLoader()
+        patterns = loader.load_patterns()
+
+        assert "template-injection" in patterns
+        pattern = patterns["template-injection"]
+
+        assert pattern.id == "template-injection"
+        assert pattern.name == "Server-Side Template Injection (SSTI)"
+        assert pattern.category == "injection"
+        assert pattern.severity == SeverityLevel.CRITICAL
+        assert pattern.cwe_id == "CWE-94"
+        assert "A03:2021" in pattern.owasp_id
+        assert len(pattern.affected_languages) > 0
+        assert "python" in pattern.affected_languages
+        assert "javascript" in pattern.affected_languages
+
+    def test_template_injection_has_templates(self):
+        """Test that template_injection pattern has detection templates."""
+        loader = PatternLoader()
+        patterns = loader.load_patterns()
+        pattern = patterns["template-injection"]
+
+        assert len(pattern.templates) > 0
+
+        static_templates = [t for t in pattern.templates if t.get("type") == "static"]
+        data_flow_templates = [t for t in pattern.templates if t.get("type") == "data_flow"]
+
+        assert len(static_templates) > 0
+        assert len(data_flow_templates) > 0
+
+    def test_template_injection_has_remediation(self):
+        """Test that template_injection pattern has remediation."""
+        loader = PatternLoader()
+        patterns = loader.load_patterns()
+        pattern = patterns["template-injection"]
+
+        assert pattern.remediation is not None
+        assert len(pattern.remediation.description) > 0
+
+    def test_template_injection_has_references(self):
+        """Test that template_injection has references."""
+        loader = PatternLoader()
+        patterns = loader.load_patterns()
+        pattern = patterns["template-injection"]
+
+        assert len(pattern.references) > 0
+        references = pattern.references
+        assert any("owasp.org" in ref for ref in references)
+        assert any("cwe.mitre.org" in ref for ref in references)
+
+    def test_template_injection_severity(self):
+        """Test that template_injection has correct severity."""
+        loader = PatternLoader()
+        patterns = loader.load_patterns()
+        pattern = patterns["template-injection"]
+
+        assert pattern.severity == SeverityLevel.CRITICAL
+
+    def test_template_injection_cwe_reference(self):
+        """Test that template_injection has correct CWE reference."""
+        loader = PatternLoader()
+        patterns = loader.load_patterns()
+        pattern = patterns["template-injection"]
+
+        assert pattern.cwe_id == "CWE-94"
+
+    def test_template_injection_description(self):
+        """Test that template_injection has meaningful description."""
+        loader = PatternLoader()
+        patterns = loader.load_patterns()
+        pattern = patterns["template-injection"]
+
+        assert len(pattern.description) > 50
+        assert "template" in pattern.description.lower()
+
+    def test_template_injection_remediation_examples(self):
+        """Test that remediation has code examples."""
+        loader = PatternLoader()
+        patterns = loader.load_patterns()
+        pattern = patterns["template-injection"]
+
+        assert pattern.remediation.code_before is not None
+        assert pattern.remediation.code_after is not None
+        assert (
+            "render_template_string" in pattern.remediation.code_before.lower()
+            or "Template" in pattern.remediation.code_before.lower()
+        )
+        assert "render_template" in pattern.remediation.code_after.lower()
