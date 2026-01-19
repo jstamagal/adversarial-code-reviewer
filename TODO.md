@@ -51,7 +51,20 @@ Agent 1: Your task is to REVIEW, SCRUTINIZE, and REFINE this TODO.md and PRD.md 
   - [ ] Create setup.py for package installation
   - [ ] Initialize git repository
   - [ ] Create .gitignore file
-  - [ ] Set up LICENSE file (choose appropriate license)
+  - [ ] Set up LICENSE file (choose MIT or Apache 2.0)
+  - [ ] Add license headers to all source files
+
+- [ ] Legal and compliance setup
+  - [ ] Choose software license (recommend MIT)
+  - [ ] Create LICENSE file
+  - [ ] Create LICENSE_HEADERS template
+  - [ ] Write data privacy policy
+  - [ ] Write terms of service / acceptable use policy
+  - [ ] Create vulnerability disclosure policy
+  - [ ] Create CLA (Contributor License Agreement)
+  - [ ] Review export control requirements
+  - [ ] Create security@ email address
+  - [ ] Generate PGP key for security communications
 
 - [ ] Set up development environment
   - [ ] Create requirements.txt for dependencies
@@ -386,6 +399,45 @@ Agent 1: Your task is to REVIEW, SCRUTINIZE, and REFINE this TODO.md and PRD.md 
   - [ ] List custom patterns
   - [ ] Add tests for patterns command
 
+- [ ] Implement `acr config validate` command
+  - [ ] Validate .acrrc.yaml syntax
+  - [ ] Validate configuration values
+  - [ ] Provide clear error messages
+  - [ ] Suggest fixes for invalid config
+  - [ ] Add tests for validation command
+
+- [ ] Implement `acr version` command
+  - [ ] Display current version
+  - [ ] Check for updates
+  - [ ] Show Python version
+  - [ ] Show dependency versions
+  - [ ] Add tests for version command
+
+- [ ] Implement `acr doctor` diagnostics command
+  - [ ] Check Python version
+  - [ ] Check dependency versions
+  - [ ] Check tree-sitter installation
+  - [ ] Check configuration validity
+  - [ ] Check LLM API connectivity
+  - [ ] Check disk space
+  - [ ] Provide diagnostic summary
+  - [ ] Add tests for doctor command
+
+- [ ] Add dry run mode
+  - [ ] Implement --dry-run flag
+  - [ ] Preview findings without writing reports
+  - [ ] Show estimated LLM costs
+  - [ ] Show analysis time estimate
+  - [ ] Add tests for dry run mode
+
+- [ ] Add shell autocompletion
+  - [ ] Generate bash completion script
+  - [ ] Generate zsh completion script
+  - [ ] Generate fish completion script
+  - [ ] Document autocompletion installation
+  - [ ] Test all shells
+  - [ ] Add completion to installation script
+
 ### 1.7 Reporting System (Weeks 7-8)
 
 - [ ] Implement finding data model
@@ -535,7 +587,8 @@ Agent 1: Your task is to REVIEW, SCRUTINIZE, and REFINE this TODO.md and PRD.md 
 ### 1.9 Documentation (Week 8)
 
 - [ ] Write Getting Started Guide
-  - [ ] Installation instructions
+  - [ ] Installation instructions for Linux, macOS, Windows
+  - [ ] Installation troubleshooting guide
   - [ ] Quick start tutorial
   - [ ] First scan walkthrough
   - [ ] Configuration guide
@@ -559,16 +612,56 @@ Agent 1: Your task is to REVIEW, SCRUTINIZE, and REFINE this TODO.md and PRD.md 
   - [ ] How to reduce false positives
   - [ ] How to tune for your codebase
 
+- [ ] Write Comprehensive Troubleshooting Guide
+  - [ ] Common error messages and solutions
+  - [ ] Installation troubleshooting
+  - [ ] Configuration troubleshooting
+  - [ ] Scan troubleshooting
+  - [ ] LLM API troubleshooting
+  - [ ] Performance troubleshooting
+  - [ ] Debug mode documentation
+
+- [ ] Write Data Privacy Documentation
+  - [ ] Data privacy policy
+  - [ ] GDPR compliance documentation
+  - [ ] CCPA compliance documentation
+  - [ ] Data handling explanation
+  - [ ] Local vs cloud analysis options
+
+- [ ] Write Terms of Service
+  - [ ] Acceptable use policy
+  - [ ] Liability disclaimers
+  - [ ] Support and warranty policy
+  - [ ] Commercial use policy
+
+- [ ] Write Vulnerability Disclosure Policy
+  - [ ] Responsible disclosure process
+  - [ ] Security contact information
+  - [ ] Timeline expectations
+  - [ ] Credit policy
+
+- [ ] Create Persona-Specific Guides
+  - [ ] Developer quick reference
+  - [ ] Security engineer advanced guide
+  - [ ] DevOps engineer CI/CD guide
+  - [ ] CTO/product manager value guide
+  - [ ] Enterprise security team guide (Phase 3+)
+
+- [ ] Write Migration Guides
+  - [ ] Migration from Snyk
+  - [ ] Migration from Dependabot
+  - [ ] Migration from SonarQube
+  - [ ] Tool comparison matrix
+  - [ ] Complementary tool usage
+
 - [ ] Update README
   - [ ] Add features section
   - [ ] Add installation instructions
   - [ ] Add quick start
   - [ ] Add screenshots/examples
   - [ ] Add badges (coverage, build status, etc.)
-
-- [ ] Create CHANGELOG.md
-  - [ ] Document initial release
-  - [ ] Establish changelog format
+  - [ ] Add license information
+  - [ ] Add links to legal documents
 
 ### 1.10 Pre-commit Hook (Week 8)
 
@@ -846,6 +939,7 @@ Agent 1: Your task is to REVIEW, SCRUTINIZE, and REFINE this TODO.md and PRD.md 
   - [ ] Define navigation commands
   - [ ] Define viewing commands
   - [ ] Define action commands
+  - [ ] Define keyboard shortcuts
   - [ ] Create mockups
 
 - [ ] Implement finding explorer
@@ -868,6 +962,16 @@ Agent 1: Your task is to REVIEW, SCRUTINIZE, and REFINE this TODO.md and PRD.md 
   - [ ] Mark as accepted risk
   - [ ] Export annotations
   - [ ] Add tests for annotations
+
+- [ ] Implement UX enhancements
+  - [ ] Define keyboard shortcuts for interactive mode
+  - [ ] Support keyboard shortcut customization
+  - [ ] Add light/dark color themes
+  - [ ] Add colorblind-friendly themes
+  - [ ] Support custom color themes via configuration
+  - [ ] Add help screen for shortcuts
+  - [ ] Add --theme flag
+  - [ ] Add tests for theme support
 
 ### 2.7 Advanced Attack Patterns (Weeks 20-21)
 
@@ -949,7 +1053,44 @@ Agent 1: Your task is to REVIEW, SCRUTINIZE, and REFINE this TODO.md and PRD.md 
   - [ ] Prioritize critical vulnerabilities
   - [ ] Add tests for recommendations
 
-### 2.9 CI/CD Integration (Weeks 21-22)
+### 2.9 Finding Management (Week 21)
+
+- [ ] Implement finding search
+  - [ ] Create `acr search` command
+  - [ ] Support search by pattern name
+  - [ ] Support search by CWE ID
+  - [ ] Support search by OWASP category
+  - [ ] Support search by finding ID
+  - [ ] Support search by severity
+  - [ ] Support search by file path
+  - [ ] Add tests for search command
+
+- [ ] Implement vulnerability scoring
+  - [ ] Calculate CVSS scores for findings
+  - [ ] Implement custom risk scoring algorithm
+  - [ ] Add priority ranking based on score
+  - [ ] Support custom scoring weights in configuration
+  - [ ] Display scores in reports
+  - [ ] Document scoring methodology
+  - [ ] Add tests for scoring
+
+- [ ] Implement team collaboration features
+  - [ ] Add finding assignment to team members
+  - [ ] Add comments/discussions on findings
+  - [ ] Track finding history and modifications
+  - [ ] Implement @mentions for team members
+  - [ ] Add finding status workflow (assigned, in progress, fixed, verified)
+  - [ ] Add tests for collaboration features
+
+- [ ] Implement remediation tracking
+  - [ ] Track vulnerabilities assigned to users
+  - [ ] Track remediation time metrics
+  - [ ] Generate remediation reports
+  - [ ] Add accountability metrics (time to fix, backlog)
+  - [ ] Create remediation dashboard (HTML report)
+  - [ ] Add tests for remediation tracking
+
+### 2.10 CI/CD Integration (Weeks 21-22)
 
 - [ ] Implement GitHub Actions workflow
   - [ ] Create workflow template
@@ -977,6 +1118,7 @@ Agent 1: Your task is to REVIEW, SCRUTINIZE, and REFINE this TODO.md and PRD.md 
   - [ ] Write GitHub Actions guide
   - [ ] Provide workflow examples
   - [ ] Document configuration options
+  - [ ] Write CI/CD best practices guide
   - [ ] Add troubleshooting guide
 
 ### 2.10 Additional Testing (Week 22)
@@ -1006,7 +1148,37 @@ Agent 1: Your task is to REVIEW, SCRUTINIZE, and REFINE this TODO.md and PRD.md 
   - [ ] Benchmark stateful analysis
   - [ ] Compare with Phase 1 baseline
 
-### 2.11 Documentation Update (Week 22)
+### 2.11 Operations and Deployment (Week 22)
+
+- [ ] Implement operational monitoring
+  - [ ] Add `/health` endpoint
+  - [ ] Add `/ready` endpoint
+  - [ ] Add `/metrics` endpoint (Prometheus compatible)
+  - [ ] Collect analysis time metrics
+  - [ ] Collect memory usage metrics
+  - [ ] Collect LLM API metrics
+  - [ ] Collect error rate metrics
+  - [ ] Add tests for monitoring
+
+- [ ] Implement backup and restore
+  - [ ] Add `acr backup` command
+  - [ ] Add `acr restore` command
+  - [ ] Backup .acr-state files
+  - [ ] Backup configuration files
+  - [ ] Backup custom patterns
+  - [ ] Implement automatic daily backups (configurable)
+  - [ ] Implement retention policy
+  - [ ] Add tests for backup/restore
+
+- [ ] Create operational documentation
+  - [ ] Create operational runbooks
+  - [ ] Document alerting strategies
+  - [ ] Document backup procedures
+  - [ ] Document disaster recovery
+  - [ ] Write monitoring setup guide
+  - [ ] Write update and rollback guide
+
+### 2.12 Documentation Update (Week 22)
 
 - [ ] Update documentation for Phase 2
   - [ ] Document JavaScript/TypeScript support
@@ -1014,6 +1186,10 @@ Agent 1: Your task is to REVIEW, SCRUTINIZE, and REFINE this TODO.md and PRD.md 
   - [ ] Document SARIF output
   - [ ] Document interactive mode
   - [ ] Document advanced patterns
+  - [ ] Document finding search
+  - [ ] Document vulnerability scoring
+  - [ ] Document team collaboration
+  - [ ] Document remediation tracking
 
 - [ ] Add JavaScript/TypeScript examples
   - [ ] Create JavaScript tutorial
@@ -1026,7 +1202,7 @@ Agent 1: Your task is to REVIEW, SCRUTINIZE, and REFINE this TODO.md and PRD.md 
   - [ ] Document interactive commands
   - [ ] Add interactive mode examples
 
-### 2.12 Phase 2 Release (Week 22)
+### 2.13 Phase 2 Release (Week 22)
 
 - [ ] Prepare for release
   - [ ] Tag version 0.2.0
@@ -1724,7 +1900,67 @@ Agent 1: Your task is to REVIEW, SCRUTINIZE, and REFINE this TODO.md and PRD.md 
   - [ ] Add tests for reporting API
   - [ ] Document API endpoints
 
-### 5.3 Plugin System (Weeks 54-57)
+### 5.3 Enterprise Features (Weeks 53-54)
+
+- [ ] Implement Role-Based Access Control (RBAC)
+  - [ ] Define user roles (admin, security_engineer, developer, viewer)
+  - [ ] Implement permission system
+  - [ ] Support custom role creation
+  - [ ] Implement role inheritance
+  - [ ] Audit all permission changes
+  - [ ] Add RBAC configuration to CLI
+  - [ ] Add tests for RBAC
+
+- [ ] Implement Single Sign-On (SSO)
+  - [ ] Implement OAuth 2.0 / OpenID Connect
+  - [ ] Implement SAML 2.0 support
+  - [ ] Integrate with Okta
+  - [ ] Integrate with Auth0
+  - [ ] Integrate with Azure Active Directory
+  - [ ] Integrate with Google Identity
+  - [ ] Support custom identity providers
+  - [ ] Implement just-in-time user provisioning
+  - [ ] Implement user profile synchronization
+  - [ ] Add tests for SSO
+
+- [ ] Enhance Audit Logging for Compliance
+  - [ ] Implement immutable audit trail (append-only)
+  - [ ] Cryptographically sign audit logs
+  - [ ] Support long-term retention (configurable, default 7 years)
+  - [ ] Secure log storage and access
+  - [ ] Implement log export capabilities
+  - [ ] Generate audit reports for compliance
+  - [ ] Add tests for audit logging
+
+- [ ] Implement Compliance Reporting
+  - [ ] Generate SOC 2 Type II compliance reports
+  - [ ] Generate HIPAA compliance reports
+  - [ ] Generate PCI DSS compliance reports
+  - [ ] Generate ISO 27001 compliance reports
+  - [ ] Track vulnerability remediation for compliance
+  - [ ] Identify compliance-relevant findings
+  - [ ] Create evidence collection for compliance
+  - [ ] Add tests for compliance reporting
+
+- [ ] Create Enterprise Documentation
+  - [ ] Write SSO configuration guide
+  - [ ] Write RBAC setup guide
+  - [ ] Write audit logging configuration guide
+  - [ ] Write compliance reporting guide
+  - [ ] Write enterprise deployment guide
+  - [ ] Write on-premises deployment guide
+  - [ ] Create enterprise support documentation
+  - [ ] Create SLA documentation (if applicable)
+
+- [ ] Design Multi-Tenancy Architecture (Optional, SaaS only)
+  - [ ] Design tenant isolation strategy
+  - [ ] Design per-tenant configuration
+  - [ ] Design per-tenant data encryption
+  - [ ] Design tenant provisioning/deprovisioning
+  - [ ] Design resource quotas per tenant
+  - [ ] Design billing integration (if applicable)
+
+### 5.4 Plugin System (Weeks 54-57)
 
 - [ ] Design plugin architecture
   - [ ] Define plugin interface
@@ -1759,7 +1995,7 @@ Agent 1: Your task is to REVIEW, SCRUTINIZE, and REFINE this TODO.md and PRD.md 
   - [ ] Add security scanning for community plugins
   - [ ] Document marketplace submission process
 
-### 5.4 Local LLM Support (Weeks 57-59)
+### 5.5 Local LLM Support (Weeks 57-59)
 
 - [ ] Implement Ollama integration
   - [ ] Connect to local Ollama
@@ -1792,7 +2028,7 @@ Agent 1: Your task is to REVIEW, SCRUTINIZE, and REFINE this TODO.md and PRD.md 
   - [ ] Document performance trade-offs
   - [ ] Add troubleshooting guide for local LLMs
 
-### 5.5 Comprehensive Documentation and Training (Weeks 59-60)
+### 5.6 Comprehensive Documentation and Training (Weeks 59-60)
 
 - [ ] Update all documentation
 - [ ] Create architecture diagrams
@@ -1821,7 +2057,7 @@ Agent 1: Your task is to REVIEW, SCRUTINIZE, and REFINE this TODO.md and PRD.md 
   - [ ] Create PR templates
   - [ ] Create roadmap transparency document
 
-### 5.6 Phase 5 Testing (Week 60)
+### 5.7 Phase 5 Testing (Week 60)
 
 - [ ] Performance testing
   - [ ] Test analysis speed on various codebase sizes
@@ -1870,7 +2106,7 @@ Agent 1: Your task is to REVIEW, SCRUTINIZE, and REFINE this TODO.md and PRD.md 
   - [ ] Fix critical UX issues
   - [ ] Iterate on documentation
 
-### 5.7 Phase 5 Release (Weeks 60-61)
+### 5.8 Phase 5 Release (Weeks 60-61)
 
 - [ ] Prepare for v1.0.0 release
   - [ ] Tag version 1.0.0

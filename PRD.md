@@ -1059,13 +1059,58 @@ adversarial-code-reviewer/
 ## 7. Documentation Requirements
 
 ### 7.1 User Documentation
+
+#### Getting Started
 - Getting Started Guide (5 minute setup)
+- Installation guide for Linux, macOS, Windows
+- Installation troubleshooting
+- Quick start tutorial
+- First scan walkthrough
+
+#### Core Documentation
 - CLI Reference (all commands and options)
 - Configuration Guide (all configuration options)
 - Pattern Reference (all attack patterns)
-- Integration Guide (CI/CD, IDE, third-party)
 - Best Practices Guide (how to use ACR effectively)
 - FAQ
+- Glossary of terms
+
+#### Persona-Specific Guides
+- **For Developers**: Quick reference, common patterns, interpretation guide
+- **For Security Engineers**: Advanced patterns, LLM usage, custom patterns
+- **For DevOps Engineers**: CI/CD integration, automation, monitoring
+- **For CTOs/Product Managers**: Value proposition, ROI, metrics, reporting
+- **For Enterprise Security Teams**: Compliance, audit logging, RBAC, reporting
+
+#### Integration Documentation
+- Integration Guide (CI/CD, IDE, third-party)
+- CI/CD Best Practices Guide
+- Pre-commit Hook Setup Guide
+- GitHub Actions Integration
+- GitLab CI Integration
+- CI/CD Troubleshooting Guide
+
+#### Migration and Comparison
+- Migration Guide from Snyk
+- Migration Guide from Dependabot
+- Migration Guide from SonarQube
+- Tool Comparison Matrix
+- Complementary Tool Usage Guide
+
+#### Troubleshooting
+- Comprehensive Troubleshooting Guide
+- Common Error Messages and Solutions
+- Debug Mode Documentation
+- Log Analysis Guide
+- Performance Tuning Guide
+
+#### Enterprise Documentation
+- Enterprise Deployment Guide
+- SSO Configuration Guide
+- RBAC Setup Guide
+- Audit Logging Configuration
+- Compliance Reporting Guide (SOC 2, HIPAA, PCI DSS)
+- On-Premises Deployment Guide (Docker, Kubernetes)
 
 ### 7.2 Developer Documentation
 - Architecture Overview
@@ -1289,3 +1334,358 @@ adversarial-code-reviewer/
 - **CVE**: Common Vulnerabilities and Exposures
 - **LOC**: Lines of Code
 - **SBOM**: Software Bill of Materials
+- **Finding**: Individual vulnerability or security issue identified by ACR
+
+## 14. Legal and Compliance Considerations
+
+### 14.1 Software Licensing
+
+**License Choice**: MIT License (recommended)
+
+**Rationale**:
+- Permissive license encourages adoption
+- Compatible with most open-source and commercial use
+- Minimal attribution requirements
+- Simple and well-understood by legal teams
+- Allows inclusion in commercial products
+
+**Alternative**: Apache 2.0 License
+- Includes patent protection
+- More comprehensive terms
+- Slightly more complex
+
+**Requirements**:
+- Include LICENSE file in root directory
+- Add license headers to all source files
+- Document third-party library license compatibility
+- Create CLA (Contributor License Agreement) for contributors
+- Document commercial use policy
+
+### 14.2 Data Privacy and GDPR Compliance
+
+**Data Privacy Policy**:
+- ACR does NOT send user code to third-party services without explicit consent
+- LLM API calls (OpenAI, Anthropic) are opt-in with clear warnings
+- Users control whether code is analyzed locally or with external APIs
+- No personal data is collected or stored by ACR
+- Scan results and state files are stored locally on user's machine
+
+**GDPR Considerations**:
+- If code contains PII (personally identifiable information), it is processed locally
+- ACR does not store or transmit PII to external services
+- Users have full control over their data
+- Data can be deleted at any time by removing .acr-state files
+- Clear documentation on data handling provided
+
+**CCPA Considerations**:
+- No sale of user data
+- Transparent data collection practices
+- User control over data deletion
+
+**Data Residency**:
+- By default, all analysis runs locally
+- LLM API calls use data centers in user's region (configurable)
+- Enterprise deployments support on-premises-only mode
+
+### 14.3 Terms of Service and Acceptable Use
+
+**Acceptable Use Policy**:
+- ACR is designed for defensive security purposes only
+- Users must not use ACR to:
+  - Attack systems without authorization
+  - Generate malicious exploit code for unauthorized use
+  - Bypass security controls on systems they don't own
+- ACR findings are for educational and remediation purposes only
+- Users are responsible for how they use generated attack scenarios
+
+**Liability Disclaimers**:
+- ACR is provided "as is" without warranties
+- ACR may not find all vulnerabilities
+- ACR may generate false positives
+- Users are responsible for validating findings
+- ACR is not a substitute for professional security audits
+
+**Support and Warranty**:
+- No commercial support provided (unless purchased separately)
+- No warranty for fitness of purpose
+- Best-effort community support via GitHub issues
+- Commercial support packages may be offered in the future
+
+### 14.4 Export Control
+
+**Export Control Considerations**:
+- Review cryptographic patterns for export control regulations
+- Certain countries may have restrictions on security tools
+- Comply with EAR (Export Administration Regulations) if applicable
+- Comply with ITAR (International Traffic in Arms Regulations) if applicable
+- Document any country-specific usage restrictions
+
+**Actions**:
+- Review cryptographic patterns with legal counsel
+- Add country usage restrictions if needed
+- Document compliance with export regulations
+- Consider separate distribution for certain regions
+
+### 14.5 Vulnerability Disclosure Policy
+
+**Responsible Disclosure**:
+- If ACR discovers 0-day vulnerabilities in user code:
+  - Report to user privately
+  - Provide actionable remediation guidance
+  - Allow reasonable time for remediation before public disclosure
+  - Do not publicly disclose without user consent
+
+- If ACR discovers vulnerabilities in third-party dependencies:
+  - Report to maintainers via security@ email
+  - Follow responsible disclosure timelines (90 days standard)
+  - Work with maintainers on coordinated disclosure
+  - Coordinate CVE assignment if applicable
+
+- If users discover vulnerabilities in ACR itself:
+  - Report to security@adversarial-code-reviewer.com
+  - Provide detailed reproduction steps
+  - Allow reasonable time for remediation
+  - Credit in release notes if desired
+
+**Security Contact**:
+- Email: security@adversarial-code-reviewer.com
+- PGP Key: [to be generated]
+- Expected response time: 48 hours
+
+**Bug Bounty Program** (Phase 5+):
+- Consider implementing bug bounty program
+- Reward critical vulnerabilities in ACR
+- Encourage responsible disclosure
+- Document program rules and rewards
+
+## 15. Enterprise Features
+
+### 15.1 Role-Based Access Control (RBAC)
+
+**Roles**:
+- **Admin**: Full access to all configuration, findings, and settings
+- **Security Engineer**: Can run scans, manage findings, assign remediation
+- **Developer**: Can view findings assigned to them, mark as fixed
+- **Viewer**: Read-only access to findings and reports
+
+**Permissions**:
+- Define granular permissions for each role
+- Support custom roles
+- Implement permission inheritance
+- Audit all permission changes
+
+**Implementation**: Phase 5+
+
+### 15.2 Single Sign-On (SSO)
+
+**Supported Protocols**:
+- OAuth 2.0 / OpenID Connect (OIDC)
+- SAML 2.0
+
+**Supported Providers**:
+- Okta
+- Auth0
+- Azure Active Directory / Entra ID
+- Google Identity
+- OneLogin
+- Custom providers
+
+**Features**:
+- Automatic user provisioning
+- Just-in-time provisioning
+- User profile synchronization
+- Session management
+- Multi-factor authentication support
+
+**Implementation**: Phase 5+
+
+### 15.3 Audit Logging
+
+**Audit Events**:
+- All scan operations (who, when, what)
+- Finding modifications (creation, update, deletion)
+- Configuration changes
+- Permission changes
+- Authentication events
+- API access events
+
+**Log Requirements**:
+- Immutable audit trail (append-only)
+- Cryptographic signing of logs
+- Long-term retention (configurable, default 7 years)
+- Secure log storage and access
+- Log export capabilities
+- Compliance-ready format
+
+**Compliance Standards**:
+- SOC 2 Type II audit logging
+- HIPAA audit trail requirements
+- PCI DSS audit logging
+- ISO 27001 logging requirements
+
+**Implementation**: Phase 3+
+
+### 15.4 Compliance Reporting
+
+**SOC 2 Compliance**:
+- Generate SOC 2 Type II readiness reports
+- Track vulnerability remediation for compliance
+- Document control environment
+- Evidence collection and export
+- Management attestation reports
+
+**HIPAA Compliance** (for healthcare customers):
+- Identify HIPAA-relevant findings
+- Track PHI handling vulnerabilities
+- Generate HIPAA compliance reports
+- Business associate agreement (BAA) templates
+
+**PCI DSS Compliance** (for payment customers):
+- Identify PCI-relevant findings
+- Track payment processing vulnerabilities
+- Generate PCI DSS compliance reports
+- Support quarterly scans for PCI requirements
+
+**ISO 27001**:
+- Information security management tracking
+- Risk assessment reports
+- Control effectiveness monitoring
+
+**Implementation**: Phase 5+
+
+### 15.5 Multi-Tenancy (Optional, SaaS Deployment)
+
+**Tenant Isolation**:
+- Logical separation of tenant data
+- Per-tenant configuration
+- Per-tenant attack pattern libraries
+- Per-tenant vulnerability state
+- Data encryption at rest and in transit per tenant
+
+**Tenant Management**:
+- Tenant provisioning and deprovisioning
+- Tenant administration
+- Resource quotas per tenant
+- Billing per tenant
+
+**Implementation**: Phase 5+ (SaaS deployment only)
+
+## 16. Operations and Deployment
+
+### 16.1 Operational Monitoring
+
+**Health Checks**:
+- `/health` endpoint: Basic health status
+- `/ready` endpoint: Readiness for traffic
+- `/metrics` endpoint: Prometheus-compatible metrics
+
+**Metrics to Collect**:
+- Analysis time (p50, p95, p99)
+- Memory usage
+- CPU usage
+- LLM API call counts and latency
+- Error rates by type
+- Cache hit rates
+- Concurrent scan counts
+
+**Alerting**:
+- High error rate alerts
+- Memory usage alerts (> 80%)
+- LLM API failure alerts
+- Disk space alerts
+- Scan timeout alerts
+
+**Implementation**: Phase 3+
+
+### 16.2 Backup and Recovery
+
+**Backup Strategy**:
+- Backup .acr-state files regularly
+- Backup configuration files (.acrrc.yaml)
+- Backup custom attack patterns
+- Backup allowlist/denylist files
+
+**Backup Frequency**:
+- Automatic daily backups (configurable)
+- Manual backup command: `acr backup`
+- Automated retention policy (default 90 days)
+
+**Disaster Recovery**:
+- Restore command: `acr restore <backup-file>`
+- Document recovery procedures
+- Test recovery procedures regularly
+- RPO/RTO targets (configurable)
+
+**Implementation**: Phase 2+
+
+### 16.3 Update and Rollback
+
+**Update Procedures**:
+- Document pip upgrade process: `pip install --upgrade adversarial-code-reviewer`
+- Document Docker image update process
+- Document VS Code extension update process
+- Document JetBrains plugin update process
+
+**Rollback Procedures**:
+- Document rollback to previous version
+- `acr install <version>` command for specific version
+- Document data migration requirements between versions
+- Test rollback procedures for each release
+
+**Version Information**:
+- `acr version` command to show version
+- `acr check-update` command to check for updates
+- `acr self-update` command (optional, Phase 3+)
+
+**Breaking Changes**:
+- Document breaking changes in CHANGELOG
+- Use semantic versioning (MAJOR.MINOR.PATCH)
+- Provide migration guides for major version changes
+
+### 16.4 CI/CD Best Practices
+
+**Performance Optimization for CI/CD**:
+- Use aggressive caching in CI/CD
+- Run ACR on pull requests only (incremental analysis)
+- Use `--diff` flag to analyze only changed code
+- Configure severity threshold to fail only on critical findings
+- Use SARIF output for GitHub Security tab integration
+
+**Failure Handling**:
+- Don't fail CI on low-severity findings
+- Configure exit code thresholds per environment
+- Allow passing with findings below threshold
+- Document failure thresholds for different environments
+
+**Common CI/CD Patterns**:
+- Pre-commit: Run on staged files, fail on medium+
+- Pull request: Run on diff, fail on high+
+- Main branch: Run full scan, fail on critical
+- Scheduled: Run full scan with LLM, fail on high+
+
+**Implementation**: Phase 2+
+
+### 16.5 Installation Troubleshooting
+
+**Common Issues**:
+- Python version incompatibility (requires 3.8+)
+- Dependency conflicts with other packages
+- Missing system dependencies (tree-sitter)
+- Platform-specific issues (Windows, macOS, Linux)
+- Permission issues
+
+**Diagnostics Command**:
+- `acr doctor` command to diagnose issues
+- Check Python version
+- Check dependency versions
+- Check tree-sitter installation
+- Check configuration validity
+- Check for common issues
+
+**Troubleshooting Guide**:
+- Document common error messages
+- Provide solutions for each error
+- Add log file location
+- Add debug mode instructions (--verbose flag)
+
+**Implementation**: Phase 1+
