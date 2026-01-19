@@ -308,3 +308,142 @@ def test_cli_report_empty_findings():
         result = runner.invoke(report.cli, ["empty.json"])
         assert result.exit_code == 0
         assert "No findings found" in result.output
+
+
+def test_cli_config_help():
+    """Test config command help."""
+    from acr.cli import config
+
+    runner = CliRunner()
+    result = runner.invoke(config.cli, ["--help"])
+    assert result.exit_code == 0
+    assert "Manage ACR configuration" in result.output
+
+
+def test_cli_config_show_defaults():
+    """Test config show with defaults (no config file)."""
+    from acr.cli import config
+
+    runner = CliRunner()
+    with runner.isolated_filesystem():
+        result = runner.invoke(config.cli, ["show"])
+        assert result.exit_code == 0
+        assert "Configuration: (defaults)" in result.output
+
+
+def test_cli_config_show_with_file():
+    """Test config show with existing config file."""
+    from acr.cli import config
+
+    runner = CliRunner()
+    with runner.isolated_filesystem():
+        config_data = """
+project:
+  name: test-project
+  root: .
+languages:
+  python:
+    enabled: true
+    version: "3.10"
+patterns:
+  enabled:
+    - sql-injection
+  severity_threshold: medium
+"""
+        with open(".acrrc.yaml", "w") as f:
+            f.write(config_data)
+
+        result = runner.invoke(config.cli, ["show"])
+        assert result.exit_code == 0
+        assert "test-project" in result.output
+        assert "sql-injection" in result.output
+
+
+def test_cli_config_validate_no_file():
+    """Test config validate with no config file."""
+    from acr.cli import config
+
+    runner = CliRunner()
+    with runner.isolated_filesystem():
+        result = runner.invoke(config.cli, ["validate"])
+        assert result.exit_code == 0
+        assert "No configuration file found" in result.output
+
+
+def test_cli_config_validate_valid():
+    """Test config validate with valid configuration."""
+    from acr.cli import config
+
+    runner = CliRunner()
+    with runner.isolated_filesystem():
+        config_data = """
+project:
+  name: test-project
+  root: .
+languages:
+  python:
+    enabled: true
+    version: "3.10"
+patterns:
+  enabled:
+    - sql-injection
+  severity_threshold: medium
+"""
+        with open(".acrrc.yaml", "w") as f:
+            f.write(config_data)
+
+        result = runner.invoke(config.cli, ["validate"])
+        assert result.exit_code == 0
+        assert "Configuration is valid" in result.output
+        assert "test-project" in result.output
+
+
+def test_cli_config_validate_invalid_yaml():
+    """Test config validate with invalid YAML."""
+    from acr.cli import config
+
+    runner = CliRunner()
+    with runner.isolated_filesystem():
+        with open(".acrrc.yaml", "w") as f:
+            f.write("{ invalid yaml")
+
+        result = runner.invoke(config.cli, ["validate"])
+        assert result.exit_code != 0
+        assert "Invalid YAML" in result.output
+
+
+def test_cli_config_validate_invalid_severity():
+    """Test config validate with invalid severity threshold."""
+    from acr.cli import config
+
+    runner = CliRunner()
+    with runner.isolated_filesystem():
+        config_data = """
+project:
+  name: test-project
+  root: .
+languages:
+  python:
+    enabled: true
+    version: "3.10"
+patterns:
+  enabled:
+    - sql-injection
+  severity_threshold: invalid
+"""
+        with open(".acrrc.yaml", "w") as f:
+            f.write(config_data)
+
+        result = runner.invoke(config.cli, ["validate"])
+        assert result.exit_code != 0
+        assert "Validation failed" in result.output
+
+
+def test_cli_patterns_help():
+    """Test patterns command help."""
+    from acr.cli import patterns
+
+    runner = CliRunner()
+    result = runner.invoke(patterns.cli, ["--help"])
+    assert result.exit_code == 0
+    assert "Manage attack patterns" in result.output
