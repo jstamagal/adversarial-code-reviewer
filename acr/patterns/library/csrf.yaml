@@ -1,0 +1,214 @@
+id: csrf
+name: Cross-Site Request Forgery (CSRF)
+category: authentication
+severity: high
+cwe: CWE-352
+owasp: A01:2021-Broken Access Control
+
+description: |
+  CSRF occurs when an attacker tricks a victim's browser into making unwanted requests to a web application
+  where the victim is authenticated, without the victim's knowledge or consent.
+
+references:
+  - https://owasp.org/www-community/attacks/csrf
+  - https://cwe.mitre.org/data/definitions/352.html
+
+affected_languages:
+  - python
+  - javascript
+  - typescript
+  - java
+  - ruby
+  - php
+
+affected_frameworks:
+  - flask
+  - django
+  - fastapi
+  - express
+  - nestjs
+
+detection:
+  static:
+    - pattern: "@app\\.route\\(.*methods=\\['POST'\\].*\\)(?!.*@csrf_exempt)"
+      description: Flask POST route without CSRF protection
+      confidence: high
+      requires_framework: [flask]
+
+    - pattern: "app\\.post\\(.*\\)(?!.*csrf)"
+      description: Express POST endpoint without CSRF middleware
+      confidence: medium
+      requires_framework: [express]
+
+    - pattern: "@app\\.route\\(.*methods=\\[.*(POST|PUT|DELETE|PATCH)\\].*\\)"
+      description: State-changing route without CSRF check
+      confidence: medium
+
+  data_flow:
+    - source: "request.(json|form|data|body)"
+      sink: "(DELETE|PUT|POST|PATCH|update|delete|create|transfer)"
+      sanitizers:
+        - "(csrf|token|verify_csrf|check_csrf)"
+
+remediation:
+  description: Implement CSRF protection with tokens and SameSite cookies
+
+  code_before: |
+    @app.route('/transfer', methods=['POST'])
+    def transfer():
+      recipient = request.form['recipient']
+      amount = request.form['amount']
+      transfer_funds(recipient, amount)
+      return "Transfer successful"
+
+  code_after_flask_wtf: |
+    from flask_wtf.csrf import CSRFProtect
+
+    csrf = CSRFProtect(app)
+
+    @app.route('/transfer', methods=['POST'])
+    def transfer():
+      recipient = request.form['recipient']
+      amount = request.form['amount']
+      transfer_funds(recipient, amount)
+      return "Transfer successful"
+
+  code_after_manual: |
+    import secrets
+
+    def generate_csrf_token():
+      return secrets.token_hex(16)
+
+    @app.route('/transfer', methods=['POST'])
+    def transfer():
+      token = request.form.get('csrf_token')
+      if token != session.get('csrf_token'):
+          return "Invalid CSRF token", 403
+      recipient = request.form['recipient']
+      amount = request.form['amount']
+      transfer_funds(recipient, amount)
+      return "Transfer successful"
+
+examples:
+  vulnerable:
+    - |
+      @app.route('/change-password', methods=['POST'])
+      def change_password():
+          old = request.form['old_password']
+          new = request.form['new_password']
+          change_password(current_user, new)
+          return "Password changed"
+
+    - |
+      @app.route('/delete-account', methods=['POST'])
+      def delete_account():
+          user_id = request.form['user_id']
+          delete_user(user_id)
+          return "Account deleted"
+
+    - |
+      @app.route('/api/update-profile', methods=['POST'])
+      def update_profile():
+          data = request.json
+          current_user.email = data.get('email')
+          current_user.save()
+          return jsonify({'success': True})
+
+    - |
+      @app.route('/admin/promote', methods=['POST'])
+      def promote_user():
+          username = request.form['username']
+          make_admin(username)
+          return "User promoted"
+
+  secure:
+    - |
+      from flask_wtf.csrf import CSRFProtect
+
+      csrf = CSRFProtect(app)
+
+      @app.route('/change-password', methods=['POST'])
+      def change_password():
+          old = request.form['old_password']
+          new = request.form['new_password']
+          change_password(current_user, new)
+          return "Password changed"
+
+    - |
+      from flask_wtf.csrf import CSRFProtect
+
+      csrf = CSRFProtect(app)
+
+      @app.route('/delete-account', methods=['POST'])
+      def delete_account():
+          user_id = request.form['user_id']
+          if current_user.id != user_id:
+              return "Unauthorized", 403
+          delete_user(user_id)
+          return "Account deleted"
+
+    - |
+      from flask import session
+      import secrets
+
+      @app.route('/api/update-profile', methods=['POST'])
+      def update_profile():
+          token = request.json.get('csrf_token')
+          if not secrets.compare_digest(token, session.get('csrf_token')):
+              return "Invalid CSRF token", 403
+          data = request.json
+          current_user.email = data.get('email')
+          current_user.save()
+          return jsonify({'success': True})
+
+security_recommendations:
+  - Use CSRF tokens on all state-changing requests
+  - Implement SameSite cookie attribute
+  - Use POST/PUT/DELETE for state changes (not GET)
+  - Validate CSRF tokens on the server
+  - Use cryptographic CSRF tokens (not predictable values)
+  - Re-generate tokens after use (one-time use tokens)
+  - Verify origin and referrer headers
+  - Use framework CSRF protection (Flask-WTF, Django built-in)
+
+attack_vectors:
+  - vector: "Fund Transfer CSRF"
+    description: Trick user into transferring funds
+    technique: Create malicious form that auto-submits to /transfer endpoint
+
+  - vector: "Password Change CSRF"
+    description: Change victim's password without their knowledge
+    technique: Malicious form POSTs to /change-password
+
+  - vector: "Account Deletion CSRF"
+    description: Delete victim's account
+    technique: POST request to /delete-account endpoint
+
+  - vector: "Image Tag CSRF"
+    description: Use <img> tag to make GET/POST requests
+    technique: <img src="https://target.com/transfer?to=attacker&amount=10000">
+
+  - vector: "GET Request CSRF"
+    description: Exploit state-changing GET requests
+    technique: Tricky URL in <a> or <img> tag
+
+llm_prompts:
+  analyze: |
+    Analyze this code for CSRF vulnerabilities. Look for:
+    1. POST/PUT/DELETE/PATCH endpoints without CSRF protection
+    2. Missing CSRF token validation
+    3. State-changing operations that can be triggered cross-origin
+    4. Missing SameSite cookie attributes
+    5. GET requests that modify state
+
+    For each finding:
+    - Identify the vulnerable endpoint
+    - Explain the CSRF attack scenario
+    - Provide secure implementation with CSRF protection
+
+  generate_attack: |
+    Generate a CSRF attack for this vulnerable fund transfer endpoint. The attack should:
+    1. Create HTML form that auto-submits on page load
+    2. Use proper method (POST) and form fields
+    3. Explain how victim's browser will send authentication cookies
+    4. Show both visible and hidden (iframe) attack variants

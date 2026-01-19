@@ -1,0 +1,212 @@
+id: insecure-deserialization
+name: Insecure Deserialization
+category: injection
+severity: critical
+cwe: CWE-502
+owasp: A08:2021-Software and Data Integrity Failures
+
+description: |
+  Insecure deserialization occurs when untrusted data is deserialized without proper validation,
+  allowing attackers to execute arbitrary code or cause denial of service through crafted payloads.
+
+references:
+  - https://owasp.org/www-community/vulnerabilities/Insecure_Deserialization
+  - https://cwe.mitre.org/data/definitions/502.html
+
+affected_languages:
+  - python
+  - javascript
+  - java
+  - ruby
+
+affected_frameworks:
+  - flask
+  - django
+  - fastapi
+  - express
+  - nestjs
+
+vulnerability_types:
+  - Python pickle deserialization
+  - Python YAML load
+  - JSON deserialization with unsafe reviver
+  - Java object deserialization
+  - Ruby YAML load
+
+detection:
+  static:
+    - pattern: "pickle\\.loads\\(.*request\\..*\\)"
+      description: Deserializing user-provided pickle data
+      confidence: critical
+      requires_language: [python]
+
+    - pattern: "pickle\\.load\\(.*request\\..*\\)"
+      description: Loading user-provided pickle data
+      confidence: critical
+      requires_language: [python]
+
+    - pattern: "yaml\\.load\\(.*request\\..*\\)"
+      description: Loading YAML without Loader parameter
+      confidence: high
+      requires_language: [python]
+
+    - pattern: "yaml\\.unsafe_load\\(.*request\\..*\\)"
+      description: Using explicit unsafe YAML loading
+      confidence: critical
+      requires_language: [python]
+
+    - pattern: "JSON\\.parse\\(.*req\\..*,\\s*.*reviver.*\\)"
+      description: JSON parsing with custom reviver (potentially unsafe)
+      confidence: medium
+      requires_language: [javascript, typescript]
+
+  data_flow:
+    - source: "request.(json|form|args|values|body|data)"
+      sink: "(pickle|yaml|JSON)"
+      sanitizers:
+        - "(validate|safe|sanitize|restricted)"
+
+remediation:
+  description: Use safe deserialization methods or validate input structure
+
+  code_before: |
+    @app.route('/data')
+    def process_data():
+      data = request.get_json()
+      obj = pickle.loads(base64.b64decode(data))
+      return jsonify({'result': obj})
+
+  code_after: |
+    import json
+
+    @app.route('/data')
+    def process_data():
+      data = request.get_json()
+      # Use JSON instead of pickle
+      obj = json.loads(data)
+      return jsonify({'result': obj})
+
+  code_after_yaml: |
+    import yaml
+
+    @app.route('/data')
+    def process_data():
+      data = request.get_json()
+      # Use safe loader
+      obj = yaml.safe_load(data)
+      return jsonify({'result': obj})
+
+  code_after_validation: |
+    import pickle
+    import base64
+
+    ALLOWED_CLASSES = {'MyClass', 'AnotherSafeClass'}
+
+    def safe_pickle_loads(data):
+        obj = pickle.loads(data)
+        if type(obj).__name__ not in ALLOWED_CLASSES:
+            raise ValueError("Unauthorized class")
+        return obj
+
+    @app.route('/data')
+    def process_data():
+      data = request.get_json()
+      obj = safe_pickle_loads(base64.b64decode(data))
+      return jsonify({'result': obj})
+
+examples:
+  vulnerable:
+    - |
+      @app.route('/restore')
+      def restore_session():
+          session_data = request.args.get('session')
+          obj = pickle.loads(base64.b64decode(session_data))
+          return str(obj)
+
+    - |
+      @app.route('/config')
+      def load_config():
+          config_yaml = request.data
+          config = yaml.load(config_yaml)
+          return jsonify(config)
+
+    - |
+      @app.route('/api/object')
+      def get_object():
+          obj_data = request.json.get('data')
+          obj = pickle.loads(base64.b64decode(obj_data))
+          return process_object(obj)
+
+  secure:
+    - |
+      import json
+
+      @app.route('/restore')
+      def restore_session():
+          session_data = request.args.get('session')
+          # Use JSON for session data
+          obj = json.loads(base64.b64decode(session_data))
+          return jsonify(obj)
+
+    - |
+      import yaml
+
+      @app.route('/config')
+      def load_config():
+          config_yaml = request.data
+          # Use safe YAML loader
+          config = yaml.safe_load(config_yaml)
+          return jsonify(config)
+
+    - |
+      import msgpack
+
+      @app.route('/api/object')
+      def get_object():
+          obj_data = request.json.get('data')
+          # Use MessagePack instead of pickle
+          obj = msgpack.unpackb(base64.b64decode(obj_data), raw=False)
+          return process_object(obj)
+
+attack_vectors:
+  - vector: "Python Pickle RCE"
+    payload: "gASV..."
+    description: Deserialize malicious pickle to execute code
+
+  - vector: "YAML Code Execution"
+    payload: "!!python/object/new:os.system ['rm -rf /']"
+    description: Use YAML tag to execute system commands
+
+  - vector: "Pickle Shell Injection"
+    description: Generate pickle payload to spawn reverse shell
+
+  - vector: "Pickle Keylogger"
+    description: Inject code to log keystrokes
+
+security_recommendations:
+  - Never deserialize untrusted data with pickle
+  - Use yaml.safe_load() instead of yaml.load()
+  - Use JSON for serialization when possible
+  - Validate data structure before deserialization
+  - Use allow-list of safe classes if deserialization is necessary
+  - Use signed data to ensure integrity
+
+llm_prompts:
+  analyze: |
+    Analyze this code for insecure deserialization vulnerabilities. Look for:
+    1. pickle.loads() or pickle.load() with user input
+    2. yaml.load() without safe loader
+    3. JSON.parse() with reviver functions
+    4. Unvalidated deserialization of external data
+
+    For each finding:
+    - Identify the specific vulnerability
+    - Explain the potential impact (RCE, DoS, data theft)
+    - Provide secure alternative
+
+  generate_attack: |
+    Generate a Python pickle deserialization attack for this vulnerable endpoint. The attack should:
+    1. Execute a shell command (e.g., whoami, cat /etc/passwd)
+    2. Create a reverse shell payload
+    3. Explain how the pickle payload works
+    4. Show base64 encoded payload

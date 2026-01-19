@@ -1,0 +1,239 @@
+id: broken-authentication
+name: Broken Authentication
+category: authentication
+severity: critical
+cwe: CWE-287, CWE-307
+owasp: A07:2021-Identification and Authentication Failures
+
+description: |
+  Broken authentication occurs when authentication mechanisms are improperly implemented,
+  allowing attackers to bypass authentication, hijack sessions, or escalate privileges.
+
+references:
+  - https://owasp.org/www-project-top-ten/2017/A2_2017-Broken_Authentication
+  - https://cwe.mitre.org/data/definitions/287.html
+  - https://cwe.mitre.org/data/definitions/307.html
+
+affected_languages:
+  - python
+  - javascript
+  - typescript
+  - java
+  - ruby
+  - php
+
+affected_frameworks:
+  - flask
+  - django
+  - fastapi
+  - express
+  - nestjs
+
+vulnerability_types:
+  - Weak password policies
+  - Hardcoded credentials
+  - Missing authentication checks
+  - Session fixation
+  - Session hijacking
+  - Missing rate limiting on login
+  - Weak session management
+  - Missing CSRF protection
+
+detection:
+  static:
+    - pattern: "@app\\.route\\(.*\\)(?!.*@login_required)"
+      description: Flask route without authentication decorator
+      confidence: medium
+
+    - pattern: "password.*==.*['\"]\\w{1,4}['\"]"
+      description: Weak hardcoded password check
+      confidence: high
+
+    - pattern: "session\\[.*\\].*==.*request\\."
+      description: Comparing session value directly with user input
+      confidence: high
+
+    - pattern: "session\\['user_id'\\]\\s*=\\s*request\\..*"
+      description: Setting session ID based on user input without validation
+      confidence: critical
+
+    - pattern: "(password|pwd|pass)\\s*[:=]\\s*['\"](123456|password|admin|root)['\"]"
+      description: Common weak password
+      confidence: high
+
+  data_flow:
+    - source: "request.(json|form|args|values|body|params)"
+      sink: "(session|cookie|auth|login)"
+      sanitizers:
+        - "(hash|bcrypt|argon2|verify|validate|authenticate)"
+
+remediation:
+  description: Implement proper authentication with strong session management
+
+  code_before: |
+    @app.route('/admin')
+    def admin_panel():
+      # No authentication check!
+      return render_template('admin.html')
+
+  code_after: |
+    from functools import wraps
+
+    def login_required(f):
+      @wraps(f)
+      def decorated_function(*args, **kwargs):
+          if 'user_id' not in session:
+              return redirect(url_for('login'))
+          return f(*args, **kwargs)
+      return decorated_function
+
+    @app.route('/admin')
+    @login_required
+    def admin_panel():
+      return render_template('admin.html')
+
+  code_before_session_fixation: |
+    @app.route('/login', methods=['POST'])
+    def login():
+      user = User.query.filter_by(username=request.form['username']).first()
+      if user and check_password_hash(user.password, request.form['password']):
+          session['user_id'] = user.id
+          return redirect(url_for('dashboard'))
+
+  code_after_session_fixation: |
+    from flask import session
+    import uuid
+
+    @app.route('/login', methods=['POST'])
+    def login():
+      # Regenerate session ID to prevent fixation
+      if 'user_id' in session:
+          session.clear()
+
+      session['csrf_token'] = str(uuid.uuid4())
+      user = User.query.filter_by(username=request.form['username']).first()
+      if user and check_password_hash(user.password, request.form['password']):
+          session['user_id'] = user.id
+          return redirect(url_for('dashboard'))
+
+examples:
+  vulnerable:
+    - |
+      @app.route('/transfer', methods=['POST'])
+      def transfer():
+          # No authentication check!
+          amount = request.form['amount']
+          recipient = request.form['recipient']
+          transfer_money(amount, recipient)
+          return "Transfer successful"
+
+    - |
+      @app.route('/api/sensitive')
+      def sensitive_data():
+          if request.args.get('admin') == 'true':
+              return jsonify({'secret': 'sensitive_data'})
+
+    - |
+      @app.route('/profile/<user_id>')
+      def profile(user_id):
+          # Directly using user-provided user_id in session
+          session['current_user'] = user_id
+          return render_template('profile.html', user_id=user_id)
+
+    - |
+      @app.route('/login', methods=['POST'])
+      def login():
+          username = request.form['username']
+          password = request.form['password']
+          # Weak password check
+          if password == 'admin':
+              session['logged_in'] = True
+              return redirect('/dashboard')
+
+  secure:
+    - |
+      @app.route('/transfer', methods=['POST'])
+      @login_required
+      def transfer():
+          amount = request.form['amount']
+          recipient = request.form['recipient']
+          # Additional authorization check
+          if amount > get_user_balance(session['user_id']):
+              return "Insufficient funds", 400
+          transfer_money(session['user_id'], amount, recipient)
+          return "Transfer successful"
+
+    - |
+      @app.route('/api/sensitive')
+      @login_required
+      @admin_required
+      def sensitive_data():
+          return jsonify({'secret': 'sensitive_data'})
+
+    - |
+      @app.route('/login', methods=['POST'])
+      def login():
+          username = request.form['username']
+          password = request.form['password']
+          user = authenticate(username, password)
+          if user:
+              session['user_id'] = user.id
+              session.permanent = True
+              app.permanent_session_lifetime = timedelta(minutes=30)
+              return redirect('/dashboard')
+
+security_recommendations:
+  - Require authentication on all sensitive endpoints
+  - Use strong, salted password hashing (bcrypt, argon2)
+  - Implement rate limiting on login endpoints
+  - Regenerate session IDs on login
+  - Set secure session cookies (HttpOnly, Secure, SameSite)
+  - Implement CSRF protection for state-changing operations
+  - Use multi-factor authentication for sensitive actions
+  - Log failed authentication attempts
+  - Implement account lockout after repeated failures
+
+attack_vectors:
+  - vector: "Authentication Bypass"
+    description: Access protected endpoints without credentials
+    technique: Missing @login_required decorator
+
+  - vector: "Session Fixation"
+    description: Force victim to use attacker-controlled session
+    technique: Not regenerating session ID on login
+
+  - vector: "Session Hijacking"
+    description: Take over another user's session
+    technique: Predictable or weak session IDs
+
+  - vector: "Privilege Escalation"
+    description: Access higher-privilege functions
+    technique: Missing role checks or weak authorization
+
+  - vector: "Brute Force Login"
+    description: Guess passwords through repeated attempts
+    technique: Missing rate limiting
+
+llm_prompts:
+  analyze: |
+    Analyze this code for broken authentication vulnerabilities. Look for:
+    1. Routes or endpoints without authentication checks
+    2. Weak password storage or verification
+    3. Session management issues (fixation, hijacking)
+    4. Missing CSRF protection
+    5. Hardcoded credentials
+    6. Missing rate limiting on authentication
+    7. Direct session ID manipulation
+
+    For each finding:
+    - Identify the specific vulnerability type
+    - Explain how an attacker could exploit it
+    - Provide secure implementation
+
+  generate_attack: |
+    Generate an authentication bypass attack for this vulnerable application. The attack should:
+    1. Attempt to access protected endpoints without authentication
+    2. Test for session fixation vulnerabilities
+    3. Attempt privilege escalation by manipulating session data
+    4. Try to bypass authentication through parameter tampering
+    5. Demonstrate horizontal and vertical privilege escalation

