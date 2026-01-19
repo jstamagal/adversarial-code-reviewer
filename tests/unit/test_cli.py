@@ -15,6 +15,7 @@
 """Unit tests for CLI commands."""
 
 import sys
+from pathlib import Path
 from click.testing import CliRunner
 
 
@@ -58,6 +59,160 @@ def test_cli_init_help():
     result = runner.invoke(init.cli, ["--help"])
     assert result.exit_code == 0
     assert "Initialize" in result.output
+
+
+def test_cli_init_basic():
+    """Test init command creates configuration file."""
+    from acr.cli import init
+    import yaml
+
+    runner = CliRunner()
+    with runner.isolated_filesystem():
+        result = runner.invoke(init.cli)
+        assert result.exit_code == 0
+        assert ".acrrc.yaml" in result.output
+        assert "Configuration file created successfully!" in result.output
+        assert "Next steps:" in result.output
+
+        assert Path(".acrrc.yaml").exists()
+
+        with open(".acrrc.yaml") as f:
+            config = yaml.safe_load(f)
+            assert config is not None
+            assert "project" in config
+            assert "patterns" in config
+            assert "languages" in config
+
+
+def test_cli_init_with_project_name():
+    """Test init command with custom project name."""
+    from acr.cli import init
+    import yaml
+
+    runner = CliRunner()
+    with runner.isolated_filesystem():
+        result = runner.invoke(init.cli, ["--project-name", "my-awesome-project"])
+        assert result.exit_code == 0
+
+        with open(".acrrc.yaml") as f:
+            config = yaml.safe_load(f)
+            assert config["project"]["name"] == "my-awesome-project"
+
+
+def test_cli_init_overwrite_existing():
+    """Test init command refuses to overwrite existing config without force."""
+    from acr.cli import init
+
+    runner = CliRunner()
+    with runner.isolated_filesystem():
+        with open(".acrrc.yaml", "w") as f:
+            f.write("existing: config")
+
+        result = runner.invoke(init.cli)
+        assert result.exit_code != 0
+        assert "already exists" in result.output
+        assert "--force" in result.output
+
+
+def test_cli_init_force_overwrite():
+    """Test init command overwrites with force flag."""
+    from acr.cli import init
+    import yaml
+
+    runner = CliRunner()
+    with runner.isolated_filesystem():
+        with open(".acrrc.yaml", "w") as f:
+            f.write("existing: config")
+
+        result = runner.invoke(init.cli, ["--force"])
+        assert result.exit_code == 0
+        assert "Created .acrrc.yaml" in result.output
+
+        with open(".acrrc.yaml") as f:
+            config = yaml.safe_load(f)
+            assert config is not None
+            assert "project" in config
+
+
+def test_cli_init_config_structure():
+    """Test init command creates valid configuration structure."""
+    from acr.cli import init
+    import yaml
+
+    runner = CliRunner()
+    with runner.isolated_filesystem():
+        result = runner.invoke(init.cli)
+        assert result.exit_code == 0
+
+        with open(".acrrc.yaml") as f:
+            config = yaml.safe_load(f)
+
+            assert "project" in config
+            assert "name" in config["project"]
+            assert "root" in config["project"]
+
+            assert "languages" in config
+            assert "python" in config["languages"]
+
+            assert "frameworks" in config
+            assert "flask" in config["frameworks"]
+            assert "django" in config["frameworks"]
+            assert "fastapi" in config["frameworks"]
+
+            assert "patterns" in config
+            assert "enabled" in config["patterns"]
+            assert "severity_threshold" in config["patterns"]
+            assert "custom_patterns" in config["patterns"]
+
+            assert "llm" in config
+            assert "provider" in config["llm"]
+            assert "model" in config["llm"]
+
+            assert "analysis" in config
+            assert "max_depth" in config["analysis"]
+            assert "timeout" in config["analysis"]
+
+            assert "reporting" in config
+            assert "formats" in config["reporting"]
+            assert "output_dir" in config["reporting"]
+
+            assert "exclude" in config
+            assert "paths" in config["exclude"]
+            assert "files" in config["exclude"]
+
+
+def test_cli_init_default_patterns():
+    """Test init command includes default patterns."""
+    from acr.cli import init
+    import yaml
+
+    runner = CliRunner()
+    with runner.isolated_filesystem():
+        result = runner.invoke(init.cli)
+        assert result.exit_code == 0
+
+        with open(".acrrc.yaml") as f:
+            config = yaml.safe_load(f)
+            enabled_patterns = config["patterns"]["enabled"]
+            assert "sql-injection" in enabled_patterns
+            assert "xss" in enabled_patterns
+            assert "csrf" in enabled_patterns
+            assert "command-injection" in enabled_patterns
+
+
+def test_cli_init_default_severity():
+    """Test init command sets default severity threshold."""
+    from acr.cli import init
+    import yaml
+
+    runner = CliRunner()
+    with runner.isolated_filesystem():
+        result = runner.invoke(init.cli)
+        assert result.exit_code == 0
+
+        with open(".acrrc.yaml") as f:
+            config = yaml.safe_load(f)
+            assert config["patterns"]["severity_threshold"] == "medium"
 
 
 def test_cli_attack_help():

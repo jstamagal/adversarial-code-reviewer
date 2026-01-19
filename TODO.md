@@ -453,11 +453,11 @@ Agent 1: Your task is to REVIEW, SCRUTINIZE, and REFINE this TODO.md and PRD.md 
    - [x] Include/exclude specific sections
    - [x] Add tests for report command
 
-- [ ] Implement `acr init` command
-  - [ ] Create .acrrc.yaml template
-  - [ ] Create default configuration
-  - [ ] Guide user through setup
-  - [ ] Add tests for init command
+ - [x] Implement `acr init` command
+   - [x] Create .acrrc.yaml template
+   - [x] Create default configuration
+   - [x] Guide user through setup
+   - [x] Add tests for init command
 
  - [x] Implement `acr config` command
     - [x] Show current configuration
