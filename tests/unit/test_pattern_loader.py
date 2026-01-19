@@ -30,7 +30,7 @@ class TestPatternLoader:
         patterns = loader.load_patterns()
 
         assert isinstance(patterns, dict)
-        assert len(patterns) >= 13
+        assert len(patterns) >= 14
         assert "sql-injection" in patterns
         assert "xss" in patterns
         assert "command-injection" in patterns
@@ -44,6 +44,7 @@ class TestPatternLoader:
         assert "xxe" in patterns
         assert "broken_access_control" in patterns
         assert "security_misconfiguration" in patterns
+        assert "known_vulnerabilities" in patterns
 
     def test_sensitive_data_exposure_pattern_loaded(self):
         """Test that sensitive_data_exposure pattern loads correctly."""
@@ -502,4 +503,91 @@ class TestPatternLoader:
         assert (
             "helmet" in pattern.remediation.code_after.lower()
             or "secret" in pattern.remediation.code_after.lower()
+        )
+
+    def test_known_vulnerabilities_pattern_loaded(self):
+        """Test that known_vulnerabilities pattern loads correctly."""
+        loader = PatternLoader()
+        patterns = loader.load_patterns()
+
+        assert "known_vulnerabilities" in patterns
+        pattern = patterns["known_vulnerabilities"]
+
+        assert pattern.id == "known_vulnerabilities"
+        assert pattern.name == "Using Components with Known Vulnerabilities"
+        assert pattern.category == "supply_chain"
+        assert pattern.severity == SeverityLevel.HIGH
+        assert pattern.cwe_id == "CWE-937"
+        assert pattern.owasp_id == "A06:2021-Using Components with Known Vulnerabilities"
+        assert len(pattern.affected_languages) > 0
+        assert "python" in pattern.affected_languages
+
+    def test_known_vulnerabilities_has_templates(self):
+        """Test that known_vulnerabilities pattern has detection templates."""
+        loader = PatternLoader()
+        patterns = loader.load_patterns()
+        pattern = patterns["known_vulnerabilities"]
+
+        assert len(pattern.templates) > 0
+
+        static_templates = [t for t in pattern.templates if t.get("type") == "static"]
+        assert len(static_templates) > 0
+
+    def test_known_vulnerabilities_has_remediation(self):
+        """Test that known_vulnerabilities pattern has remediation."""
+        loader = PatternLoader()
+        patterns = loader.load_patterns()
+        pattern = patterns["known_vulnerabilities"]
+
+        assert pattern.remediation is not None
+        assert len(pattern.remediation.description) > 0
+
+    def test_known_vulnerabilities_has_references(self):
+        """Test that known_vulnerabilities has references."""
+        loader = PatternLoader()
+        patterns = loader.load_patterns()
+        pattern = patterns["known_vulnerabilities"]
+
+        assert len(pattern.references) > 0
+        references = pattern.references
+        assert any("owasp.org" in ref for ref in references)
+        assert any("cwe.mitre.org" in ref for ref in references)
+
+    def test_known_vulnerabilities_severity(self):
+        """Test that known_vulnerabilities has correct severity."""
+        loader = PatternLoader()
+        patterns = loader.load_patterns()
+        pattern = patterns["known_vulnerabilities"]
+
+        assert pattern.severity == SeverityLevel.HIGH
+
+    def test_known_vulnerabilities_cwe_reference(self):
+        """Test that known_vulnerabilities has correct CWE reference."""
+        loader = PatternLoader()
+        patterns = loader.load_patterns()
+        pattern = patterns["known_vulnerabilities"]
+
+        assert pattern.cwe_id == "CWE-937"
+
+    def test_known_vulnerabilities_description(self):
+        """Test that known_vulnerabilities has meaningful description."""
+        loader = PatternLoader()
+        patterns = loader.load_patterns()
+        pattern = patterns["known_vulnerabilities"]
+
+        assert len(pattern.description) > 50
+        assert "vulnerabilities" in pattern.description.lower()
+        assert "dependencies" in pattern.description.lower()
+
+    def test_known_vulnerabilities_remediation_examples(self):
+        """Test that remediation has code examples."""
+        loader = PatternLoader()
+        patterns = loader.load_patterns()
+        pattern = patterns["known_vulnerabilities"]
+
+        assert pattern.remediation.code_before is not None
+        assert pattern.remediation.code_after is not None
+        assert (
+            "django" in pattern.remediation.code_before.lower()
+            or "flask" in pattern.remediation.code_before.lower()
         )

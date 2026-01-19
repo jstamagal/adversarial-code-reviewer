@@ -73,7 +73,7 @@ Agent 1: Your task is to REVIEW, SCRUTINIZE, and REFINE this TODO.md and PRD.md 
 - ✅ Pattern schema (acr/patterns/schema.py with Pydantic models)
 - ✅ Pattern loader (acr/patterns/loader.py)
 - ✅ Pattern matcher (acr/patterns/matcher.py)
-- ✅ 13 patterns implemented in acr/patterns/library/:
+- ✅ 14 patterns implemented in acr/patterns/library/:
   1. sql_injection.yaml
   2. command_injection.yaml (includes subprocess shell=True)
   3. xss.yaml
@@ -86,8 +86,9 @@ Agent 1: Your task is to REVIEW, SCRUTINIZE, and REFINE this TODO.md and PRD.md 
   10. sensitive_data_exposure.yaml (logging, storage, transmission of sensitive data)
   11. xxe.yaml (XML External Entity injection)
   12. broken_access_control.yaml (IDOR, privilege escalation, missing auth)
-  13. security_misconfiguration.yaml (debug mode, insecure cookies, missing headers - NEW)
-- ⚠️ Additional OWASP Top 10 patterns needed (7 remaining)
+  13. security_misconfiguration.yaml (debug mode, insecure cookies, missing headers)
+  14. known_vulnerabilities.yaml (outdated dependencies, CVEs, deprecated packages - NEW)
+- ⚠️ Additional OWASP Top 10 patterns needed (6 remaining)
 - ⚠️ Framework-specific patterns (Flask, Django) - minimal
 
 **Testing Status:**
@@ -101,7 +102,7 @@ Agent 1: Your task is to REVIEW, SCRUTINIZE, and REFINE this TODO.md and PRD.md 
 - Entry point and sink identification implemented
 - Caching foundation implemented with comprehensive test coverage
 - Good pattern system infrastructure
-- 13/20 OWASP Top 10 patterns implemented (65%)
+- 14/20 OWASP Top 10 patterns implemented (70%)
 - Need to complete: remaining patterns, CLI commands, reporting
 
 ---
@@ -295,7 +296,7 @@ Agent 1: Your task is to REVIEW, SCRUTINIZE, and REFINE this TODO.md and PRD.md 
    - [x] Broken Access Control pattern
    - [x] Security Misconfiguration pattern
    - [x] Insecure Deserialization pattern
-   - [ ] Using Components with Known Vulnerabilities pattern
+   - [x] Using Components with Known Vulnerabilities pattern
    - [ ] Insufficient Logging & Monitoring pattern
 
 - [ ] Create additional Python-specific patterns
