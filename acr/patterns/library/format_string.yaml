@@ -1,0 +1,268 @@
+id: format-string
+name: Format String Vulnerability
+category: injection
+severity: medium
+cwe: CWE-134
+owasp: A03:2021-Injection (Format String)
+
+description: |
+  Format string vulnerabilities occur when untrusted user input is directly used in format strings,
+  potentially allowing attackers to read memory, execute arbitrary code, or cause denial of service.
+  In Python, this can happen with %-formatting, .format(), and string.Template.
+
+references:
+  - https://owasp.org/www-community/attacks/Format_string_attack
+  - https://cwe.mitre.org/data/definitions/134.html
+  - https://docs.python.org/3/library/stdtypes.html#printf-style-string-formatting
+
+affected_languages:
+  - python
+
+affected_frameworks:
+  - flask
+  - django
+  - fastapi
+
+vulnerability_types:
+  - "% operator with user input"
+  - .format() with user input
+  - string.Template with user input
+  - f-string with user input (in eval context)
+
+detection:
+  static:
+    - pattern: "(?:print|logging|log|debug|info|warning|error|critical|write)\\(.*%(?:request\\.|user_input|data|payload)\\)"
+      description: "Format string using % operator with user input"
+      confidence: medium
+      requires_language:
+        - python
+
+    - pattern: "(?:print|logging|log|debug|info|warning|error|critical|write)\\(.*\\.format\\((?:request\\.|user_input|data|payload)\\)\\)"
+      description: Format string using .format() with user input
+      confidence: medium
+      requires_language:
+        - python
+
+    - pattern: "(?:print|logging|log|debug|info|warning|error|critical|write)\\(f['\"]\\{.*request\\..*\\}['\"]\\)"
+      description: f-string with user input in logging/output
+      confidence: low
+      requires_language:
+        - python
+
+    - pattern: "return.*%(?:request\\.|user_input|data|payload)"
+      description: Return statement with format string using user input
+      confidence: medium
+      requires_language:
+        - python
+
+    - pattern: "StringTemplate\\(.*substitute\\((?:request\\.|user_input|data|payload)\\)"
+      description: string.Template with user input substitution
+      confidence: medium
+      requires_language:
+        - python
+
+    - pattern: "exec\\(f['\"]%s['\"]\\s*%\\s*\\(request\\.|user_input\\)\\)"
+      description: Dangerous f-string with exec and user input
+      confidence: critical
+      requires_language:
+        - python
+
+    - pattern: "eval\\(f['\"]%s['\"]\\s*%\\s*\\(request\\.|user_input\\)\\)"
+      description: Dangerous f-string with eval and user input
+      confidence: critical
+      requires_language:
+        - python
+
+  data_flow:
+    - source: "request.(json|form|args|values|body|params|query|cookies|headers)"
+      sink: "(print|logging|log|debug|info|warning|error|critical|write|\\.format|%\\s*\\(|StringTemplate)"
+      sanitizers:
+        - "(escape|sanitize|validate|str|repr|replace)"
+
+remediation:
+  description: Always use positional or keyword arguments for format strings instead of string interpolation
+
+  code_before: |
+    @app.route('/greet')
+    def greet():
+        name = request.args.get('name', 'World')
+        message = "Hello, %s!" % name
+        return message
+
+  code_after: |
+    @app.route('/greet')
+    def greet():
+        name = request.args.get('name', 'World')
+        # Use positional arguments instead of % formatting with user input
+        message = "Hello, {}!".format(name)
+        return message
+
+  code_after_library: |
+    from string import Template
+
+    @app.route('/greet')
+    def greet():
+        name = request.args.get('name', 'World')
+        # Use string.Template for safer formatting
+        template = Template("Hello, $name!")
+        message = template.safe_substitute(name=name)
+        return message
+
+examples:
+  vulnerable:
+    - |
+      @app.route('/log')
+      def log_action():
+          action = request.args.get('action')
+          # Vulnerable: format string with % operator
+          logging.warning("User performed action: %s" % action)
+          return "Logged"
+
+    - |
+      @app.route('/error')
+      def error_page():
+          error_code = request.args.get('code', '500')
+          # Vulnerable: .format() with user input
+          message = "Error occurred: {}".format(error_code)
+          return message
+
+    - |
+      @app.route('/template')
+      def template_view():
+          content = request.args.get('content', 'default')
+          # Vulnerable: string.Template with user input
+          template = Template("Content: $content")
+          return template.substitute(content=content)
+
+    - |
+      @app.route('/echo')
+      def echo():
+          text = request.args.get('text')
+          # Vulnerable: direct return with format string
+          return "Echo: %s" % text
+
+    - |
+      def log_user_activity(user_input):
+          # Vulnerable: format string in logging
+          logger.debug("User input: %s" % user_input)
+
+    - |
+      @app.route('/debug')
+      def debug():
+          query = request.args.get('query')
+          # Vulnerable: potentially unsafe in debug mode
+          if app.debug:
+              print(f"Debug query: {query}")
+          return "Debug output"
+
+  secure:
+    - |
+      @app.route('/greet')
+      def greet():
+          name = request.args.get('name', 'World')
+          # Secure: use .format() properly
+          message = "Hello, {}!".format(name)
+          return message
+
+    - |
+      @app.route('/log')
+      def log_action():
+          action = request.args.get('action')
+          # Secure: use logging module's built-in formatting
+          logging.warning("User performed action: %s", action)
+          return "Logged"
+
+    - |
+      from string import Template
+
+      @app.route('/template')
+      def template_view():
+          content = request.args.get('content', 'default')
+          # Secure: use safe_substitute with named arguments
+          template = Template("Content: $content")
+          return template.safe_substitute(content=content)
+
+    - |
+      @app.route('/echo')
+      def echo():
+          text = request.args.get('text', '')
+          # Secure: use f-string with proper escaping if needed
+          return f"Echo: {text}"
+
+    - |
+      def log_user_activity(user_input):
+          # Secure: use logging module's formatting
+          logger.debug("User input: %s", user_input)
+
+    - |
+      import html
+
+      @app.route('/echo')
+      def echo():
+          text = request.args.get('text', '')
+          # Secure: escape HTML content
+          safe_text = html.escape(text)
+          return f"Echo: {safe_text}"
+
+attack_vectors:
+  - vector: "Memory Read"
+    payload: "%x%x%x%x%x%x%x%x%x%x"
+    description: Read stack memory values via format specifiers
+
+  - vector: "Parameter Reading"
+    payload: "%s%s%s%s"
+    description: Read function parameters from stack
+
+  - vector: "Denial of Service"
+    payload: "%99999999999999999999s"
+    description: Cause memory exhaustion with large width specifier
+
+  - vector: "Format Specifier Chain"
+    payload: "%n%n%n%n"
+    description: Write to memory using %n specifier (less common in Python)
+
+  - vector: "Information Leakage"
+    payload: "%p%p%p%p"
+    description: Leak pointer values from memory
+
+security_recommendations:
+  - "Use logging module's built-in string formatting: logger.warning(\"Message: %s\", value)"
+  - "Use .format() with positional arguments for format strings"
+  - "Use f-strings (Python 3.6+) but be careful with eval/exec contexts"
+  - "Use string.Template for complex template needs with safe_substitute()"
+  - "Avoid using % operator with user input"
+  - "Validate and sanitize user input before formatting"
+  - "Use type hints and ensure correct types for format specifiers"
+  - "Consider using template engines like Jinja2 for complex formatting needs"
+
+llm_prompts:
+  analyze: |
+    Analyze this code for format string vulnerabilities. Look for:
+    1. % operator with user input directly in the format string
+    2. .format() called with user input as the template
+    3. string.Template with user input in substitute()
+    4. f-strings with user input in exec/eval contexts
+    5. Format strings in logging/print statements with user input
+    6. Return statements with format strings using user input
+
+    For each finding:
+    - Identify the specific format string vulnerability
+    - Explain potential for information disclosure or DoS
+    - Provide secure implementation using proper formatting methods
+
+  generate_attack: |
+    Generate format string attack payloads for this vulnerable endpoint. The attack should:
+    1. Demonstrate memory reading via %x, %p, %s specifiers
+    2. Show parameter reading from stack
+    3. Attempt to cause denial of service with large format specifiers
+    4. Explain why each payload is dangerous
+    5. Provide multiple attack vectors
+
+  remediation_guidance: |
+    Provide remediation guidance for format string vulnerabilities:
+    1. Explain the difference between format string templates and arguments
+    2. Show proper use of logging module formatting
+    3. Demonstrate secure use of .format() and f-strings
+    4. Show how to use string.Template with safe_substitute()
+    5. Provide validation and sanitization recommendations
+    6. Include best practices for different Python versions

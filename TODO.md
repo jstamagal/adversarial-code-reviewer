@@ -303,7 +303,7 @@ Agent 1: Your task is to REVIEW, SCRUTINIZE, and REFINE this TODO.md and PRD.md 
 - [ ] Create additional Python-specific patterns
   - [x] Pickle deserialization pattern
   - [x] Eval/exec usage pattern
-  - [ ] Format string pattern
+  - [x] Format string pattern
   - [ ] Template injection pattern
   - [x] Subprocess shell=True pattern
   - [ ] YAML.load() pattern
