@@ -31,6 +31,91 @@ def test_cli_version():
     assert "v0.1.0" in result.output
 
 
+def test_cli_version_shows_python():
+    """Test version command shows Python version."""
+    from acr.cli import version
+
+    runner = CliRunner()
+    result = runner.invoke(version.cli)
+    assert result.exit_code == 0
+    assert "Python" in result.output
+    assert str(sys.version_info.major) in result.output
+
+
+def test_cli_version_shows_platform():
+    """Test version command shows platform."""
+    from acr.cli import version
+
+    runner = CliRunner()
+    result = runner.invoke(version.cli)
+    assert result.exit_code == 0
+    assert "Platform:" in result.output
+
+
+def test_cli_version_shows_dependencies():
+    """Test version command shows dependency versions."""
+    from acr.cli import version
+
+    runner = CliRunner()
+    result = runner.invoke(version.cli)
+    assert result.exit_code == 0
+    assert "Dependencies:" in result.output
+    assert "click:" in result.output
+    assert "pydantic:" in result.output
+    assert "pyyaml:" in result.output
+
+
+def test_cli_version_check_updates_newer_available():
+    """Test version check with newer version available."""
+    from acr.cli import version
+    from unittest.mock import patch
+
+    runner = CliRunner()
+    with patch("acr.cli.version.check_for_updates", return_value="0.2.0"):
+        result = runner.invoke(version.cli, ["--check-updates"])
+        assert result.exit_code == 0
+        assert "Checking for updates" in result.output
+        assert "A newer version is available" in result.output
+        assert "v0.2.0" in result.output
+
+
+def test_cli_version_check_updates_latest():
+    """Test version check when already on latest version."""
+    from acr.cli import version
+    from unittest.mock import patch
+
+    runner = CliRunner()
+    with patch("acr.cli.version.check_for_updates", return_value="0.1.0"):
+        result = runner.invoke(version.cli, ["--check-updates"])
+        assert result.exit_code == 0
+        assert "Checking for updates" in result.output
+        assert "You are running the latest version" in result.output
+
+
+def test_cli_version_check_updates_offline():
+    """Test version check when offline (error handling)."""
+    from acr.cli import version
+    from unittest.mock import patch
+
+    runner = CliRunner()
+    with patch("acr.cli.version.check_for_updates", return_value=None):
+        result = runner.invoke(version.cli, ["--check-updates"])
+        assert result.exit_code == 0
+        assert "Checking for updates" in result.output
+        assert "Unable to check for updates" in result.output
+
+
+def test_cli_version_help():
+    """Test version command help."""
+    from acr.cli import version
+
+    runner = CliRunner()
+    result = runner.invoke(version.cli, ["--help"])
+    assert result.exit_code == 0
+    assert "Show version information" in result.output
+    assert "--check-updates" in result.output
+
+
 def test_cli_scan_help():
     """Test scan command help."""
     from acr.cli import scan
