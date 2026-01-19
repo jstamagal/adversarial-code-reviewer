@@ -30,6 +30,9 @@ class LanguageConfig(BaseModel):
 
     enabled: bool = Field(default=True, description="Whether language is enabled")
     version: str = Field(default="", description="Language version")
+    legacy_mode: bool = Field(
+        default=False, description="Enable analysis of legacy code (Python < 3.8)"
+    )
 
 
 class PatternConfig(BaseModel):

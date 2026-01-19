@@ -241,14 +241,14 @@ Agent 1: Your task is to REVIEW, SCRUTINIZE, and REFINE this TODO.md and PRD.md 
    - [x] Detect taint reaching sinks
    - [x] Add tests for taint analysis
 
-- [ ] Implement advanced analysis scenarios
-  - [ ] Implement legacy code support
-    - [ ] Detect Python version
-    - [ ] Warn on Python < 3.8
-    - [ ] Document legacy code limitations
-    - [ ] Add opt-in legacy analysis mode
-    - [ ] Add tests for legacy code handling
-  - [ ] Implement generated code detection
+ - [ ] Implement advanced analysis scenarios
+   - [x] Implement legacy code support
+     - [x] Detect Python version
+     - [x] Warn on Python < 3.8
+     - [x] Document legacy code limitations
+     - [x] Add opt-in legacy analysis mode
+     - [x] Add tests for legacy code handling
+   - [ ] Implement generated code detection
     - [ ] Detect common generated code patterns
     - [ ] Default to excluding generated code
     - [ ] Allow opt-in for generated code analysis

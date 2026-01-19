@@ -14,6 +14,20 @@
 
 """Core analysis engine."""
 
-from acr.core import analyzer, ast_parser, cfg_builder, dfg_builder, taint_tracker
+from acr.core import (
+    analyzer,
+    ast_parser,
+    cfg_builder,
+    dfg_builder,
+    taint_tracker,
+    legacy_support,
+)
 
-__all__ = ["analyzer", "ast_parser", "cfg_builder", "dfg_builder", "taint_tracker"]
+__all__ = [
+    "analyzer",
+    "ast_parser",
+    "cfg_builder",
+    "dfg_builder",
+    "taint_tracker",
+    "legacy_support",
+]
