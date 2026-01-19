@@ -14,6 +14,6 @@
 
 """Utility modules."""
 
-from acr.utils import logger, errors, helpers
+from acr.utils import logger, errors, helpers, cache
 
-__all__ = ["logger", "errors", "helpers"]
+__all__ = ["logger", "errors", "helpers", "cache"]
