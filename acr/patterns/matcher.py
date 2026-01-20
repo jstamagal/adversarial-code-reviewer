@@ -27,6 +27,7 @@ from acr.patterns.schema import (
 from acr.models.finding import Finding, FindingLocation, FindingImpact, FindingRemediation
 from acr.patterns.loader import PatternLoader
 from acr.core.ast_parser import ASTParser
+from acr.utils.degradation import analysis_fallback, safe_iterate
 
 
 class PatternMatcher:
@@ -44,6 +45,7 @@ class PatternMatcher:
         else:
             self.patterns = patterns
 
+    @safe_iterate(component="pattern_matcher")
     def match_all(
         self,
         source_code: str,
@@ -71,6 +73,7 @@ class PatternMatcher:
 
         return all_findings
 
+    @analysis_fallback(component="pattern_matcher", fallback_value=[])
     def match_pattern(
         self,
         pattern: Pattern,
