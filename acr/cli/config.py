@@ -113,28 +113,106 @@ def validate(_ctx: click.Context, config: Optional[str], fix: bool) -> None:
             except yaml.YAMLError as e:
                 click.echo("[bold red]❌ Invalid YAML[/bold red]")
                 click.echo(f"Error: {e}")
+
+                from acr.config.validator import get_fix_suggestions
+
+                suggestions = get_fix_suggestions(e, {})
+                if suggestions:
+                    click.echo("")
+                    click.echo("[bold yellow]💡 Suggestions:[/bold yellow]")
+                    for suggestion in suggestions:
+                        click.echo(f"  • {suggestion}")
+
                 raise click.Abort() from e
 
         if config_data is None:
             config_data = {}
 
-        loaded_config = validate_config(config_data)
-
-        click.echo("[bold green]✓ Configuration is valid[/bold green]")
-        click.echo("")
-
-        _display_config_summary(loaded_config)
+        from acr.config.validator import get_fix_suggestions, try_auto_fix
 
         if fix:
+            click.echo("[yellow]Attempting to auto-fix issues...[/yellow]")
             click.echo("")
-            click.echo("[yellow]Auto-fix not yet implemented[/yellow]")
-            click.echo("Please manually fix any issues")
+
+            try:
+                loaded_config = validate_config(config_data)
+                click.echo("[bold green]✓ Configuration is valid (no fixes needed)[/bold green]")
+                click.echo("")
+
+                _display_config_summary(loaded_config)
+
+            except Exception as e:
+                if try_auto_fix(e, config_data, path):
+                    click.echo("[bold green]✓ Auto-fix applied[/bold green]")
+                    click.echo("")
+
+                    with open(path, "w", encoding="utf-8") as f:
+                        yaml.dump(config_data, f, default_flow_style=False, sort_keys=False)
+
+                    click.echo("Configuration file has been updated")
+                    click.echo("")
+                    click.echo("Re-validating...")
+
+                    try:
+                        loaded_config = validate_config(config_data)
+                        click.echo("[bold green]✓ Configuration is now valid[/bold green]")
+                        click.echo("")
+
+                        _display_config_summary(loaded_config)
+
+                    except Exception as e2:
+                        click.echo("")
+                        click.echo("[bold red]❌ Validation still failed after auto-fix[/bold red]")
+                        click.echo(f"Error: {e2}")
+
+                        suggestions = get_fix_suggestions(e2, config_data)
+                        if suggestions:
+                            click.echo("")
+                            click.echo("[bold yellow]💡 Suggestions:[/bold yellow]")
+                            for suggestion in suggestions:
+                                click.echo(f"  • {suggestion}")
+
+                        sys.exit(1)
+                else:
+                    click.echo("[bold red]❌ Auto-fix not available for this issue[/bold red]")
+                    click.echo(f"Error: {e}")
+
+                    suggestions = get_fix_suggestions(e, config_data)
+                    if suggestions:
+                        click.echo("")
+                        click.echo("[bold yellow]💡 Suggestions:[/bold yellow]")
+                        for suggestion in suggestions:
+                            click.echo(f"  • {suggestion}")
+
+                    sys.exit(1)
+
+        else:
+            loaded_config = validate_config(config_data)
+
+            click.echo("[bold green]✓ Configuration is valid[/bold green]")
+            click.echo("")
+
+            _display_config_summary(loaded_config)
+
+            click.echo("")
+            click.echo("[dim]Run 'acr config validate --fix' to attempt automatic fixes[/dim]")
 
     except click.Abort:
         raise
     except Exception as e:
         click.echo("[bold red]❌ Validation failed[/bold red]")
         click.echo(f"Error: {e}")
+
+        from acr.config.validator import get_fix_suggestions
+
+        local_config_data = config_data if config_data else {}
+        suggestions = get_fix_suggestions(e, local_config_data)
+        if suggestions:
+            click.echo("")
+            click.echo("[bold yellow]💡 Suggestions:[/bold yellow]")
+            for suggestion in suggestions:
+                click.echo(f"  • {suggestion}")
+
         sys.exit(1)
 
 

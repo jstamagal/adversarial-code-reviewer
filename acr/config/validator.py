@@ -15,7 +15,7 @@
 """Configuration validator implementation."""
 
 from pathlib import Path
-from typing import Any, Dict, List
+from typing import Any, Dict, List, Tuple
 
 from acr.config.schema import ACRConfig
 from acr.utils.errors import ConfigurationError
@@ -212,3 +212,158 @@ def validate_reporting_formats(config: ACRConfig) -> None:
             raise ConfigurationError(
                 f"Invalid report format '{fmt}'. Must be one of: {', '.join(sorted(valid_formats))}"
             )
+
+
+def get_fix_suggestions(error: Exception, config_data: Dict[str, Any]) -> List[str]:
+    """Get fix suggestions for configuration validation errors.
+
+    Args:
+        error: The validation error that occurred
+        config_data: Configuration data that was being validated
+
+    Returns:
+        List of fix suggestions
+    """
+    suggestions = []
+    error_message = str(error)
+
+    if "Invalid severity threshold" in error_message:
+        suggestions.append(
+            "Change 'patterns.severity_threshold' to one of: critical, high, medium, low, info"
+        )
+        if "severity_threshold" in config_data.get("patterns", {}):
+            current = config_data["patterns"]["severity_threshold"]
+            suggestions.append(f"Current value '{current}' is not valid")
+
+    elif "Invalid LLM provider" in error_message:
+        suggestions.append("Change 'llm.provider' to one of: anthropic, openai")
+        if "provider" in config_data.get("llm", {}):
+            current = config_data["llm"]["provider"]
+            suggestions.append(f"Current value '{current}' is not a valid provider")
+
+    elif "api_key_env must be specified" in error_message:
+        suggestions.append("Set 'llm.api_key_env' to your API key environment variable name")
+        suggestions.append("Example: api_key_env: 'ANTHROPIC_API_KEY'")
+        suggestions.append("Or set 'llm.enabled' to false if you don't want to use LLM features")
+
+    elif "max_tokens must be positive" in error_message:
+        suggestions.append(
+            "Set 'llm.max_tokens' to a positive number (recommended: 4096 or higher)"
+        )
+        if "max_tokens" in config_data.get("llm", {}):
+            current = config_data["llm"]["max_tokens"]
+            suggestions.append(f"Current value '{current}' is invalid")
+
+    elif "max_tokens should be at least 100" in error_message:
+        suggestions.append("Increase 'llm.max_tokens' to at least 100 when caching is enabled")
+        suggestions.append("Recommended: Set max_tokens to 4096 or disable caching")
+        suggestions.append("Example: max_tokens: 4096 or cache_enabled: false")
+
+    elif "Project root does not exist" in error_message:
+        suggestions.append("Verify 'project.root' points to an existing directory")
+        suggestions.append("Use '.' for current directory or an absolute path")
+        if "root" in config_data.get("project", {}):
+            current = config_data["project"]["root"]
+            suggestions.append(f"Current value: {current}")
+
+    elif "Project root is not a directory" in error_message:
+        suggestions.append("'project.root' must be a directory, not a file")
+        if "root" in config_data.get("project", {}):
+            current = config_data["project"]["root"]
+            suggestions.append(f"Current value: {current}")
+
+    elif "Custom patterns directory does not exist" in error_message:
+        suggestions.append(
+            "Create the custom patterns directory or remove 'patterns.custom_patterns'"
+        )
+        suggestions.append(
+            "To disable custom patterns, set 'patterns.custom_patterns' to empty string"
+        )
+
+    elif "Duplicate patterns" in error_message:
+        suggestions.append("Remove duplicate entries from 'patterns.enabled' list")
+        if "enabled" in config_data.get("patterns", {}):
+            patterns = config_data["patterns"]["enabled"]
+            if isinstance(patterns, list):
+                seen = set()
+                duplicates = [p for p in patterns if p in seen or seen.add(p)]
+                if duplicates:
+                    suggestions.append(f"Duplicate patterns found: {', '.join(duplicates)}")
+
+    elif "Invalid report format" in error_message:
+        suggestions.append(
+            "Change 'reporting.formats' to contain only: markdown, json, yaml, sarif, html"
+        )
+        if "formats" in config_data.get("reporting", {}):
+            formats = config_data["reporting"]["formats"]
+            valid_formats = {"markdown", "json", "yaml", "sarif", "html"}
+            invalid = [f for f in formats if f not in valid_formats]
+            if invalid:
+                suggestions.append(f"Invalid formats: {', '.join(invalid)}")
+
+    elif "Unsupported language" in error_message:
+        suggestions.append("Remove unsupported language from 'languages' section")
+        suggestions.append("Supported languages: python, javascript, typescript, java, go, rust")
+
+    elif "patterns.enabled must be a list" in error_message:
+        suggestions.append("Set 'patterns.enabled' to a list of pattern names")
+        suggestions.append("Example: patterns.enabled: ['sql-injection', 'xss']")
+
+    elif "should be a directory path" in error_message:
+        suggestions.append("Exclusion path patterns should end with '/' to indicate a directory")
+        suggestions.append("Example: exclude.paths: ['tests/', 'build/']")
+
+    elif "should contain wildcards or extension" in error_message:
+        suggestions.append(
+            "Exclusion file patterns should contain wildcards (*) or have an extension"
+        )
+        suggestions.append("Example: exclude.files: ['*.pyc', '*.log']")
+
+    elif "Invalid YAML" in error_message:
+        suggestions.append("Fix YAML syntax errors in the configuration file")
+        suggestions.append("Common issues:")
+        suggestions.append("  - Incorrect indentation (use 2 spaces)")
+        suggestions.append("  - Missing colons after keys")
+        suggestions.append("  - Unbalanced quotes or brackets")
+        suggestions.append("  - Use YAML linter: https://www.yamllint.com/")
+
+    elif "patterns.enabled" in error_message:
+        suggestions.append("Check 'patterns.enabled' is a valid list of pattern names")
+
+    else:
+        suggestions.append("Check configuration file syntax and values")
+        suggestions.append("Run 'acr config list' to see all available options")
+        suggestions.append("Run 'acr config show' to see current configuration")
+
+    return suggestions
+
+
+def try_auto_fix(error: Exception, config_data: Dict[str, Any], config_path: Path) -> bool:
+    """Attempt to automatically fix common configuration issues.
+
+    Args:
+        error: The validation error that occurred
+        config_data: Configuration data that was being validated
+        config_path: Path to the configuration file
+
+    Returns:
+        True if auto-fix was applied, False otherwise
+    """
+    error_message = str(error)
+
+    if "Duplicate patterns" in error_message:
+        if "enabled" in config_data.get("patterns", {}):
+            patterns = config_data["patterns"]["enabled"]
+            if isinstance(patterns, list):
+                seen = set()
+                unique_patterns = []
+                for p in patterns:
+                    if p not in seen:
+                        seen.add(p)
+                        unique_patterns.append(p)
+
+                if len(unique_patterns) != len(patterns):
+                    config_data["patterns"]["enabled"] = unique_patterns
+                    return True
+
+    return False

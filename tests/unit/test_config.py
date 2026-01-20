@@ -642,3 +642,166 @@ def test_full_config_with_all_sections():
     assert config.analysis.analyze_generated_code is False
     assert config.reporting.max_snippet_lines == 10
     assert "python" in config.languages
+
+
+def test_get_fix_suggestions_invalid_severity():
+    """Test fix suggestions for invalid severity threshold."""
+    from acr.config.validator import get_fix_suggestions
+    from acr.utils.errors import ConfigurationError
+
+    error = ConfigurationError(
+        "Invalid severity threshold 'invalid'. Must be one of: critical, high, medium, low, info"
+    )
+    config_data = {"patterns": {"severity_threshold": "invalid"}}
+
+    suggestions = get_fix_suggestions(error, config_data)
+    assert len(suggestions) > 0
+    assert any("critical, high, medium, low, info" in s for s in suggestions)
+    assert any("invalid" in s for s in suggestions)
+
+
+def test_get_fix_suggestions_invalid_llm_provider():
+    """Test fix suggestions for invalid LLM provider."""
+    from acr.config.validator import get_fix_suggestions
+    from acr.utils.errors import ConfigurationError
+
+    error = ConfigurationError("Invalid LLM provider 'invalid'. Must be one of: anthropic, openai")
+    config_data = {"llm": {"provider": "invalid"}}
+
+    suggestions = get_fix_suggestions(error, config_data)
+    assert len(suggestions) > 0
+    assert any("anthropic, openai" in s for s in suggestions)
+    assert any("invalid" in s for s in suggestions)
+
+
+def test_get_fix_suggestions_missing_api_key():
+    """Test fix suggestions for missing API key environment variable."""
+    from acr.config.validator import get_fix_suggestions
+    from acr.utils.errors import ConfigurationError
+
+    error = ConfigurationError("llm.api_key_env must be specified when LLM is enabled")
+    config_data = {"llm": {"enabled": True, "provider": "anthropic"}}
+
+    suggestions = get_fix_suggestions(error, config_data)
+    assert len(suggestions) > 0
+    assert any("api_key_env" in s for s in suggestions)
+    assert any("ANTHROPIC_API_KEY" in s for s in suggestions)
+
+
+def test_get_fix_suggestions_invalid_max_tokens():
+    """Test fix suggestions for invalid max_tokens."""
+    from acr.config.validator import get_fix_suggestions
+    from acr.utils.errors import ConfigurationError
+
+    error = ConfigurationError("llm.max_tokens must be positive")
+    config_data = {"llm": {"max_tokens": -1}}
+
+    suggestions = get_fix_suggestions(error, config_data)
+    assert len(suggestions) > 0
+    assert any("positive" in s for s in suggestions)
+
+
+def test_get_fix_suggestions_cache_enabled_small_tokens():
+    """Test fix suggestions for cache enabled with small max_tokens."""
+    from acr.config.validator import get_fix_suggestions
+    from acr.utils.errors import ConfigurationError
+
+    error = ConfigurationError("llm.max_tokens should be at least 100 when caching is enabled")
+    config_data = {"llm": {"max_tokens": 50, "cache_enabled": True}}
+
+    suggestions = get_fix_suggestions(error, config_data)
+    assert len(suggestions) > 0
+    assert any("100" in s for s in suggestions)
+
+
+def test_get_fix_suggestions_project_root_not_exists():
+    """Test fix suggestions for non-existent project root."""
+    from acr.config.validator import get_fix_suggestions
+    from acr.utils.errors import ConfigurationError
+
+    error = ConfigurationError("Project root does not exist: /nonexistent")
+    config_data = {"project": {"root": "/nonexistent"}}
+
+    suggestions = get_fix_suggestions(error, config_data)
+    assert len(suggestions) > 0
+    assert any("project.root" in s for s in suggestions)
+
+
+def test_get_fix_suggestions_duplicate_patterns():
+    """Test fix suggestions for duplicate patterns."""
+    from acr.config.validator import get_fix_suggestions
+    from acr.utils.errors import ConfigurationError
+
+    error = ConfigurationError("Duplicate patterns in patterns.enabled")
+    config_data = {"patterns": {"enabled": ["sql-injection", "sql-injection", "xss"]}}
+
+    suggestions = get_fix_suggestions(error, config_data)
+    assert len(suggestions) > 0
+    assert any("Duplicate" in s for s in suggestions)
+
+
+def test_get_fix_suggestions_invalid_report_format():
+    """Test fix suggestions for invalid report format."""
+    from acr.config.validator import get_fix_suggestions
+    from acr.utils.errors import ConfigurationError
+
+    error = ConfigurationError("Invalid report format 'pdf'. Must be one of: json, markdown, sarif")
+    config_data = {"reporting": {"formats": ["pdf", "markdown"]}}
+
+    suggestions = get_fix_suggestions(error, config_data)
+    assert len(suggestions) > 0
+    assert any("markdown, json, yaml, sarif, html" in s for s in suggestions)
+
+
+def test_get_fix_suggestions_unsupported_language():
+    """Test fix suggestions for unsupported language."""
+    from acr.config.validator import get_fix_suggestions
+    from acr.utils.errors import ConfigurationError
+
+    error = ConfigurationError(
+        "Unsupported language 'cobol'. Supported languages: java, go, rust, python"
+    )
+    config_data = {"languages": {"cobol": {"enabled": True}}}
+
+    suggestions = get_fix_suggestions(error, config_data)
+    assert len(suggestions) > 0
+    assert any("python, javascript, typescript, java, go, rust" in s for s in suggestions)
+
+
+def test_get_fix_suggestions_invalid_yaml():
+    """Test fix suggestions for invalid YAML."""
+    from acr.config.validator import get_fix_suggestions
+
+    error = Exception("Invalid YAML: mapping values are not allowed here")
+    suggestions = get_fix_suggestions(error, {})
+
+    assert len(suggestions) > 0
+    assert any("YAML" in s for s in suggestions)
+
+
+def test_try_auto_fix_duplicate_patterns():
+    """Test auto-fix for duplicate patterns."""
+    from acr.config.validator import try_auto_fix
+    from acr.utils.errors import ConfigurationError
+    from pathlib import Path
+
+    error = ConfigurationError("Duplicate patterns in patterns.enabled")
+    config_data = {"patterns": {"enabled": ["sql-injection", "sql-injection", "xss", "xss"]}}
+
+    result = try_auto_fix(error, config_data, Path("/tmp/test.yaml"))
+    assert result is True
+    assert config_data["patterns"]["enabled"] == ["sql-injection", "xss"]
+
+
+def test_try_auto_fix_no_fix_available():
+    """Test auto-fix when no fix is available."""
+    from acr.config.validator import try_auto_fix
+    from acr.utils.errors import ConfigurationError
+    from pathlib import Path
+
+    error = ConfigurationError("Invalid severity threshold")
+    config_data = {"patterns": {"severity_threshold": "invalid"}}
+
+    result = try_auto_fix(error, config_data, Path("/tmp/test.yaml"))
+    assert result is False
+    assert config_data["patterns"]["severity_threshold"] == "invalid"
