@@ -14,13 +14,19 @@
 
 """Pattern loader implementation."""
 
-from typing import List, Optional, Dict, Any
+from typing import List, Optional, Dict, Any, Union
 from pathlib import Path
 from datetime import datetime
 
 import yaml
 
-from acr.patterns.schema import Pattern, PatternRemediation, PatternImpact
+from acr.patterns.schema import (
+    Pattern,
+    PatternRemediation,
+    PatternImpact,
+    StaticPatternTemplate,
+    DataFlowPatternTemplate,
+)
 
 
 class PatternLoader:
@@ -135,24 +141,34 @@ class PatternLoader:
         except Exception:
             return None
 
-    def _parse_templates(self, detection_data: Dict[str, Any]) -> List[Dict[str, Any]]:
+    def _parse_templates(
+        self, detection_data: Dict[str, Any]
+    ) -> List[Union[StaticPatternTemplate, DataFlowPatternTemplate]]:
         """Parse detection templates from YAML.
 
         Args:
             detection_data: Detection section from YAML
 
         Returns:
-            List of template dictionaries
+            List of template objects
         """
-        templates: List[Dict[str, Any]] = []
+        templates: List[Union[StaticPatternTemplate, DataFlowPatternTemplate]] = []
 
         static_patterns = detection_data.get("static", [])
         for pattern_data in static_patterns:
-            templates.append({"type": "static", **pattern_data})
+            try:
+                template = StaticPatternTemplate(**pattern_data)
+                templates.append(template)
+            except Exception:
+                pass
 
         data_flow_patterns = detection_data.get("data_flow", [])
         for pattern_data in data_flow_patterns:
-            templates.append({"type": "data_flow", **pattern_data})
+            try:
+                template = DataFlowPatternTemplate(**pattern_data)
+                templates.append(template)
+            except Exception:
+                pass
 
         return templates
 

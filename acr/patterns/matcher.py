@@ -19,7 +19,11 @@ from typing import List, Optional, Any, Dict, cast
 from pathlib import Path
 import hashlib
 
-from acr.patterns.schema import Pattern
+from acr.patterns.schema import (
+    Pattern,
+    StaticPatternTemplate,
+    DataFlowPatternTemplate,
+)
 from acr.models.finding import Finding, FindingLocation, FindingImpact, FindingRemediation
 from acr.patterns.loader import PatternLoader
 from acr.core.ast_parser import ASTParser
@@ -79,7 +83,7 @@ class PatternMatcher:
         Args:
             pattern: Attack pattern to match
             source_code: Source code to analyze
-            file_path: Path to the source file
+            file_path: Path to source file
             ast_data: Optional AST data from parser
 
         Returns:
@@ -90,13 +94,11 @@ class PatternMatcher:
         lines = source_code.split("\n")
 
         for template in pattern.templates:
-            pattern_type = template.get("type", "static")
-
-            if pattern_type == "static":
+            if isinstance(template, StaticPatternTemplate):
                 matches = self._match_static_pattern(template, source_code, file_path, pattern)
                 findings.extend(matches)
 
-            elif pattern_type == "data_flow":
+            elif isinstance(template, DataFlowPatternTemplate):
                 if ast_data:
                     matches = self._match_data_flow_pattern(
                         template, ast_data, file_path, pattern, lines
@@ -106,14 +108,14 @@ class PatternMatcher:
         return findings
 
     def _match_static_pattern(
-        self, template: Dict, source_code: str, file_path: str, pattern: Pattern
+        self, template: StaticPatternTemplate, source_code: str, file_path: str, pattern: Pattern
     ) -> List[Finding]:
         """Match static regex patterns against source code.
 
         Args:
-            template: Pattern template with regex pattern
+            template: Static pattern template with regex pattern
             source_code: Source code to analyze
-            file_path: Path to the source file
+            file_path: Path to source file
             pattern: Attack pattern metadata
 
         Returns:
@@ -121,9 +123,57 @@ class PatternMatcher:
         """
         findings: List[Finding] = []
 
-        pattern_regex = template.get("pattern")
+        pattern_regex = template.pattern
         if not pattern_regex:
             return findings
+
+        try:
+            regex = re.compile(pattern_regex, re.MULTILINE | re.DOTALL)
+
+            for match in regex.finditer(source_code):
+                line_num = source_code[: match.start()].count("\n") + 1
+                col_num = match.start() - source_code.rfind("\n", 0, match.start())
+
+                finding_id = self._generate_finding_id(
+                    file_path, line_num, pattern.id, match.group()
+                )
+
+                location = FindingLocation(file=file_path, line=line_num, column=col_num)
+
+                impact = FindingImpact(
+                    confidentiality=self._severity_to_impact(pattern.severity),
+                    integrity=self._severity_to_impact(pattern.severity),
+                    availability="low",
+                )
+
+                remediation = FindingRemediation(
+                    description=pattern.remediation.description,
+                    code_before=pattern.remediation.code_before,
+                    code_after=pattern.remediation.code_after,
+                )
+
+                finding = Finding(
+                    id=finding_id,
+                    title=pattern.name,
+                    severity=pattern.severity,
+                    confidence=template.confidence or "medium",
+                    category=pattern.category,
+                    cwe_id=pattern.cwe_id,
+                    owasp_id=pattern.owasp_id,
+                    location=location,
+                    description=pattern.description,
+                    attack_vector=template.description or pattern.attack_vector,
+                    impact=impact,
+                    remediation=remediation,
+                    references=pattern.references,
+                )
+
+                findings.append(finding)
+
+        except re.error:
+            pass
+
+        return findings
 
         try:
             regex = re.compile(pattern_regex, re.MULTILINE | re.DOTALL)
@@ -175,7 +225,7 @@ class PatternMatcher:
 
     def _match_data_flow_pattern(
         self,
-        template: Dict,
+        template: DataFlowPatternTemplate,
         ast_data: Dict,
         file_path: str,
         pattern: Pattern,
@@ -184,9 +234,9 @@ class PatternMatcher:
         """Match data flow patterns (taint analysis).
 
         Args:
-            template: Pattern template with source/sink/sanitizers
+            template: Data flow template with source/sink/sanitizers
             ast_data: AST data from parser
-            file_path: Path to the source file
+            file_path: Path to source file
             pattern: Attack pattern metadata
             lines: Source code lines
 
@@ -195,12 +245,76 @@ class PatternMatcher:
         """
         findings: List[Finding] = []
 
-        source_pattern = template.get("source")
-        sink_pattern = template.get("sink")
-        sanitizers = template.get("sanitizers", [])
+        source_pattern = template.source
+        sink_pattern = template.sink
+        sanitizers = template.sanitizers or []
 
         if not source_pattern or not sink_pattern:
             return findings
+
+        try:
+            source_regex = re.compile(source_pattern)
+            sink_regex = re.compile(sink_pattern)
+            sanitizer_regexes = [re.compile(s) for s in sanitizers if s] if sanitizers else []
+
+            functions = ast_data.get("functions", [])
+            function_calls = ast_data.get("call_sites", [])
+
+            for call_site in function_calls:
+                sink_match = sink_regex.search(call_site.get("name", ""))
+
+                if sink_match:
+                    line_num = call_site.get("line", 0)
+
+                    source_detected = self._check_for_source(source_regex, lines, line_num)
+
+                    if source_detected and not self._check_for_sanitizers(
+                        sanitizer_regexes, lines, line_num
+                    ):
+                        finding_id = self._generate_finding_id(
+                            file_path, line_num, pattern.id, call_site.get("name", "")
+                        )
+
+                        location = FindingLocation(
+                            file=file_path,
+                            line=line_num,
+                            function=call_site.get("function"),
+                        )
+
+                        impact = FindingImpact(
+                            confidentiality=self._severity_to_impact(pattern.severity),
+                            integrity=self._severity_to_impact(pattern.severity),
+                            availability="low",
+                        )
+
+                        remediation = FindingRemediation(
+                            description=pattern.remediation.description,
+                            code_before=pattern.remediation.code_before,
+                            code_after=pattern.remediation.code_after,
+                        )
+
+                        finding = Finding(
+                            id=finding_id,
+                            title=pattern.name,
+                            severity=pattern.severity,
+                            confidence=template.confidence or "medium",
+                            category=pattern.category,
+                            cwe_id=pattern.cwe_id,
+                            owasp_id=pattern.owasp_id,
+                            location=location,
+                            description=pattern.description,
+                            attack_vector=f"Taint flow from {source_pattern} to {sink_pattern}",
+                            impact=impact,
+                            remediation=remediation,
+                            references=pattern.references,
+                        )
+
+                        findings.append(finding)
+
+        except re.error:
+            pass
+
+        return findings
 
         try:
             source_regex = re.compile(source_pattern)

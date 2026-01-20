@@ -14,7 +14,7 @@
 
 """Pattern schema using Pydantic models."""
 
-from typing import List, Optional, Dict, Any, Literal
+from typing import List, Optional, Dict, Any, Literal, Union
 from pydantic import BaseModel, Field
 
 
@@ -60,6 +60,45 @@ class PatternImpact(BaseModel):
     )
 
 
+class StaticPatternTemplate(BaseModel):
+    """Static pattern template for regex-based matching."""
+
+    type: Literal["static"] = Field(default="static", description="Template type")
+    pattern: str = Field(description="Regular expression pattern to match")
+    description: Optional[str] = Field(
+        default=None, description="Description of what this pattern matches"
+    )
+    confidence: Optional[str] = Field(
+        default="medium", description="Confidence level (high, medium, low)"
+    )
+    contexts: Optional[List[str]] = Field(
+        default=None, description="Code contexts where this pattern applies"
+    )
+    exclude_patterns: Optional[List[str]] = Field(
+        default=None, description="Patterns to exclude from matching"
+    )
+
+
+class DataFlowPatternTemplate(BaseModel):
+    """Data flow pattern template for taint analysis."""
+
+    type: Literal["data_flow"] = Field(default="data_flow", description="Template type")
+    source: str = Field(description="Regex pattern for taint source (untrusted input)")
+    sink: str = Field(description="Regex pattern for taint sink (sensitive operation)")
+    sanitizers: Optional[List[str]] = Field(
+        default=None, description="List of regex patterns that sanitize data"
+    )
+    description: Optional[str] = Field(
+        default=None, description="Description of this data flow pattern"
+    )
+    confidence: Optional[str] = Field(
+        default="medium", description="Confidence level (high, medium, low)"
+    )
+    max_distance: Optional[int] = Field(
+        default=None, description="Maximum lines between source and sink"
+    )
+
+
 class PatternRemediation(BaseModel):
     """Remediation information for a pattern."""
 
@@ -84,7 +123,7 @@ class Pattern(BaseModel):
     )
     affected_frameworks: List[str] = Field(default_factory=list, description="Affected frameworks")
 
-    templates: List[Dict[str, Any]] = Field(
+    templates: List[Union[StaticPatternTemplate, DataFlowPatternTemplate]] = Field(
         default_factory=list, description="Pattern templates for matching"
     )
 

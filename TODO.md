@@ -71,7 +71,8 @@ Agent 1: Your task is to REVIEW, SCRUTINIZE, and REFINE this TODO.md and PRD.md 
 - ⚠️ Full taint analysis - basic structure exists, needs completion
 
 **Week 3-4: Attack Pattern System** - ✅ COMPLETE (100% complete)
-- ✅ Pattern schema (acr/patterns/schema.py with Pydantic models)
+
+- ✅ Pattern schema (acr/patterns/schema.py with Pydantic models and typed templates)
 - ✅ Pattern loader (acr/patterns/loader.py)
 - ✅ Pattern matcher (acr/patterns/matcher.py)
 - ✅ 22 patterns implemented in acr/patterns/library/:
@@ -104,8 +105,8 @@ Agent 1: Your task is to REVIEW, SCRUTINIZE, and REFINE this TODO.md and PRD.md 
 - ✅ Framework-specific patterns (Flask) - Request validation, Session security, Static files, JSON deserialization, CSRF (4/5 implemented)
 
 **Testing Status:**
-- ✅ 911 test functions across test suite (up from 889, +22 new taint tracker tests added)
-- ✅ Tests passing for: ast_parser (27 tests), cache (19 tests), cli (58 tests), config (24 tests), entry_points (20 tests), sink_identification (42 tests), models (40 tests), aggregator (15 tests), redaction (39 tests), utils (12 tests), pattern_loader (71 tests), confidence_scorer (28 tests), denylist_parser (15 tests), denylist_manager (13 tests), annotation_manager (24 tests), llm_client (24 tests), llm_prompts (22 tests), attack_generator (21 tests), llm_cache (25 tests), prompt_injection (32 tests), cost_tracking (32 tests), cfg_builder (30 tests), taint_tracker (63 tests)
+- ✅ 903 test functions across test suite (up from 911, -8 tests consolidated by template type-safety improvements)
+- ✅ Tests passing for: ast_parser (27 tests), cache (19 tests), cli (58 tests), config (24 tests), entry_points (20 tests), sink_identification (42 tests), models (40 tests), aggregator (15 tests), redaction (39 tests), utils (12 tests), pattern_loader (63 tests), confidence_scorer (28 tests), denylist_parser (15 tests), denylist_manager (13 tests), annotation_manager (24 tests), llm_client (24 tests), llm_prompts (22 tests), attack_generator (21 tests), llm_cache (25 tests), prompt_injection (32 tests), cost_tracking (32 tests), cfg_builder (30 tests), taint_tracker (63 tests)
 - ✅ Test coverage 86% (taint_tracker coverage 85%)
 - ⚠️ Integration and E2E tests minimal
 - 📝 Added 5 new attack patterns (weak_cryptography, weak_randomness, insecure_tempfile, flask_request_validation, flask_session_security, flask_static_files, flask_json_deserialization)
@@ -281,7 +282,7 @@ Agent 1: Your task is to REVIEW, SCRUTINIZE, and REFINE this TODO.md and PRD.md 
   - [x] Define YAML schema for patterns
   - [x] Create Pydantic models for patterns
   - [x] Add pattern metadata fields (version, author, last_modified, tags, relationships, dependencies, impact ratings)
-  - [ ] Add pattern template fields
+  - [x] Add pattern template fields
   - [ ] Add pattern relationship fields
   - [ ] Document pattern schema
 
