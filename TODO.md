@@ -355,7 +355,7 @@ Agent 1: Your task is to REVIEW, SCRUTINIZE, and REFINE this TODO.md and PRD.md 
   - [ ] Clickjacking pattern (X-Frame-Options, CSP)
   - [ ] Mixed Content pattern
   - [ ] MIME type confusion pattern
-  - [ ] Host header injection pattern
+  - [x] Host header injection pattern
   - [ ] Open redirect pattern
   - [ ] Stored XSS via file upload pattern
   - [ ] Reflected XSS in headers pattern

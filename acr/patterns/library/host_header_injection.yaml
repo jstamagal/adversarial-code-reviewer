@@ -1,0 +1,324 @@
+id: host-header-injection
+name: Host Header Injection
+category: input-validation
+severity: high
+cwe: CWE-20
+owasp: A01:2021-Broken Access Control
+
+description: |
+  Host header injection occurs when applications use the HTTP Host header without validation,
+  allowing attackers to manipulate the host value and conduct attacks like password reset poisoning,
+  cache poisoning, XSS, or open redirects.
+
+references:
+- https://portswigger.net/web-security/host-header
+- https://cwe.mitre.org/data/definitions/20.html
+- https://owasp.org/www-project-web-security-testing-guide/v41/4-Web_Application_Security_Testing/07-Input_Validation_Testing/17-Testing_for_Host_Header_Injection
+
+affected_languages:
+- python
+- javascript
+- typescript
+- ruby
+- php
+- java
+- go
+
+affected_frameworks:
+- flask
+- django
+- fastapi
+- express
+- spring-boot
+
+detection:
+  static:
+  - pattern: request\.host
+    description: Direct usage of request.host without validation
+    confidence: medium
+
+  - pattern: request\.headers\[['"]Host['"]\]
+    description: Direct usage of request.headers['Host'] without validation
+    confidence: medium
+
+  - pattern: request\.headers\.get\(['"]Host['"]\)
+    description: Direct usage of request.headers.get('Host') without validation
+    confidence: medium
+
+  - pattern: request\.get_host\(\)
+    description: Django request.get_host() without validation
+    confidence: medium
+    requires_framework: [django]
+
+  - pattern: request\.META\.get\(['"]HTTP_HOST['"]\)
+    description: Django request.META.get('HTTP_HOST') without validation
+    confidence: medium
+    requires_framework: [django]
+
+  - pattern: req\.headers\[['"]host['"]\]
+    description: Express/Node.js req.headers.host without validation
+    confidence: medium
+    requires_language: [javascript, typescript]
+
+  - pattern: req\.get\(['"]host['"]\)
+    description: Express/Node.js req.get('host') without validation
+    confidence: medium
+    requires_language: [javascript, typescript]
+
+  data_flow:
+  - source: (request\.headers|request\.get_host|request\.META|req\.headers|req\.get)
+    sink: (redirect|url_for|send_file|build_absolute_uri|render_template_string)
+    sanitizers:
+    - (validate|sanitize|check|whitelist|allowed_hosts|ALLOWED_HOSTS)
+
+remediation:
+  description: Validate Host header against allowed hosts, use framework security features
+
+  code_before: |
+    @app.route('/reset-password')
+    def reset_password():
+        host = request.host
+        reset_link = f"https://{host}/reset?token={token}"
+        send_email(user.email, reset_link)
+
+  code_after: |
+    from urllib.parse import urlparse
+
+    ALLOWED_HOSTS = ['example.com', 'www.example.com']
+
+    def validate_host(host):
+        """Validate host header against allowed hosts"""
+        parsed = urlparse(f"https://{host}")
+        if parsed.netloc in ALLOWED_HOSTS:
+            return parsed.netloc
+        return 'example.com'  # fallback to default
+
+    @app.route('/reset-password')
+    def reset_password():
+        host = validate_host(request.host)
+        reset_link = f"https://{host}/reset?token={token}"
+        send_email(user.email, reset_link)
+
+  code_after_framework: |
+    from flask import request
+    from urllib.parse import urlparse
+
+    # Use Flask ALLOWED_HOSTS pattern
+    app.config['SERVER_NAME'] = 'example.com'
+
+    @app.route('/reset-password')
+    def reset_password():
+        # Use url_for with _external=True which respects SERVER_NAME
+        reset_link = url_for('reset_token', token=token, _external=True)
+        send_email(user.email, reset_link)
+
+  code_after_django: |
+    # Django has built-in ALLOWED_HOSTS validation
+    # settings.py
+    ALLOWED_HOSTS = ['example.com', 'www.example.com']
+
+    # views.py
+    from django.shortcuts import redirect
+
+    @login_required
+    def reset_password(request):
+        # Django's get_host() validates against ALLOWED_HOSTS
+        reset_link = request.build_absolute_uri('/reset/')
+        send_email(user.email, reset_link)
+
+examples:
+  vulnerable:
+  - |
+    @app.route('/reset-password')
+    def reset_password():
+        email = request.args.get('email')
+        host = request.host  # Vulnerable: uses host without validation
+        token = generate_token(email)
+        reset_link = f"http://{host}/reset?token={token}"
+        send_reset_email(email, reset_link)
+
+  - |
+    @app.route('/upload')
+    def upload_file():
+        host = request.headers.get('Host')  # Vulnerable
+        filename = secure_filename(request.files['file'].filename)
+        upload_url = f"http://{host}/uploads/{filename}"
+        return jsonify({'url': upload_url})
+
+  - |
+    from flask import request, redirect
+
+    @app.route('/redirect')
+    def redirect_user():
+        host = request.host  # Vulnerable
+        next_url = request.args.get('next', '/')
+        return redirect(f"http://{host}{next_url}")
+
+  - |
+    @app.route('/webhook')
+    def webhook():
+        host = request.headers['Host']  # Vulnerable
+        callback_url = f"http://{host}/callback"
+        requests.post(callback_url, json=request.json)
+
+  - |
+    # Django vulnerable
+    def reset_password(request):
+        host = request.META.get('HTTP_HOST')  # Vulnerable without ALLOWED_HOSTS
+        # Django validates if ALLOWED_HOSTS is set, but this bypasses it
+        reset_link = f"http://{host}/reset/"
+        send_email(user.email, reset_link)
+
+  secure:
+  - |
+    from urllib.parse import urlparse
+
+    ALLOWED_HOSTS = ['example.com', 'www.example.com']
+
+    def validate_host(host_header):
+        """Validate and normalize host header"""
+        try:
+            # Parse the host to ensure it's valid
+            netloc = urlparse(f"https://{host_header}").netloc
+
+            # Check against allowed hosts
+            if netloc in ALLOWED_HOSTS:
+                return netloc
+
+            # Return default if invalid
+            return 'example.com'
+        except (ValueError, AttributeError):
+            return 'example.com'
+
+    @app.route('/reset-password')
+    def reset_password():
+        email = request.args.get('email')
+        host = validate_host(request.host)
+        token = generate_token(email)
+        reset_link = f"http://{host}/reset?token={token}"
+        send_reset_email(email, reset_link)
+
+  - |
+    from flask import Flask, request, url_for
+
+    app = Flask(__name__)
+    app.config['SERVER_NAME'] = 'example.com'
+
+    @app.route('/reset-password')
+    def reset_password():
+        # Use url_for which respects SERVER_NAME
+        reset_link = url_for('reset_token', token=token, _external=True)
+        send_reset_email(user.email, reset_link)
+
+  - |
+    # Django secure with ALLOWED_HOSTS
+    # settings.py
+    ALLOWED_HOSTS = ['example.com', 'www.example.com']
+    SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+
+    # views.py
+    def reset_password(request):
+        # get_host() is validated against ALLOWED_HOSTS
+        reset_link = request.build_absolute_uri('/reset/')
+        send_email(user.email, reset_link)
+
+  - |
+    # Express/Node.js secure
+    const express = require('express');
+    const app = express();
+
+    const ALLOWED_HOSTS = ['example.com', 'www.example.com'];
+
+    function validateHost(host) {
+        if (ALLOWED_HOSTS.includes(host)) {
+            return host;
+        }
+        return 'example.com';
+    }
+
+    app.get('/reset-password', (req, res) => {
+        const host = validateHost(req.headers.host);
+        const resetLink = `https://${host}/reset?token=${token}`;
+        sendResetEmail(email, resetLink);
+    });
+
+example_payload: 'Host: evil.com'
+
+attack_vector: |
+  An attacker can exploit host header injection by:
+
+  1. **Password Reset Poisoning**: Manipulate the Host header in password reset
+     requests to generate reset links pointing to attacker-controlled domains.
+     When victims click these links, their password reset tokens are sent to
+     the attacker's domain instead of the legitimate site.
+
+  2. **Cache Poisoning**: Poison shared caches (CDNs, reverse proxies) by
+     making requests with malicious Host headers. Subsequent users receive
+     attacker-controlled content, leading to data theft or malware delivery.
+
+  3. **Web Cache Deception**: Manipulate cache to serve sensitive data from
+     different hosts, allowing attackers to access information meant for other
+     users or organizations.
+
+  4. **XSS Attacks**: If the Host header is reflected in responses without
+     proper encoding, attackers can inject malicious scripts that execute
+     in users' browsers.
+
+  5. **Open Redirects**: Manipulate redirect URLs by controlling the host,
+     allowing phishing attacks that redirect users to malicious sites that
+     appear legitimate.
+
+  6. **Email Link Hijacking**: In password reset, email verification, or
+     notification emails, manipulate generated links to point to attacker
+     domains to steal sensitive information.
+
+  7. **X-Forwarded-Host Bypass**: If the application trusts X-Forwarded-Host
+     without validation behind a proxy, attackers can set this header to
+     achieve the same attacks.
+
+llm_prompts:
+  analyze: |
+    Analyze this code for host header injection vulnerabilities. Look for:
+    1. Direct usage of request.host or request.headers['Host']
+    2. Usage of request.get_host() without ALLOWED_HOSTS validation
+    3. Usage of request.META.get('HTTP_HOST') without ALLOWED_HOSTS
+    4. Construction of absolute URLs using host header
+    5. Password reset links using host header
+    6. Redirect URLs using host header
+    7. Callback URLs using host header
+
+    For each vulnerability:
+    - Identify the vulnerable line
+    - Explain potential attack scenarios (password reset poisoning, cache poisoning, XSS)
+    - Show attack payloads
+    - Provide secure implementation with host validation
+
+  generate_attack: |
+    Generate host header injection attacks for this vulnerable endpoint. The attacks should demonstrate:
+    1. Password reset poisoning - manipulate reset link to point to attacker's domain
+    2. Cache poisoning - poison cache with malicious host
+    3. XSS via host header if host is reflected
+    4. Open redirect if redirect URL uses host header
+    5. Web cache deception with port manipulation
+
+    For each attack:
+    - Show the Host header value
+    - Explain the attack scenario
+    - Describe potential impact
+    - Show expected vs actual behavior
+
+  remediation_guidance: |
+    Provide remediation guidance for host header injection vulnerabilities:
+    1. Validate host header against whitelist of allowed domains
+    2. Use framework built-in validation (ALLOWED_HOSTS in Django, SERVER_NAME in Flask)
+    3. Use url_for with _external=True instead of manual URL construction
+    4. Never use host header directly in security-sensitive contexts (password resets, redirects)
+    5. Implement fallback to default domain if host is invalid
+    6. Consider using X-Forwarded-* headers with proper validation behind proxy
+    7. Use HTTPS and HSTS to prevent MITM attacks
+
+    Provide code examples for:
+    - Proper host validation function
+    - Framework-specific secure patterns
+    - Secure password reset implementation
+    - Secure redirect implementation
