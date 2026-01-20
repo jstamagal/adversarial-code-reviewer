@@ -41,7 +41,10 @@ class Analyzer:
         if self._pattern_matcher is None:
             from acr.patterns.matcher import PatternMatcher
 
-            self._pattern_matcher = PatternMatcher()
+            custom_patterns_dir = None
+            if self.config.patterns and self.config.patterns.custom_patterns:
+                custom_patterns_dir = self.config.patterns.custom_patterns
+            self._pattern_matcher = PatternMatcher(custom_patterns_dir=custom_patterns_dir)
         return self._pattern_matcher
 
     def analyze(self, path: Union[str, Path]) -> List[Finding]:

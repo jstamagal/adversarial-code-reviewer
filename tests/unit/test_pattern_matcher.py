@@ -732,3 +732,73 @@ def process():
         assert finding.location.file == "test.py"
         assert finding.location.line == 3
         assert "control flow violation" in finding.attack_vector.lower()
+
+
+class TestPatternMatcherCustomPatternsDir:
+    """Tests for custom patterns directory loading."""
+
+    def test_matcher_loads_custom_patterns_from_directory(self, tmp_path):
+        """Test that matcher loads custom patterns from directory."""
+        custom_dir = tmp_path / "custom_patterns"
+        custom_dir.mkdir()
+
+        pattern_yaml = custom_dir / "custom_test.yaml"
+        pattern_yaml.write_text(
+            """
+id: custom-test-pattern
+name: Custom Test Pattern
+description: Custom pattern for testing
+severity: high
+category: test
+templates:
+  - type: static
+    pattern: custom_function\\(
+    confidence: high
+attack_vector: Test attack vector
+remediation:
+  description: Test remediation
+"""
+        )
+
+        matcher = PatternMatcher(custom_patterns_dir=str(custom_dir))
+        assert len(matcher.patterns) > 0
+
+        custom_pattern = next((p for p in matcher.patterns if p.id == "custom-test-pattern"), None)
+        assert custom_pattern is not None
+        assert custom_pattern.name == "Custom Test Pattern"
+        assert custom_pattern.severity == "high"
+
+    def test_matcher_custom_patterns_override_builtin(self, tmp_path):
+        """Test that custom patterns can override built-in patterns."""
+        custom_dir = tmp_path / "custom_patterns"
+        custom_dir.mkdir()
+
+        pattern_yaml = custom_dir / "sql_injection.yaml"
+        pattern_yaml.write_text(
+            """
+id: sql_injection
+name: Override SQL Injection
+description: Overridden pattern
+severity: info
+category: test
+templates:
+  - type: static
+    pattern: override_pattern\\(
+    confidence: low
+attack_vector: Override attack vector
+remediation:
+  description: Override remediation
+"""
+        )
+
+        matcher = PatternMatcher(custom_patterns_dir=str(custom_dir))
+
+        sql_pattern = next((p for p in matcher.patterns if p.id == "sql_injection"), None)
+        assert sql_pattern is not None
+        assert sql_pattern.name == "Override SQL Injection"
+        assert sql_pattern.severity == "info"
+
+    def test_matcher_custom_patterns_nonexistent_directory(self):
+        """Test that matcher handles nonexistent custom patterns directory gracefully."""
+        matcher = PatternMatcher(custom_patterns_dir="/nonexistent/directory")
+        assert len(matcher.patterns) > 0

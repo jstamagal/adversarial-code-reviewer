@@ -16,6 +16,7 @@
 
 import hashlib
 import re
+from pathlib import Path
 from typing import Dict, List, Optional
 
 from acr.models.finding import Finding, FindingImpact, FindingLocation, FindingRemediation
@@ -32,15 +33,21 @@ from acr.utils.degradation import analysis_fallback, safe_iterate
 class PatternMatcher:
     """Match attack patterns against code."""
 
-    def __init__(self, patterns: Optional[List[Pattern]] = None):
+    def __init__(
+        self,
+        patterns: Optional[List[Pattern]] = None,
+        custom_patterns_dir: Optional[str] = None,
+    ):
         """Initialize pattern matcher.
 
         Args:
             patterns: List of attack patterns to match. If None, loads from default library.
+            custom_patterns_dir: Optional path to custom patterns directory.
         """
         if patterns is None:
+            custom_path = Path(custom_patterns_dir) if custom_patterns_dir else None
             loader = PatternLoader()
-            self.patterns = list(loader.load_patterns().values())
+            self.patterns = list(loader.load_patterns(custom_patterns_dir=custom_path).values())
         else:
             self.patterns = patterns
 
