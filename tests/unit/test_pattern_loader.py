@@ -14,6 +14,7 @@
 
 """Tests for pattern loader functionality."""
 
+import tempfile
 from pathlib import Path
 
 from acr.patterns.loader import PatternLoader
@@ -790,3 +791,264 @@ class TestPatternLoader:
             or "Template" in pattern.remediation.code_before.lower()
         )
         assert "render_template" in pattern.remediation.code_after.lower()
+
+    def test_load_custom_patterns(self):
+        """Test that custom patterns can be loaded from a custom directory."""
+        loader = PatternLoader()
+
+        with tempfile.TemporaryDirectory() as tmpdir:
+            custom_dir = Path(tmpdir)
+
+            custom_pattern_content = """id: custom-pattern
+name: Custom Pattern
+description: A custom security pattern
+category: test
+severity: medium
+cwe: CWE-000
+owasp: A00:2021-Test
+affected_languages:
+  - python
+attack_vector: Custom attack
+remediation:
+  description: Fix it
+  code_before: bad_code()
+  code_after: good_code()
+detection:
+  static:
+    - type: regex
+      pattern: custom_function\\(\\)
+      description: Custom function call
+      confidence: high
+"""
+            pattern_file = custom_dir / "custom-pattern.yaml"
+            pattern_file.write_text(custom_pattern_content)
+
+            patterns = loader.load_patterns(custom_patterns_dir=custom_dir)
+
+            assert "custom-pattern" in patterns
+            assert patterns["custom-pattern"].name == "Custom Pattern"
+            assert patterns["custom-pattern"].category == "test"
+
+    def test_custom_patterns_extend_builtin_patterns(self):
+        """Test that custom patterns extend built-in patterns."""
+        loader = PatternLoader()
+
+        with tempfile.TemporaryDirectory() as tmpdir:
+            custom_dir = Path(tmpdir)
+
+            custom_pattern_content = """id: my-custom-pattern
+name: My Custom Pattern
+description: A custom security pattern
+category: test
+severity: high
+cwe: CWE-999
+owasp: A99:2021-Custom
+affected_languages:
+  - python
+attack_vector: Custom attack
+remediation:
+  description: Fix it
+  code_before: bad_code()
+  code_after: good_code()
+detection:
+  static:
+    - type: regex
+      pattern: my_custom_function\\(\\)
+      description: My custom function call
+      confidence: high
+"""
+            pattern_file = custom_dir / "my-custom-pattern.yaml"
+            pattern_file.write_text(custom_pattern_content)
+
+            patterns = loader.load_patterns(custom_patterns_dir=custom_dir)
+
+            assert "sql-injection" in patterns
+            assert "my-custom-pattern" in patterns
+            assert patterns["sql-injection"].name == "SQL Injection"
+            assert patterns["my-custom-pattern"].name == "My Custom Pattern"
+
+    def test_custom_patterns_override_builtin_patterns(self):
+        """Test that custom patterns can override built-in patterns."""
+        loader = PatternLoader()
+
+        with tempfile.TemporaryDirectory() as tmpdir:
+            custom_dir = Path(tmpdir)
+
+            custom_pattern_content = """id: sql-injection
+name: Custom SQL Injection
+description: Custom SQL injection pattern
+category: test
+severity: critical
+cwe: CWE-89
+owasp: A01:2017-Injection
+affected_languages:
+  - python
+attack_vector: Custom SQL injection attack
+remediation:
+  description: Custom fix
+  code_before: custom_bad_code()
+  code_after: custom_good_code()
+detection:
+  static:
+    - type: regex
+      pattern: custom_sql\\(\\)
+      description: Custom SQL function
+      confidence: high
+"""
+            pattern_file = custom_dir / "sql-injection.yaml"
+            pattern_file.write_text(custom_pattern_content)
+
+            patterns = loader.load_patterns(custom_patterns_dir=custom_dir)
+
+            assert "sql-injection" in patterns
+            assert patterns["sql-injection"].name == "Custom SQL Injection"
+            assert patterns["sql-injection"].category == "test"
+
+    def test_load_patterns_with_invalid_custom_directory(self):
+        """Test that invalid custom directory is handled gracefully."""
+        loader = PatternLoader()
+
+        patterns = loader.load_patterns(custom_patterns_dir=Path("/nonexistent/path"))
+
+        assert isinstance(patterns, dict)
+        assert len(patterns) >= 17
+        assert "sql-injection" in patterns
+
+    def test_load_patterns_from_multiple_custom_directories(self):
+        """Test loading patterns from two custom directories sequentially."""
+        loader = PatternLoader()
+
+        with tempfile.TemporaryDirectory() as tmpdir1, tempfile.TemporaryDirectory() as tmpdir2:
+            custom_dir1 = Path(tmpdir1)
+            custom_dir2 = Path(tmpdir2)
+
+            custom_pattern1 = """id: custom-pattern-1
+name: Custom Pattern 1
+description: First custom pattern
+category: test
+severity: medium
+cwe: CWE-001
+owasp: A00:2021-Test
+affected_languages:
+  - python
+attack_vector: Attack 1
+remediation:
+  description: Fix 1
+  code_before: bad1()
+  code_after: good1()
+detection:
+  static:
+    - type: regex
+      pattern: custom1\\(\\)
+      description: Custom 1
+      confidence: high
+"""
+            custom_pattern2 = """id: custom-pattern-2
+name: Custom Pattern 2
+description: Second custom pattern
+category: test
+severity: high
+cwe: CWE-002
+owasp: A00:2021-Test
+affected_languages:
+  - python
+attack_vector: Attack 2
+remediation:
+  description: Fix 2
+  code_before: bad2()
+  code_after: good2()
+detection:
+  static:
+    - type: regex
+      pattern: custom2\\(\\)
+      description: Custom 2
+      confidence: high
+"""
+            (custom_dir1 / "custom-pattern-1.yaml").write_text(custom_pattern1)
+            (custom_dir2 / "custom-pattern-2.yaml").write_text(custom_pattern2)
+
+            patterns1 = loader.load_patterns(custom_patterns_dir=custom_dir1)
+            assert "custom-pattern-1" in patterns1
+            assert "custom-pattern-2" not in patterns1
+
+            patterns2 = loader.load_patterns(custom_patterns_dir=custom_dir2)
+            assert "custom-pattern-1" not in patterns2
+            assert "custom-pattern-2" in patterns2
+
+    def test_custom_pattern_with_data_flow_template(self):
+        """Test that custom patterns can have data flow templates."""
+        loader = PatternLoader()
+
+        with tempfile.TemporaryDirectory() as tmpdir:
+            custom_dir = Path(tmpdir)
+
+            custom_pattern_content = """id: custom-dataflow-pattern
+name: Custom Data Flow Pattern
+description: Custom pattern with data flow
+category: test
+severity: high
+cwe: CWE-000
+owasp: A00:2021-Test
+affected_languages:
+  - python
+attack_vector: Custom data flow attack
+remediation:
+  description: Fix data flow
+  code_before: bad()
+  code_after: good()
+detection:
+  data_flow:
+    - source: request
+      sink: execute
+      sanitizers: []
+"""
+            pattern_file = custom_dir / "custom-dataflow-pattern.yaml"
+            pattern_file.write_text(custom_pattern_content)
+
+            patterns = loader.load_patterns(custom_patterns_dir=custom_dir)
+
+            assert "custom-dataflow-pattern" in patterns
+            pattern = patterns["custom-dataflow-pattern"]
+            data_flow_templates = [
+                t for t in pattern.templates if isinstance(t, DataFlowPatternTemplate)
+            ]
+            assert len(data_flow_templates) > 0
+            assert data_flow_templates[0].source == "request"
+            assert data_flow_templates[0].sink == "execute"
+
+    def test_custom_pattern_disabled(self):
+        """Test that custom patterns can be disabled."""
+        loader = PatternLoader()
+
+        with tempfile.TemporaryDirectory() as tmpdir:
+            custom_dir = Path(tmpdir)
+
+            custom_pattern_content = """id: custom-disabled-pattern
+name: Custom Disabled Pattern
+description: A custom pattern that is disabled
+category: test
+severity: medium
+cwe: CWE-000
+owasp: A00:2021-Test
+affected_languages:
+  - python
+attack_vector: Custom attack
+remediation:
+  description: Fix it
+  code_before: bad_code()
+  code_after: good_code()
+enabled: false
+detection:
+  static:
+    - type: regex
+      pattern: custom_disabled\\(\\)
+      description: Disabled pattern
+      confidence: high
+"""
+            pattern_file = custom_dir / "custom-disabled-pattern.yaml"
+            pattern_file.write_text(custom_pattern_content)
+
+            patterns = loader.load_patterns(custom_patterns_dir=custom_dir)
+
+            assert "custom-disabled-pattern" in patterns
+            assert patterns["custom-disabled-pattern"].enabled is False

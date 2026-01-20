@@ -36,11 +36,14 @@ class PatternLoader:
         """Initialize pattern loader."""
         self.patterns: Dict[str, Pattern] = {}
 
-    def load_patterns(self, pattern_dir: Optional[Path] = None) -> Dict[str, Pattern]:
+    def load_patterns(
+        self, pattern_dir: Optional[Path] = None, custom_patterns_dir: Optional[Path] = None
+    ) -> Dict[str, Pattern]:
         """Load patterns from directory.
 
         Args:
-            pattern_dir: Directory containing pattern YAML files
+            pattern_dir: Directory containing pattern YAML files (default: built-in library)
+            custom_patterns_dir: Optional directory for custom patterns (overrides built-in)
 
         Returns:
             Dictionary of patterns by ID
@@ -49,16 +52,21 @@ class PatternLoader:
             pattern_dir = Path(__file__).parent / "library"
 
         pattern_dir = Path(pattern_dir)
-
-        if not pattern_dir.exists():
-            return {}
-
         patterns: Dict[str, Pattern] = {}
 
-        for pattern_file in pattern_dir.glob("*.yaml"):
-            pattern = self.load_pattern(pattern_file)
-            if pattern:
-                patterns[pattern.id] = pattern
+        if pattern_dir.exists():
+            for pattern_file in pattern_dir.glob("*.yaml"):
+                pattern = self.load_pattern(pattern_file)
+                if pattern:
+                    patterns[pattern.id] = pattern
+
+        if custom_patterns_dir:
+            custom_patterns_dir = Path(custom_patterns_dir)
+            if custom_patterns_dir.exists():
+                for pattern_file in custom_patterns_dir.glob("*.yaml"):
+                    pattern = self.load_pattern(pattern_file)
+                    if pattern:
+                        patterns[pattern.id] = pattern
 
         return patterns
 

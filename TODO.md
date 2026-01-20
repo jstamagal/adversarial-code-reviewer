@@ -115,8 +115,8 @@ Agent 1: Your task is to REVIEW, SCRUTINIZE, and REFINE this TODO.md and PRD.md 
 
 **Testing Status:**
 
-- ✅ 925 test functions across test suite (up from 903, +22 new pattern matcher tests)
-- ✅ Tests passing for: ast_parser (27 tests), cache (19 tests), cli (58 tests), config (24 tests), entry_points (20 tests), sink_identification (42 tests), models (40 tests), aggregator (15 tests), redaction (39 tests), utils (12 tests), pattern_loader (63 tests), pattern_matcher (22 tests), confidence_scorer (28 tests), denylist_parser (15 tests), denylist_manager (13 tests), annotation_manager (24 tests), llm_client (24 tests), llm_prompts (22 tests), attack_generator (21 tests), llm_cache (25 tests), prompt_injection (32 tests), cost_tracking (32 tests), cfg_builder (30 tests), taint_tracker (63 tests)
+- ✅ 932 test functions across test suite (up from 925, +7 new pattern loader tests)
+- ✅ Tests passing for: ast_parser (27 tests), cache (19 tests), cli (58 tests), config (24 tests), entry_points (20 tests), sink_identification (42 tests), models (40 tests), aggregator (15 tests), redaction (39 tests), utils (12 tests), pattern_loader (70 tests), pattern_matcher (22 tests), confidence_scorer (28 tests), denylist_parser (15 tests), denylist_manager (13 tests), annotation_manager (24 tests), llm_client (24 tests), llm_prompts (22 tests), attack_generator (21 tests), llm_cache (25 tests), prompt_injection (32 tests), cost_tracking (32 tests), cfg_builder (30 tests), taint_tracker (63 tests)
 - ✅ Test coverage 86% (pattern_matcher coverage 89%, taint_tracker coverage 85%)
 - ⚠️ Integration and E2E tests minimal
 - 📝 Added 5 new attack patterns (weak_cryptography, weak_randomness, insecure_tempfile, flask_request_validation, flask_session_security, flask_static_files, flask_json_deserialization)
@@ -129,6 +129,7 @@ Agent 1: Your task is to REVIEW, SCRUTINIZE, and REFINE this TODO.md and PRD.md 
 - 🆕 Enhanced sensitive data redaction COMPLETE (25 patterns, entropy-based detection, user-configurable patterns, redaction event logging, verification, 39 tests)
 - 🆕 Reporting system improvements COMPLETE (comprehensive JSON and Markdown reporters with executive summary, 15 new tests)
 - 🆕 CFG (Control Flow Graph) builder COMPLETE (BasicBlock class, CFGBuilder with full functionality, 30 tests covering conditionals, loops, exceptions, functions)
+- 🆕 Custom patterns loading COMPLETE (PatternLoader now supports loading patterns from user-configured custom directory, custom patterns can override or extend built-in patterns, 7 new tests added)
 
 ---
 
@@ -298,9 +299,9 @@ Agent 1: Your task is to REVIEW, SCRUTINIZE, and REFINE this TODO.md and PRD.md 
 - [x] Implement pattern loader
   - [x] Load patterns from YAML files
   - [x] Validate pattern structure
-  - [ ] Load custom patterns from user directory
+  - [x] Load custom patterns from user directory
   - [ ] Cache loaded patterns
-  - [ ] Add tests for pattern loading
+  - [x] Add tests for pattern loading
 
 - [x] Implement pattern matcher
   - [x] Match patterns against code structure
