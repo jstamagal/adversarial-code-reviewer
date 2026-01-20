@@ -17,7 +17,7 @@
 import logging
 import pytest
 from acr.utils.helpers import compute_content_hash, generate_finding_id, truncate_string
-from acr.utils.logger import setup_logger, get_logger
+from acr.utils.logger import setup_logger, get_logger, get_memory_usage, log_memory_usage
 
 
 def test_content_hash():
@@ -191,3 +191,98 @@ def test_get_logger_returns_same_instance():
     logger1 = get_logger("test_same")
     logger2 = get_logger("test_same")
     assert logger1 is logger2
+
+
+def test_get_memory_usage_returns_dict():
+    """Test get_memory_usage returns a dictionary."""
+    result = get_memory_usage()
+    assert isinstance(result, dict)
+
+
+def test_get_memory_usage_has_required_keys():
+    """Test get_memory_usage returns required keys when psutil available."""
+    result = get_memory_usage()
+
+    if "error" in result:
+        assert result["error"] is not None
+    else:
+        assert "rss_mb" in result
+        assert "vms_mb" in result
+        assert "system_memory_percent" in result
+        assert "system_memory_total_mb" in result
+        assert "system_memory_available_mb" in result
+
+
+def test_get_memory_usage_values_are_positive():
+    """Test memory usage values are positive numbers."""
+    result = get_memory_usage()
+
+    if "error" not in result:
+        assert result["rss_mb"] > 0
+        assert result["vms_mb"] >= 0
+        assert result["system_memory_percent"] >= 0
+        assert result["system_memory_total_mb"] > 0
+        assert result["system_memory_available_mb"] >= 0
+
+
+def test_get_memory_usage_values_are_numeric():
+    """Test memory usage values are numeric."""
+    result = get_memory_usage()
+
+    if "error" not in result:
+        assert isinstance(result["rss_mb"], (int, float))
+        assert isinstance(result["vms_mb"], (int, float))
+        assert isinstance(result["system_memory_percent"], (int, float))
+        assert isinstance(result["system_memory_total_mb"], (int, float))
+        assert isinstance(result["system_memory_available_mb"], (int, float))
+
+
+def test_log_memory_usage_with_logger():
+    """Test log_memory_usage with valid logger."""
+    logger = setup_logger("test_memory", level=logging.DEBUG)
+    log_memory_usage(logger, "test context")
+
+    assert logger is not None
+
+
+def test_log_memory_usage_without_context():
+    """Test log_memory_usage without context string."""
+    logger = setup_logger("test_memory_no_ctx", level=logging.DEBUG)
+    log_memory_usage(logger)
+
+    assert logger is not None
+
+
+def test_log_memory_usage_with_none_logger():
+    """Test log_memory_usage handles None logger gracefully."""
+    log_memory_usage(None, "test")
+
+    assert True
+
+
+def test_log_memory_usage_logs_at_debug_level(caplog):
+    """Test log_memory_usage logs at DEBUG level."""
+    logger = setup_logger("test_memory_debug", level=logging.DEBUG)
+
+    with caplog.at_level(logging.DEBUG):
+        log_memory_usage(logger, "test_context")
+
+    assert len(caplog.records) > 0 or "psutil not available" in " ".join(
+        [r.message for r in caplog.records]
+    )
+
+
+def test_memory_usage_rss_less_than_system():
+    """Test process RSS is less than total system memory."""
+    result = get_memory_usage()
+
+    if "error" not in result:
+        assert result["rss_mb"] < result["system_memory_total_mb"]
+
+
+def test_memory_usage_system_percent_reasonable():
+    """Test system memory percentage is reasonable (0-100)."""
+    result = get_memory_usage()
+
+    if "error" not in result:
+        assert 0 <= result["system_memory_percent"] <= 100

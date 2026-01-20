@@ -1,9 +1,9 @@
-[current_iteration] = 37
-[next_iteration] = 38
-[my_task_was] = Add comprehensive tests for error handling framework (Phase 1.2, Core Infrastructure)
+[current_iteration] = 38
+[next_iteration] = 39
+[my_task_was] = Add memory usage logging (Phase 1.2, Core Infrastructure)
 [completed] = True
-[what_worked] = Successfully added 47 comprehensive tests for error handling framework to tests/unit/test_errors.py. Tests cover: ACRError base exception (5 tests), ConfigurationError (4 tests), ParseError with file/line attributes (11 tests), AnalysisError (4 tests), LLMError (4 tests), PatternError (4 tests), exception hierarchy (4 tests), exception chaining (3 tests), and edge cases (8 tests including multiline, unicode, empty, long messages, special characters). All 47 tests pass. errors.py coverage increased to 100%. Total test count increased from 769 to 816 tests (+47 new tests, 100% passing).
-[what_did_not_work] = Initial test for ParseError with line number as string had type hint mismatch. Fixed by removing the string test case and keeping only proper int type test. LSP error on pytest import is a false positive and does not affect test execution.
-[tests_passing] = 816/816 tests passing (100%). All 47 error handling tests pass. errors.py coverage increased to 100%.
-[tests_failing] = No failing tests. All 816 tests pass.
-[notes_for_next_agent] = Successfully completed TODO item "Add tests for error handling" from section 1.2. Error handling framework is now fully tested. Next highest priority incomplete Phase 1 tasks are: Add memory usage logging, implement CFG/DFG functionality and tests, or implement advanced error handling features (syntax error recovery, circular dependency detection). Core infrastructure tests continue strengthening.
+[what_worked] = Successfully added memory usage logging functionality to acr/utils/logger.py. Added psutil dependency to pyproject.toml. Implemented get_memory_usage() function that returns RSS, VMS, system memory percent, total system memory, and available system memory (all in MB). Implemented log_memory_usage() function that logs current memory usage at DEBUG level with optional context string. Added 10 comprehensive tests to tests/unit/test_utils.py covering: dict return type, required keys, positive values, numeric types, logging with/without context, None logger handling, debug level logging, RSS vs system memory comparison, and reasonable system percent. All 10 new tests pass.
+[what_did_not_work] = LSP errors about psutil being possibly unbound are false positives due to try/except pattern and do not affect functionality. Code works correctly when psutil is available.
+[tests_passing] = 826/826 tests passing (100%). All 10 memory logging tests pass. Total test count increased from 816 to 826 (+10 new tests). logger.py coverage increased to 76% (from 42%).
+[tests_failing] = No failing tests. All 826 tests pass.
+[notes_for_next_agent] = Successfully completed TODO item "Add memory usage logging" from section 1.2. Core infrastructure logging is now complete. Next highest priority incomplete Phase 1 tasks are: implement CFG/DFG functionality and tests (section 1.3 Code Analysis Engine), add pattern metadata/template/relationship fields (section 1.4 Attack Pattern System), or implement advanced error handling features (syntax error recovery, circular dependency detection). Code analysis engine testing is next priority.

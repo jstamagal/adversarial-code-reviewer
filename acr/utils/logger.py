@@ -15,8 +15,16 @@
 """Logging infrastructure."""
 
 import logging
+import os
 import sys
-from typing import Optional
+from typing import Optional, Union
+
+try:
+    import psutil
+
+    PSUTIL_AVAILABLE = True
+except ImportError:
+    PSUTIL_AVAILABLE = False
 
 
 def setup_logger(
@@ -66,3 +74,57 @@ def get_logger(name: str = "acr") -> logging.Logger:
         Logger instance
     """
     return logging.getLogger(name)
+
+
+def get_memory_usage() -> dict:
+    """Get current memory usage information.
+
+    Returns:
+        Dictionary containing memory usage statistics in MB
+    """
+    memory_info = {}
+
+    if PSUTIL_AVAILABLE:
+        process = psutil.Process(os.getpid())
+
+        try:
+            memory_info["rss_mb"] = process.memory_info().rss / (1024 * 1024)
+            memory_info["vms_mb"] = process.memory_info().vms / (1024 * 1024)
+
+            memory_info["system_memory_percent"] = psutil.virtual_memory().percent
+            memory_info["system_memory_total_mb"] = psutil.virtual_memory().total / (1024 * 1024)
+            memory_info["system_memory_available_mb"] = psutil.virtual_memory().available / (
+                1024 * 1024
+            )
+
+            return memory_info
+        except (psutil.AccessDenied, psutil.NoSuchProcess):
+            memory_info["error"] = "Failed to access process memory information"
+            return memory_info
+
+    memory_info["error"] = "psutil not available"
+    return memory_info
+
+
+def log_memory_usage(logger: Optional[logging.Logger], context: str = "") -> None:
+    """Log current memory usage.
+
+    Args:
+        logger: Logger instance (can be None)
+        context: Optional context string to include in log message
+    """
+    if not logger:
+        return
+
+    memory_info = get_memory_usage()
+
+    if "error" in memory_info:
+        logger.warning(f"Memory logging unavailable: {memory_info['error']}")
+        return
+
+    context_str = f" [{context}]" if context else ""
+    logger.debug(
+        f"Memory usage{context_str}: RSS={memory_info['rss_mb']:.2f}MB, "
+        f"VMS={memory_info['vms_mb']:.2f}MB, "
+        f"System={memory_info['system_memory_percent']:.1f}% used"
+    )
