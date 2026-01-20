@@ -43,6 +43,33 @@ class PatternConfig(BaseModel):
     custom_patterns: str = Field(default="", description="Path to custom patterns directory")
 
 
+class RedactionPatternConfig(BaseModel):
+    """Custom redaction pattern configuration."""
+
+    name: str = Field(description="Pattern name")
+    pattern: str = Field(description="Regex pattern to match")
+    description: str = Field(default="", description="Pattern description")
+
+
+class RedactionConfig(BaseModel):
+    """Sensitive data redaction configuration."""
+
+    enabled: bool = Field(default=True, description="Enable sensitive data redaction")
+    entropy_threshold: float = Field(
+        default=4.5, description="Entropy threshold for detecting high-entropy strings (0-8)"
+    )
+    entropy_min_length: int = Field(
+        default=20, description="Minimum length for entropy-based detection"
+    )
+    custom_patterns: List[RedactionPatternConfig] = Field(
+        default_factory=list, description="Custom redaction patterns"
+    )
+    log_redactions: bool = Field(default=True, description="Log all redaction events")
+    verify_redaction: bool = Field(
+        default=True, description="Verify sensitive data is fully redacted before LLM calls"
+    )
+
+
 class LLMConfig(BaseModel):
     """LLM integration configuration."""
 
@@ -54,6 +81,7 @@ class LLMConfig(BaseModel):
     )
     max_tokens: int = Field(default=4096, description="Maximum tokens per request")
     cache_enabled: bool = Field(default=True, description="Enable LLM response caching")
+    redaction: RedactionConfig = Field(default_factory=RedactionConfig)
 
 
 class AnalysisConfig(BaseModel):
@@ -106,3 +134,4 @@ class ACRConfig(BaseModel):
     analysis: AnalysisConfig = Field(default_factory=AnalysisConfig)
     reporting: ReportingConfig = Field(default_factory=ReportingConfig)
     exclude: ExclusionConfig = Field(default_factory=ExclusionConfig)
+    redaction: RedactionConfig = Field(default_factory=RedactionConfig)
