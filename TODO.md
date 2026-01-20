@@ -171,13 +171,13 @@ Agent 1: Your task is to REVIEW, SCRUTINIZE, and REFINE this TODO.md and PRD.md 
 ### 1.2 Core Infrastructure (Weeks 2-3)
 
 - [x] Implement configuration management
-  - [x] Create configuration models using Pydantic
-  - [x] Implement .acrrc.yaml parsing
-  - [x] Implement environment variable overrides
-  - [x] Implement configuration validation
-  - [x] Create default configuration schema
-  - [ ] Implement secure credential storage (keyring integration)
-  - [ ] Add unit tests for configuration
+   - [x] Create configuration models using Pydantic
+   - [x] Implement .acrrc.yaml parsing
+   - [x] Implement environment variable overrides
+   - [x] Implement configuration validation
+   - [x] Create default configuration schema
+   - [x] Implement secure credential storage (keyring integration)
+   - [ ] Add unit tests for configuration
 
  - [x] Implement logging infrastructure
     - [x] Set up structured logging

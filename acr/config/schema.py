@@ -79,6 +79,8 @@ class LLMConfig(BaseModel):
     api_key_env: str = Field(
         default="ANTHROPIC_API_KEY", description="Environment variable for API key"
     )
+    use_keyring: bool = Field(default=True, description="Use keyring for secure credential storage")
+    keyring_name: str = Field(default="api_key", description="Credential name in keyring")
     max_tokens: int = Field(default=4096, description="Maximum tokens per request")
     cache_enabled: bool = Field(default=True, description="Enable LLM response caching")
     redaction: RedactionConfig = Field(default_factory=RedactionConfig)

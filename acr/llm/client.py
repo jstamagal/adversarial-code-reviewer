@@ -14,6 +14,7 @@
 
 """LLM client implementation."""
 
+import os
 import time
 import logging
 from typing import Optional, Dict, Any, List
@@ -244,6 +245,45 @@ class OpenAIClient(LLMClient):
         except openai.APIConnectionError as e:
             logger.warning(f"OpenAI API connection error: {e}")
             raise
+
+
+def get_api_key(
+    api_key_env: str,
+    use_keyring: bool,
+    keyring_name: str,
+) -> str:
+    """Get API key from environment or keyring.
+
+    Args:
+        api_key_env: Environment variable name for API key
+        use_keyring: Whether to check keyring for API key
+        keyring_name: Credential name in keyring
+
+    Returns:
+        API key string
+
+    Raises:
+        ValueError: If API key cannot be found
+    """
+    api_key = os.environ.get(api_key_env)
+
+    if not api_key and use_keyring:
+        try:
+            from acr.config.credentials import get_credential
+
+            api_key = get_credential(keyring_name)
+            if api_key:
+                logger.info(f"Retrieved API key from keyring (credential: {keyring_name})")
+        except Exception as e:
+            logger.warning(f"Failed to retrieve API key from keyring: {e}")
+
+    if not api_key:
+        raise ValueError(
+            f"API key not found. Set {api_key_env} environment variable "
+            f"or store it in keyring with name '{keyring_name}'"
+        )
+
+    return api_key
 
 
 def create_client(

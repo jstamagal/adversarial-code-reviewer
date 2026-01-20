@@ -19,7 +19,7 @@ import logging
 from typing import Optional, Dict, Any, List
 
 logger = logging.getLogger(__name__)
-from acr.llm.client import LLMClient, create_client
+from acr.llm.client import LLMClient, create_client, get_api_key
 from acr.llm.prompts import PromptTemplates
 from acr.llm.redaction import DataRedactor
 from acr.llm.prompt_injection import (
@@ -53,7 +53,11 @@ class AttackGenerator:
         if llm_client is None:
             config = load_config()
             provider = config.llm.provider
-            api_key = os.getenv(config.llm.api_key_env, "")
+            api_key = get_api_key(
+                api_key_env=config.llm.api_key_env,
+                use_keyring=config.llm.use_keyring,
+                keyring_name=config.llm.keyring_name,
+            )
             model = config.llm.model
             self.client = create_client(provider, api_key, model)
         else:
