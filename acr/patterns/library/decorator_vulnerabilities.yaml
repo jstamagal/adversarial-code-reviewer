@@ -1,0 +1,255 @@
+# Decorator Vulnerabilities Pattern
+
+id: decorator_vulnerabilities
+name: Decorator Vulnerabilities
+description: |
+  Detects security issues in Python decorator implementations, including:
+  - Unsafe caching decorators that bypass authorization checks
+  - Decorators that modify function behavior insecurely
+  - Decorators that fail to propagate context properly
+  - Caching decorators that cache per-user data without isolation
+  - LRU cache usage on authenticated endpoints without user-based keys
+
+severity: high
+category: python-specific
+cwe: CWE-287, CWE-285, CWE-532
+owasp: A01:2021-Broken Access Control, A07:2021-Identification and Authentication Failures
+
+affected_languages:
+- python
+
+affected_frameworks:
+- flask
+- django
+- fastapi
+
+tags:
+- decorator
+- caching
+- authorization
+- authentication
+- python
+
+detection:
+  static:
+    # functools.lru_cache on authenticated functions
+  - pattern: '@lru_cache(?:\([^)]*\))?\s*\ndef\s+(\w+)'
+    description: lru_cache on function that may handle user data
+    severity: high
+    line_context: 3
+
+    # lru_cache on methods that check auth
+  - pattern: '@lru_cache(?:\([^)]*\))?\s*\n\s*@([a-zA-Z_]\w*\.)*auth_required|login_required'
+    description: lru_cache before auth decorator - potential auth bypass
+    severity: critical
+    line_context: 5
+
+    # functools.cached_property on sensitive data
+  - pattern: '@cached_property\s*\ndef\s+(password|secret|token|api_key|private_key)'
+    description: cached_property on sensitive data field
+    severity: high
+    line_context: 3
+
+    # Custom caching decorator without user context
+  - pattern: '@cache(?:\([^)]*\))?\s*\ndef\s+get_\w+'
+    description: Caching decorator without user-specific key
+    severity: medium
+    line_context: 5
+
+    # Decorator that wraps function but doesn't call functools.wraps
+  - pattern: def\s+(\w+)\(f\):\s*\n\s*(?!.*wraps\(f\))
+    description: Decorator without functools.wraps - may break introspection
+    severity: low
+    line_context: 5
+
+    # Route decorator with caching applied after
+  - pattern: '@(route|app\.route|blueprint\.route)\([^)]*\)\s*\n\s*@lru_cache'
+    description: lru_cache applied after route decorator
+    severity: high
+    line_context: 3
+
+    # Cache decorator on request handler
+  - pattern: '@(functools\.)?lru_cache(?:\([^)]*\))?\s*\n\s*@(app\.)?(route|get|post|put|delete|patch)'
+    description: lru_cache on Flask/FastAPI route handler
+    severity: critical
+    line_context: 5
+
+  data_flow:
+  - source: (request\.(args|form|json|headers)\[?\[?'?\w+\]?\'?|\]?)|flask\.request\.|self\.request\.|request\.)
+    sink: (lru_cache|cache|cached_property|@cache|@lru_cache)
+    sanitizers: []
+    description: User input flows to cached function without user-based key
+    confidence: high
+
+impact:
+  confidentiality: high
+  integrity: high
+  availability: low
+
+attack_vector: |
+  An attacker can exploit cached responses by:
+
+  1. **Authentication Bypass via Shared Cache**: When lru_cache is used on
+     authenticated endpoints without user-specific keys, the first authenticated
+     user's response is cached. Subsequent unauthenticated users or users
+     with different permissions receive the cached privileged response.
+
+  2. **Information Leakage**: Cached responses containing sensitive data
+     (other users' information, admin-only data) are served to all users.
+
+  Example Attack Flow:
+  ```
+  # Vulnerable code:
+  @lru_cache(maxsize=128)
+  @app.route('/user/<int:user_id>')
+  def get_user(user_id):
+      if not is_admin(current_user):
+          return abort(403)
+      return get_user_details(user_id)
+
+  # Attack:
+  1. Admin requests /user/1 -> Response is cached
+  2. Regular user requests /user/1 -> Receives admin's cached response
+  ```
+
+example_payload: |
+  # Authentication bypass via cached response
+  curl -X GET http://example.com/user/1 -H "Cookie: user_id=attacker"
+  # If admin previously requested /user/1, attacker receives cached admin response
+
+remediation:
+  description: |
+    Use user-specific cache keys or disable caching for authenticated endpoints.
+    Never cache responses that depend on authentication/authorization state.
+
+  code_before: |
+    from functools import lru_cache
+    from flask import request
+
+    @app.route('/user/<int:user_id>')
+    @lru_cache(maxsize=128)  # VULNERABLE: caches across all users
+    def get_user(user_id):
+        user = db.get_user(user_id)
+        if not can_access(request.user, user):
+            return abort(403)
+        return user.to_dict()
+
+  code_after: |
+    from functools import lru_cache
+    from flask import request
+
+    @app.route('/user/<int:user_id>')
+    def get_user(user_id):
+        # Option 1: Include user context in cache key
+        return _get_user_cached(user_id, request.user.id)
+
+    @lru_cache(maxsize=128)
+    def _get_user_cached(user_id, requesting_user_id):
+        user = db.get_user(user_id)
+        if not can_access(requesting_user_id, user):
+            return abort(403)
+        return user.to_dict()
+
+    # Option 2: Don't cache authenticated endpoints
+    # @app.route('/user/<int:user_id>')
+    # def get_user(user_id):
+    #     user = db.get_user(user_id)
+    #     if not can_access(request.user, user):
+    #         return abort(403)
+    #     return user.to_dict()
+
+references:
+- https://owasp.org/www-project-web-security-testing-guide/v42/4-Web_Application_Security_Testing/06-Session_Management_Testing/04-Testing_for_Session_Fixation
+- https://cwe.mitre.org/data/definitions/532.html
+- https://docs.python.org/3/library/functools.html#functools.lru_cache
+- https://medium.com/@kmgebhart/memoization-with-caching-decorators-in-python-3-8-67b4c2d6c2b
+
+examples:
+  vulnerable_code: |
+    # CRITICAL: lru_cache on authenticated endpoint without user context
+    @app.route('/admin/dashboard')
+    @lru_cache(maxsize=100)
+    @login_required
+    def admin_dashboard():
+        return get_admin_data()  # Cached across all users!
+
+    # HIGH: lru_cache on user-specific data
+    @lru_cache(maxsize=500)
+    def get_user_profile(user_id):
+        return db.query(User).get(user_id)  # Returns any user's profile to anyone
+
+    # HIGH: cached_property on sensitive field
+    class User:
+        @cached_property
+        def api_token(self):
+            return generate_api_token()  # Token cached once, never refreshed
+
+  secure_code: |
+    # SECURE: Include user context in cache key
+    @app.route('/user/<int:user_id>')
+    def get_user_profile(user_id):
+        return _get_user_profile_cached(user_id, current_user.id)
+
+    @lru_cache(maxsize=500)
+    def _get_user_profile_cached(user_id, requester_id):
+        user = db.query(User).get(user_id)
+        if not user or not can_access(requester_id, user):
+            raise Forbidden()
+        return user.to_dict()
+
+    # SECURE: Don't cache sensitive data
+    class User:
+        @property
+        def api_token(self):
+            # Generate fresh token or retrieve from database
+            return self._api_token or self.generate_api_token()
+
+    # SECURE: Use user-specific cache decorator
+    from werkzeug.contrib.cache import Cache
+    cache = Cache()
+
+    @app.route('/user/<int:user_id>')
+    @cache.cached(key_prefix=lambda: f"user_{current_user.id}_{request.view_args['user_id']}")
+    def get_user_profile(user_id):
+        return db.query(User).get(user_id)
+
+relationships:
+  enables:
+  - broken_access_control
+  - sensitive_data_exposure
+  related:
+  - broken_authentication
+  - insecure_direct_object_reference
+
+dependencies: []
+
+llm_prompts:
+  analyze: |
+    Analyze this code for decorator-based security issues, specifically:
+    1. Are there @lru_cache or other caching decorators on authenticated endpoints?
+    2. Do cached functions use user-specific cache keys?
+    3. Are decorators properly using functools.wraps?
+    4. Are there cached_property decorators on sensitive fields?
+    5. Does caching happen before or after auth decorators?
+
+  generate_attack: |
+    Generate concrete attack scenarios for decorator vulnerabilities:
+    1. Authentication bypass via shared cached responses
+    2. Information disclosure from cached privileged data
+    3. Session fixation via cached session data
+    4. Cache poisoning attacks
+
+    Provide example HTTP requests that exploit these issues.
+
+  remediation_guidance: |
+    Provide remediation guidance for decorator vulnerabilities:
+    1. When to use caching vs when to avoid it
+    2. How to implement user-specific cache keys
+    3. Proper decorator implementation patterns with functools.wraps
+    4. Alternatives to caching for authenticated endpoints
+    5. Best practices for cache key design
+    6. How to invalidate user-specific caches
+
+version: 1.0.0
+author: Adversarial Code Reviewer
+last_modified: '2026-01-20'

@@ -84,7 +84,7 @@ Agent 1: Your task is to REVIEW, SCRUTINIZE, and REFINE this TODO.md and PRD.md 
 - ✅ Pattern schema (acr/patterns/schema.py with Pydantic models and typed templates)
 - ✅ Pattern loader (acr/patterns/loader.py)
 - ✅ Pattern matcher (acr/patterns/matcher.py)
-- ✅ 22 patterns implemented in acr/patterns/library/:
+ - ✅ 23 patterns implemented in acr/patterns/library/:
   1. sql_injection.yaml
   2. command_injection.yaml (includes subprocess shell=True)
   3. xss.yaml
@@ -109,13 +109,15 @@ Agent 1: Your task is to REVIEW, SCRUTINIZE, and REFINE this TODO.md and PRD.md 
   22. flask_session_security.yaml (Flask session cookie security)
   23. flask_static_files.yaml (Flask static file serving vulnerabilities)
   24. flask_json_deserialization.yaml (Flask JSON deserialization)
+  25. decorator_vulnerabilities.yaml (unsafe caching, auth bypass in decorators)
 - ✅ Additional OWASP Top 10 patterns - COMPLETE (15/15 implemented)
-- ✅ Additional Python-specific patterns - Template injection, Format string, Weak cryptography, Weak randomness, Insecure tempfile (5/6 implemented)
-- ✅ Framework-specific patterns (Flask) - Request validation, Session security, Static files, JSON deserialization, CSRF (4/5 implemented)
+ - ✅ Additional Python-specific patterns - Template injection, Format string, Weak cryptography, Weak randomness, Insecure tempfile, Decorator vulnerabilities (6/6 implemented)
+   - ✅ Framework-specific patterns (Flask) - Request validation, Session security, Static files, JSON deserialization, CSRF (4/5 implemented)
 
 **Testing Status:**
 
-- ✅ 1122 test functions across test suite (up from 1101, +6 new pattern matcher relationship tests, +1 new reporter test)
+ - ✅ 1122 test functions across test suite (up from 1101, +6 new pattern matcher relationship tests, +1 new reporter test)
+   - ✅ 1084 tests passing (1 skipped expected), test coverage 85%
 - ✅ Tests passing for: ast_parser (27 tests), cache (19 tests), cli (58 tests), config (24 tests), entry_points (20 tests), sink_identification (42 tests), models (25 tests), aggregator (15 tests), redaction (39 tests), utils (12 tests), pattern_loader (70 tests), pattern_matcher (39 tests), confidence_scorer (28 tests), denylist_parser (15 tests), denylist_manager (13 tests), annotation_manager (24 tests), llm_client (24 tests), llm_prompts (22 tests), attack_generator (21 tests), llm_cache (25 tests), prompt_injection (32 tests), cost_tracking (32 tests), cfg_builder (30 tests), taint_tracker (63 tests), reporters (16 tests)
 - ✅ Test coverage 86% (pattern_matcher coverage 85%, markdown reporter coverage 99%)
 - ⚠️ Integration and E2E tests minimal
@@ -342,12 +344,12 @@ Agent 1: Your task is to REVIEW, SCRUTINIZE, and REFINE this TODO.md and PRD.md 
   - [x] Static file serving pattern
   - [x] JSON deserialization pattern
 
-- [ ] Create advanced Python-specific patterns
-  - [ ] Decorator vulnerability pattern (unsafe caching, auth bypass)
-  - [ ] Metaclass abuse pattern (**getattr**, **getattribute**)
-  - [ ] Extended dynamic execution patterns (**import** with vars, importlib, compile, types.FunctionType)
-  - [ ] Async code vulnerability patterns (event loop blocking, cancellation issues)
-  - [ ] Generator vulnerability patterns (StopIteration, generator exhaustion)
+ - [ ] Create advanced Python-specific patterns
+   - [x] Decorator vulnerability pattern (unsafe caching, auth bypass)
+   - [ ] Metaclass abuse pattern (**getattr**, **getattribute**)
+   - [ ] Extended dynamic execution patterns (**import** with vars, importlib, compile, types.FunctionType)
+   - [ ] Async code vulnerability patterns (event loop blocking, cancellation issues)
+   - [ ] Generator vulnerability patterns (StopIteration, generator exhaustion)
 
 - [ ] Create web security patterns
   - [ ] Clickjacking pattern (X-Frame-Options, CSP)
