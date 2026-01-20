@@ -115,9 +115,9 @@ Agent 1: Your task is to REVIEW, SCRUTINIZE, and REFINE this TODO.md and PRD.md 
 
 **Testing Status:**
 
-- ✅ 903 test functions across test suite (up from 911, -8 tests consolidated by template type-safety improvements)
-- ✅ Tests passing for: ast_parser (27 tests), cache (19 tests), cli (58 tests), config (24 tests), entry_points (20 tests), sink_identification (42 tests), models (40 tests), aggregator (15 tests), redaction (39 tests), utils (12 tests), pattern_loader (63 tests), confidence_scorer (28 tests), denylist_parser (15 tests), denylist_manager (13 tests), annotation_manager (24 tests), llm_client (24 tests), llm_prompts (22 tests), attack_generator (21 tests), llm_cache (25 tests), prompt_injection (32 tests), cost_tracking (32 tests), cfg_builder (30 tests), taint_tracker (63 tests)
-- ✅ Test coverage 86% (taint_tracker coverage 85%)
+- ✅ 925 test functions across test suite (up from 903, +22 new pattern matcher tests)
+- ✅ Tests passing for: ast_parser (27 tests), cache (19 tests), cli (58 tests), config (24 tests), entry_points (20 tests), sink_identification (42 tests), models (40 tests), aggregator (15 tests), redaction (39 tests), utils (12 tests), pattern_loader (63 tests), pattern_matcher (22 tests), confidence_scorer (28 tests), denylist_parser (15 tests), denylist_manager (13 tests), annotation_manager (24 tests), llm_client (24 tests), llm_prompts (22 tests), attack_generator (21 tests), llm_cache (25 tests), prompt_injection (32 tests), cost_tracking (32 tests), cfg_builder (30 tests), taint_tracker (63 tests)
+- ✅ Test coverage 86% (pattern_matcher coverage 89%, taint_tracker coverage 85%)
 - ⚠️ Integration and E2E tests minimal
 - 📝 Added 5 new attack patterns (weak_cryptography, weak_randomness, insecure_tempfile, flask_request_validation, flask_session_security, flask_static_files, flask_json_deserialization)
 - 🆕 LLM client abstraction implemented with retry logic and rate limiting
@@ -308,7 +308,7 @@ Agent 1: Your task is to REVIEW, SCRUTINIZE, and REFINE this TODO.md and PRD.md 
   - [ ] Match patterns against data flow
   - [ ] Match patterns against control flow
   - [ ] Implement pattern prioritization
-  - [ ] Add tests for pattern matching
+   - [x] Add tests for pattern matching (22 tests: static patterns, data flow, finding generation, edge cases)
 
 - [ ] Create core attack patterns (OWASP Top 10)
   - [x] SQL Injection pattern
