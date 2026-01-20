@@ -60,18 +60,11 @@ Agent 1: Your task is to REVIEW, SCRUTINIZE, and REFINE this TODO.md and PRD.md 
 - ✅ Sensitive data detection (acr/llm/redaction.py with 5 passing tests)
 - ✅ Caching foundation (acr/utils/cache.py with 19 passing tests)
 
-**Week 2-3: Code Analysis Engine** - 🔄 IN PROGRESS (85% complete)
+**Week 2-3: Code Analysis Engine** - 🔄 IN PROGRESS (95% complete)
 
-**Week 3-4: Attack Pattern System** - ✅ COMPLETE (100% complete)
-
-**Week 4-5: LLM Integration** - ✅ COMPLETE (100% complete)
-
-**Week 5-6: CLI Implementation** - ✅ COMPLETE
-
-**Week 7-8: Reporting System** - ✅ COMPLETE (100% complete)
 - ✅ AST parsing (acr/core/ast_parser.py complete with 27+ passing tests)
-- ✅ CFG builder (acr/core/cfg_builder.py exists)
-- ✅ DFG builder (acr/core/dfg_builder.py exists)
+- ✅ CFG builder (acr/core/cfg_builder.py complete with 30 passing tests)
+- ✅ DFG builder (acr/core/dfg_builder.py complete with 33 passing tests)
 - ✅ Taint tracker (acr/core/taint_tracker.py exists)
 - ✅ Entry point identification (acr/core/entry_points.py with 20 passing tests)
 - ✅ Sink identification (acr/core/sink_identification.py with 42 passing tests)
@@ -237,13 +230,13 @@ Agent 1: Your task is to REVIEW, SCRUTINIZE, and REFINE this TODO.md and PRD.md 
    - [x] Handle exception handling
    - [x] Add tests for CFG
 
-- [x] Implement data flow analysis
-  - [x] Create DFG (Data Flow Graph) builder
-  - [ ] Track variable assignments
-  - [ ] Track variable uses
-  - [ ] Identify data flow paths
-  - [ ] Handle function calls and returns
-  - [ ] Add tests for DFG
+  - [x] Implement data flow analysis
+   - [x] Create DFG (Data Flow Graph) builder (acr/core/dfg_builder.py complete with 33 passing tests)
+   - [x] Track variable assignments
+   - [x] Track variable uses
+   - [x] Identify data flow paths
+   - [x] Handle function calls and returns
+   - [x] Add tests for DFG
 
 - [x] Implement entry point identification
   - [x] Detect Flask routes
