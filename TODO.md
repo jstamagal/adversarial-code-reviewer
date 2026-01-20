@@ -43,7 +43,7 @@ Agent 1: Your task is to REVIEW, SCRUTINIZE, and REFINE this TODO.md and PRD.md 
 
 ## Current Completion Status (Updated: 2026-01-19)
 
-### Phase 1: MVP - In Progress (95% complete)
+### Phase 1: MVP - In Progress (96% complete)
 
 **Week 1: Project Setup** - ✅ COMPLETE
 - ✅ Python project structure (pyproject.toml, setup.py, .gitignore, LICENSE)
@@ -60,7 +60,7 @@ Agent 1: Your task is to REVIEW, SCRUTINIZE, and REFINE this TODO.md and PRD.md 
 - ✅ Sensitive data detection (acr/llm/redaction.py with 5 passing tests)
 - ✅ Caching foundation (acr/utils/cache.py with 19 passing tests)
 
-**Week 2-3: Code Analysis Engine** - 🔄 IN PROGRESS (75% complete)
+**Week 2-3: Code Analysis Engine** - 🔄 IN PROGRESS (85% complete)
 
 **Week 3-4: Attack Pattern System** - ✅ COMPLETE (100% complete)
 
@@ -111,8 +111,8 @@ Agent 1: Your task is to REVIEW, SCRUTINIZE, and REFINE this TODO.md and PRD.md 
 - ✅ Framework-specific patterns (Flask) - Request validation, Session security, Static files, JSON deserialization, CSRF (4/5 implemented)
 
 **Testing Status:**
-- ✅ 769 test functions across test suite (up from 755, +14 new logging tests added)
-- ✅ Tests passing for: ast_parser (27 tests), cache (19 tests), cli (58 tests), config (24 tests), entry_points (20 tests), sink_identification (42 tests), models (40 tests), aggregator (15 tests), redaction (39 tests), utils (12 tests), pattern_loader (71 tests), confidence_scorer (28 tests), denylist_parser (15 tests), denylist_manager (13 tests), annotation_manager (24 tests), llm_client (24 tests), llm_prompts (22 tests), attack_generator (21 tests), llm_cache (25 tests), prompt_injection (32/32 tests), cost_tracking (32 tests)
+- ✅ 856 test functions across test suite (up from 769, +30 new CFG builder tests added, +14 new logging tests added)
+- ✅ Tests passing for: ast_parser (27 tests), cache (19 tests), cli (58 tests), config (24 tests), entry_points (20 tests), sink_identification (42 tests), models (40 tests), aggregator (15 tests), redaction (39 tests), utils (12 tests), pattern_loader (71 tests), confidence_scorer (28 tests), denylist_parser (15 tests), denylist_manager (13 tests), annotation_manager (24 tests), llm_client (24 tests), llm_prompts (22 tests), attack_generator (21 tests), llm_cache (25 tests), prompt_injection (32/32 tests), cost_tracking (32 tests), cfg_builder (30 tests)
 - ⚠️ Test coverage needs improvement
 - ⚠️ Integration and E2E tests minimal
 - 📝 Added 5 new attack patterns (weak_cryptography, weak_randomness, insecure_tempfile, flask_request_validation, flask_session_security, flask_static_files, flask_json_deserialization)
@@ -124,6 +124,7 @@ Agent 1: Your task is to REVIEW, SCRUTINIZE, and REFINE this TODO.md and PRD.md 
 - 🆕 Model abuse prevention COMPLETE (TokenCounter, CostEstimator, CostTrackerManager, PromptOptimizer, RecursiveCallDetector, 32 tests)
 - 🆕 Enhanced sensitive data redaction COMPLETE (25 patterns, entropy-based detection, user-configurable patterns, redaction event logging, verification, 39 tests)
 - 🆕 Reporting system improvements COMPLETE (comprehensive JSON and Markdown reporters with executive summary, 15 new tests)
+- 🆕 CFG (Control Flow Graph) builder COMPLETE (BasicBlock class, CFGBuilder with full functionality, 30 tests covering conditionals, loops, exceptions, functions)
 
 ---
 
@@ -228,13 +229,13 @@ Agent 1: Your task is to REVIEW, SCRUTINIZE, and REFINE this TODO.md and PRD.md 
   - [x] Add handling for Python 3.8+ syntax
   - [x] Add tests for AST parsing
 
-- [x] Implement control flow analysis
-  - [x] Create CFG (Control Flow Graph) builder
-  - [ ] Identify basic blocks
-  - [ ] Track control flow between blocks
-  - [ ] Handle loops and conditionals
-  - [ ] Handle exception handling
-  - [ ] Add tests for CFG
+ - [x] Implement control flow analysis
+   - [x] Create CFG (Control Flow Graph) builder
+   - [x] Identify basic blocks
+   - [x] Track control flow between blocks
+   - [x] Handle loops and conditionals
+   - [x] Handle exception handling
+   - [x] Add tests for CFG
 
 - [x] Implement data flow analysis
   - [x] Create DFG (Data Flow Graph) builder
