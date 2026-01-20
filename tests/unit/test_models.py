@@ -373,3 +373,112 @@ def test_aggregator_summary():
 
     assert summary["total_findings"] == 2
     assert summary["high_priority_count"] == 1
+
+
+def test_aggregator_prioritize_findings_by_severity():
+    """Test that prioritize_findings sorts by severity correctly."""
+    aggregator = FindingAggregator()
+
+    findings = [
+        create_test_finding("001", "medium", "high", "injection", "test.py", 10),
+        create_test_finding("002", "critical", "high", "xss", "test.py", 20),
+        create_test_finding("003", "low", "high", "auth", "test.py", 30),
+        create_test_finding("004", "high", "high", "config", "test.py", 40),
+    ]
+
+    aggregator.add_findings(findings)
+    prioritized = aggregator.prioritize_findings()
+
+    assert len(prioritized) == 4
+    assert prioritized[0].severity == "critical"
+    assert prioritized[1].severity == "high"
+    assert prioritized[2].severity == "medium"
+    assert prioritized[3].severity == "low"
+
+
+def test_aggregator_prioritize_findings_by_confidence():
+    """Test that prioritize_findings sorts by confidence within same severity."""
+    aggregator = FindingAggregator()
+
+    findings = [
+        create_test_finding("001", "high", "medium", "injection", "test.py", 10),
+        create_test_finding("002", "high", "high", "xss", "test.py", 20),
+        create_test_finding("003", "high", "low", "auth", "test.py", 30),
+    ]
+
+    aggregator.add_findings(findings)
+    prioritized = aggregator.prioritize_findings()
+
+    assert len(prioritized) == 3
+    assert prioritized[0].confidence == "high"
+    assert prioritized[1].confidence == "medium"
+    assert prioritized[2].confidence == "low"
+
+
+def test_aggregator_prioritize_findings_mixed():
+    """Test prioritization with mixed severity and confidence."""
+    aggregator = FindingAggregator()
+
+    findings = [
+        create_test_finding("001", "medium", "high", "injection", "test.py", 10),
+        create_test_finding("002", "critical", "medium", "xss", "test.py", 20),
+        create_test_finding("003", "high", "low", "auth", "test.py", 30),
+        create_test_finding("004", "low", "high", "config", "test.py", 40),
+        create_test_finding("005", "critical", "high", "injection", "test2.py", 50),
+    ]
+
+    aggregator.add_findings(findings)
+    prioritized = aggregator.prioritize_findings()
+
+    assert len(prioritized) == 5
+    assert prioritized[0].severity == "critical" and prioritized[0].confidence == "high"
+    assert prioritized[1].severity == "critical" and prioritized[1].confidence == "medium"
+    assert prioritized[2].severity == "high"
+    assert prioritized[3].severity == "medium"
+    assert prioritized[4].severity == "low"
+
+
+def test_aggregator_prioritize_with_duplicates():
+    """Test that prioritization works with deduplication."""
+    aggregator = FindingAggregator()
+
+    findings = [
+        create_test_finding("001", "high", "high", "injection", "test.py", 10),
+        create_test_finding("002", "high", "low", "injection", "test.py", 10),
+        create_test_finding("003", "medium", "high", "xss", "test.py", 20),
+    ]
+
+    aggregator.add_findings(findings)
+    prioritized = aggregator.prioritize_findings()
+
+    assert len(prioritized) == 2
+    assert prioritized[0].severity == "high"
+    assert prioritized[0].confidence == "high"
+    assert prioritized[1].severity == "medium"
+
+
+def test_aggregator_prioritize_empty_list():
+    """Test prioritization with empty findings list."""
+    aggregator = FindingAggregator()
+
+    prioritized = aggregator.prioritize_findings()
+
+    assert len(prioritized) == 0
+    assert prioritized == []
+
+
+def test_aggregator_prioritize_info_severity():
+    """Test that info severity has lowest priority."""
+    aggregator = FindingAggregator()
+
+    findings = [
+        create_test_finding("001", "info", "high", "config", "test.py", 10),
+        create_test_finding("002", "low", "low", "injection", "test.py", 20),
+    ]
+
+    aggregator.add_findings(findings)
+    prioritized = aggregator.prioritize_findings()
+
+    assert len(prioritized) == 2
+    assert prioritized[0].severity == "low"
+    assert prioritized[1].severity == "info"

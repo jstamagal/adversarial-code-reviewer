@@ -16,7 +16,7 @@
 
 import hashlib
 from collections import Counter, defaultdict
-from typing import Dict, List
+from typing import Any, Dict, List
 
 from acr.models.finding import Finding
 
@@ -29,6 +29,7 @@ class FindingAggregator:
         self._deduplicated: Dict[str, Finding] = {}
 
     def add_finding(self, finding: Finding) -> None:
+        """Add a single finding to the aggregator."""
         self.findings.append(finding)
 
     def add_findings(self, findings: List[Finding]) -> None:
@@ -68,10 +69,7 @@ class FindingAggregator:
         if severity_order[new.severity] < severity_order[existing.severity]:
             return True
 
-        if confidence_order[new.confidence] < confidence_order[existing.confidence]:
-            return True
-
-        return False
+        return confidence_order[new.confidence] < confidence_order[existing.confidence]
 
     def get_severity_distribution(self) -> Dict[str, int]:
         """Calculate severity distribution of findings."""
@@ -122,7 +120,7 @@ class FindingAggregator:
     def get_file_summary(self) -> Dict[str, Dict[str, int]]:
         """Get summary of findings per file."""
         deduplicated = self.deduplicate()
-        file_summary = defaultdict(lambda: defaultdict(int))
+        file_summary: Dict[str, Dict[str, int]] = defaultdict(lambda: defaultdict(int))
 
         for finding in deduplicated:
             file_path = finding.location.file
@@ -154,7 +152,30 @@ class FindingAggregator:
             f for f in deduplicated if f.severity in ["critical", "high"] and f.confidence == "high"
         ]
 
-    def get_summary(self) -> Dict:
+    def prioritize_findings(self) -> List[Finding]:
+        """Sort findings by priority (severity and confidence).
+
+        Priority order: critical > high > medium > low > info
+        Within same severity: high confidence > medium confidence > low confidence
+        Within same severity and confidence: maintain original order
+
+        Returns:
+            List of findings sorted by priority
+        """
+        deduplicated = self.deduplicate()
+
+        severity_order = {"critical": 0, "high": 1, "medium": 2, "low": 3, "info": 4}
+        confidence_order = {"high": 0, "medium": 1, "low": 2}
+
+        def get_priority_key(finding: Finding) -> tuple[int, int]:
+            """Generate priority key for sorting."""
+            sev_priority = severity_order.get(finding.severity, 4)
+            conf_priority = confidence_order.get(finding.confidence, 2)
+            return (sev_priority, conf_priority)
+
+        return sorted(deduplicated, key=get_priority_key)
+
+    def get_summary(self) -> Dict[str, Any]:
         """Get comprehensive summary of all findings."""
         deduplicated = self.deduplicate()
 

@@ -306,10 +306,10 @@ Agent 1: Your task is to REVIEW, SCRUTINIZE, and REFINE this TODO.md and PRD.md 
 - [x] Implement pattern matcher
   - [x] Match patterns against code structure
   - [x] Match patterns against AST
- - [x] Match patterns against data flow
-   - [x] Match patterns against control flow
-   - [ ] Implement pattern prioritization
-   - [x] Add tests for pattern matching (22 tests: static patterns, data flow, finding generation, edge cases)
+- [x] Match patterns against data flow
+- [x] Match patterns against control flow
+    - [x] Implement pattern prioritization
+    - [x] Add tests for pattern matching (22 tests: static patterns, data flow, finding generation, edge cases)
 
 - [ ] Create core attack patterns (OWASP Top 10)
   - [x] SQL Injection pattern
