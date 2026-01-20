@@ -14,6 +14,6 @@
 
 """LLM integration layer."""
 
-from acr.llm import client, prompts, redaction, cache
+from acr.llm import client, prompts, redaction, cache, prompt_injection
 
-__all__ = ["client", "prompts", "redaction", "cache"]
+__all__ = ["client", "prompts", "redaction", "cache", "prompt_injection"]

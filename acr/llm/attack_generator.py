@@ -15,10 +15,19 @@
 """Intelligent attack generation using LLM."""
 
 import os
+import logging
 from typing import Optional, Dict, Any, List
+
+logger = logging.getLogger(__name__)
 from acr.llm.client import LLMClient, create_client
 from acr.llm.prompts import PromptTemplates
 from acr.llm.redaction import DataRedactor
+from acr.llm.prompt_injection import (
+    PromptInjectorDetector,
+    PromptSanitizer,
+    OutputMonitor,
+    JAILBREAK_PREVENTION_SYSTEM_PROMPT,
+)
 from acr.models.finding import Finding, FindingLocation, FindingImpact, FindingRemediation
 from acr.config.loader import load_config
 
@@ -31,6 +40,7 @@ class AttackGenerator:
         llm_client: Optional[LLMClient] = None,
         cache_ttl: int = 86400,
         enable_cache: bool = True,
+        enable_prompt_injection_protection: bool = True,
     ):
         """Initialize attack generator.
 
@@ -38,6 +48,7 @@ class AttackGenerator:
             llm_client: LLM client instance (uses default if None)
             cache_ttl: Cache time-to-live in seconds
             enable_cache: Enable/disable response caching
+            enable_prompt_injection_protection: Enable prompt injection protection
         """
         if llm_client is None:
             config = load_config()
@@ -53,6 +64,11 @@ class AttackGenerator:
         self.enable_cache = enable_cache
         self._call_count = 0
         self._max_calls_per_scan = 100
+        self.enable_prompt_injection_protection = enable_prompt_injection_protection
+
+        self.injector_detector = PromptInjectorDetector(enabled=enable_prompt_injection_protection)
+        self.prompt_sanitizer = PromptSanitizer(detector=self.injector_detector)
+        self.output_monitor = OutputMonitor()
 
     def generate_attack_vector(
         self,
@@ -241,7 +257,25 @@ class AttackGenerator:
             LLM response
         """
         self._call_count += 1
+
+        if self.enable_prompt_injection_protection:
+            prompt, sanitization_metadata = self.prompt_sanitizer.sanitize(prompt, mode="strip")
+
+            if sanitization_metadata["has_injection"]:
+                logger.warning(
+                    f"Prompt injection detected and sanitized: "
+                    f"{sanitization_metadata['detected_categories']}"
+                )
+
+            prompt = f"{JAILBREAK_PREVENTION_SYSTEM_PROMPT}\n\n{prompt}"
+
         response = self.client.generate(prompt)
+
+        if self.enable_prompt_injection_protection:
+            is_suspicious, matched_pattern = self.output_monitor.monitor(response)
+            if is_suspicious:
+                logger.warning(f"Suspicious LLM output detected: {matched_pattern}")
+
         return response
 
     def _check_call_limit(self) -> None:
