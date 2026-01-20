@@ -14,11 +14,14 @@
 
 """Markdown report generator."""
 
-from typing import List
+from typing import List, Dict
+from collections import Counter
 from pathlib import Path
+from datetime import datetime
 
 from acr.reporters.base import BaseReporter
 from acr.models.finding import Finding
+from acr.models.aggregator import FindingAggregator
 
 
 class MarkdownReporter(BaseReporter):
@@ -33,17 +36,112 @@ class MarkdownReporter(BaseReporter):
         Returns:
             Markdown report string
         """
-        # TODO: Implement Markdown generation
-        lines = [
-            "# Adversarial Code Reviewer Report\n",
-            f"Total Findings: {len(findings)}\n",
-        ]
+        aggregator = FindingAggregator()
+        aggregator.add_findings(findings)
+        summary = aggregator.get_summary()
 
-        for finding in findings:
-            lines.append(f"## {finding.title}\n")
-            lines.append(f"**Severity:** {finding.severity}\n")
-            lines.append(f"**File:** {finding.location.file}:{finding.location.line}\n")
-            lines.append(f"\n{finding.description}\n")
+        lines = []
+
+        lines.append("# Adversarial Code Reviewer Report\n")
+        lines.append(f"**Generated:** {datetime.now().strftime('%Y-%m-%d %H:%M:%S UTC')}\n")
+
+        lines.append("\n## Executive Summary\n")
+        lines.append(f"- **Total Findings:** {summary['total_findings']}")
+        lines.append(f"- **Risk Score:** {summary['risk_score']}")
+        lines.append(f"- **High Priority Findings:** {summary['high_priority_count']}\n")
+
+        lines.append("### Severity Distribution\n")
+        for severity in ["critical", "high", "medium", "low", "info"]:
+            count = summary["severity_distribution"].get(severity, 0)
+            lines.append(f"- **{severity.capitalize()}:** {count}")
+        lines.append("")
+
+        if summary["total_findings"] > 0:
+            lines.append("### Confidence Distribution\n")
+            for confidence in ["high", "medium", "low"]:
+                count = summary["confidence_distribution"].get(confidence, 0)
+                lines.append(f"- **{confidence.capitalize()}:** {count}")
+            lines.append("")
+
+            lines.append("### Category Distribution\n")
+            categories = sorted(
+                summary["category_distribution"].items(), key=lambda x: x[1], reverse=True
+            )
+            for category, count in categories:
+                lines.append(f"- **{category}:** {count}")
+            lines.append("")
+
+        severity_order = ["critical", "high", "medium", "low", "info"]
+        deduplicated = aggregator.deduplicate()
+
+        for severity in severity_order:
+            findings_by_severity = [f for f in deduplicated if f.severity == severity]
+            if findings_by_severity:
+                lines.append(
+                    f"\n## {severity.capitalize()} Severity Findings ({len(findings_by_severity)})\n"
+                )
+                for finding in findings_by_severity:
+                    lines.append(f"### {finding.title}\n")
+                    lines.append(f"**ID:** `{finding.id}`\n")
+                    lines.append(f"**Confidence:** {finding.confidence}")
+                    lines.append(f"**Category:** {finding.category}")
+
+                    if finding.cwe_id:
+                        lines.append(
+                            f"**CWE:** [{finding.cwe_id}](https://cwe.mitre.org/data/definitions/{finding.cwe_id.replace('CWE-', '')}.html)"
+                        )
+                    if finding.owasp_id:
+                        lines.append(f"**OWASP:** {finding.owasp_id}")
+
+                    lines.append(
+                        f"\n**Location:** `{finding.location.file}:{finding.location.line}`"
+                    )
+                    if finding.location.function:
+                        lines.append(f"**Function:** `{finding.location.function}`")
+                    if finding.location.class_name:
+                        lines.append(f"**Class:** `{finding.location.class_name}`")
+
+                    lines.append(f"\n**Description:**\n{finding.description}")
+
+                    lines.append(f"\n**Attack Vector:**\n{finding.attack_vector}")
+
+                    lines.append("\n**Impact:**")
+                    lines.append(f"- Confidentiality: {finding.impact.confidentiality}")
+                    lines.append(f"- Integrity: {finding.impact.integrity}")
+                    lines.append(f"- Availability: {finding.impact.availability}")
+
+                    lines.append(f"\n**Remediation:**\n{finding.remediation.description}")
+
+                    if finding.remediation.code_before:
+                        lines.append("\n**Vulnerable Code:**")
+                        lines.append("```python")
+                        lines.append(finding.remediation.code_before)
+                        lines.append("```")
+
+                    if finding.remediation.code_after:
+                        lines.append("\n**Fixed Code:**")
+                        lines.append("```python")
+                        lines.append(finding.remediation.code_after)
+                        lines.append("```")
+
+                    if finding.references:
+                        lines.append("\n**References:**")
+                        for ref in finding.references:
+                            lines.append(f"- {ref}")
+
+                    if finding.state != "open":
+                        lines.append(f"\n**Status:** {finding.state}")
+
+                    lines.append("\n---")
+
+        if summary["file_summary"]:
+            lines.append("\n## File Summary\n")
+            for file_path, file_stats in sorted(summary["file_summary"].items()):
+                lines.append(f"\n### `{file_path}`")
+                lines.append(f"- **Total Findings:** {file_stats['total']}")
+                for severity in ["critical", "high", "medium", "low"]:
+                    if severity in file_stats:
+                        lines.append(f"- **{severity.capitalize()}:** {file_stats[severity]}")
 
         return "\n".join(lines)
 

@@ -14,12 +14,14 @@
 
 """JSON report generator."""
 
-from typing import List
+from typing import List, Dict, Any
 from pathlib import Path
+from datetime import datetime
 import json
 
 from acr.reporters.base import BaseReporter
 from acr.models.finding import Finding
+from acr.models.aggregator import FindingAggregator
 
 
 class JSONReporter(BaseReporter):
@@ -34,12 +36,29 @@ class JSONReporter(BaseReporter):
         Returns:
             JSON report string
         """
-        # TODO: Implement JSON generation with proper schema
-        data = {
-            "total_findings": len(findings),
-            "findings": [finding.model_dump() for finding in findings],
+        aggregator = FindingAggregator()
+        aggregator.add_findings(findings)
+        summary = aggregator.get_summary()
+        deduplicated = aggregator.deduplicate()
+
+        data: Dict[str, Any] = {
+            "metadata": {
+                "generated_at": datetime.now().isoformat() + "Z",
+                "tool": "Adversarial Code Reviewer",
+                "version": "0.1.0",
+            },
+            "summary": {
+                "total_findings": summary["total_findings"],
+                "risk_score": summary["risk_score"],
+                "high_priority_count": summary["high_priority_count"],
+                "severity_distribution": summary["severity_distribution"],
+                "confidence_distribution": summary["confidence_distribution"],
+                "category_distribution": summary["category_distribution"],
+            },
+            "findings": [finding.model_dump(mode="json") for finding in deduplicated],
         }
-        return json.dumps(data, indent=2)
+
+        return json.dumps(data, indent=2, default=str)
 
     def write(self, findings: List[Finding], output_path: Path) -> None:
         """Write JSON report to file.
