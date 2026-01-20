@@ -5,6 +5,33 @@ severity: critical
 cwe: CWE-89
 owasp: A01:2021-Injection
 
+version: 1.1.0
+author: ACR Security Team
+last_modified: 2025-01-19T00:00:00Z
+
+tags:
+  - injection
+  - database
+  - authentication-bypass
+  - data-exfiltration
+
+dependencies:
+  - database-connectivity
+  - user-input
+
+relationships:
+  enables:
+    - broken-access-control
+    - sensitive-data-exposure
+  related:
+    - command-injection
+    - orm-injection
+
+impact:
+  confidentiality: high
+  integrity: high
+  availability: low
+
 description: |
   SQL injection occurs when untrusted user input is concatenated into SQL queries without proper
   sanitization or parameterization, allowing attackers to execute arbitrary SQL commands.

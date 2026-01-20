@@ -46,6 +46,20 @@ class PatternLocation(BaseModel):
     class_name: Optional[str] = Field(default=None, description="Class name")
 
 
+class PatternImpact(BaseModel):
+    """Impact ratings for a pattern."""
+
+    confidentiality: Optional[str] = Field(
+        default=None, description="Confidentiality impact (high, medium, low, none)"
+    )
+    integrity: Optional[str] = Field(
+        default=None, description="Integrity impact (high, medium, low, none)"
+    )
+    availability: Optional[str] = Field(
+        default=None, description="Availability impact (high, medium, low, none)"
+    )
+
+
 class PatternRemediation(BaseModel):
     """Remediation information for a pattern."""
 
@@ -82,3 +96,24 @@ class Pattern(BaseModel):
     references: List[str] = Field(default_factory=list, description="Reference links")
 
     enabled: bool = Field(default=True, description="Whether pattern is enabled")
+
+    version: Optional[str] = Field(default="1.0.0", description="Pattern version")
+    author: Optional[str] = Field(default=None, description="Pattern author or maintainer")
+    last_modified: Optional[str] = Field(default=None, description="Last modified date (ISO 8601)")
+    tags: List[str] = Field(
+        default_factory=list, description="Tags for categorization and searching"
+    )
+
+    relationships: Dict[str, List[str]] = Field(
+        default_factory=dict,
+        description="Pattern relationships: {'enables': [...], 'enabled_by': [...], 'related': [...]}",
+    )
+
+    dependencies: List[str] = Field(
+        default_factory=list,
+        description="Required language features or conditions for this pattern",
+    )
+
+    impact: Optional[PatternImpact] = Field(
+        default=None, description="Impact ratings for confidentiality, integrity, availability"
+    )

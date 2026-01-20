@@ -16,10 +16,11 @@
 
 from typing import List, Optional, Dict, Any
 from pathlib import Path
+from datetime import datetime
 
 import yaml
 
-from acr.patterns.schema import Pattern, PatternRemediation
+from acr.patterns.schema import Pattern, PatternRemediation, PatternImpact
 
 
 class PatternLoader:
@@ -100,6 +101,11 @@ class PatternLoader:
             )
 
             templates = self._parse_templates(data.get("detection", {}))
+            impact = self._parse_impact(data.get("impact"))
+
+            last_modified = data.get("last_modified")
+            if isinstance(last_modified, datetime):
+                last_modified = last_modified.isoformat()
 
             return Pattern(
                 id=pattern_id,
@@ -117,6 +123,13 @@ class PatternLoader:
                 remediation=remediation,
                 references=data.get("references", []),
                 enabled=data.get("enabled", True),
+                version=data.get("version", "1.0.0"),
+                author=data.get("author"),
+                last_modified=last_modified,
+                tags=data.get("tags", []),
+                relationships=data.get("relationships", {}),
+                dependencies=data.get("dependencies", []),
+                impact=impact,
             )
 
         except Exception:
@@ -142,3 +155,21 @@ class PatternLoader:
             templates.append({"type": "data_flow", **pattern_data})
 
         return templates
+
+    def _parse_impact(self, impact_data: Optional[Dict[str, Any]]) -> Optional[PatternImpact]:
+        """Parse impact data from YAML.
+
+        Args:
+            impact_data: Impact section from YAML
+
+        Returns:
+            PatternImpact object or None if not provided
+        """
+        if not impact_data:
+            return None
+
+        return PatternImpact(
+            confidentiality=impact_data.get("confidentiality"),
+            integrity=impact_data.get("integrity"),
+            availability=impact_data.get("availability"),
+        )

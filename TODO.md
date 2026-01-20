@@ -280,7 +280,7 @@ Agent 1: Your task is to REVIEW, SCRUTINIZE, and REFINE this TODO.md and PRD.md 
 - [x] Design attack pattern schema
   - [x] Define YAML schema for patterns
   - [x] Create Pydantic models for patterns
-  - [ ] Add pattern metadata fields
+  - [x] Add pattern metadata fields (version, author, last_modified, tags, relationships, dependencies, impact ratings)
   - [ ] Add pattern template fields
   - [ ] Add pattern relationship fields
   - [ ] Document pattern schema
