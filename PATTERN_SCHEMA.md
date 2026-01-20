@@ -436,7 +436,7 @@ patterns:
   custom_patterns: "./custom_patterns"
 ```
 
-4. Custom patterns can override built-in patterns by using the same `id`
+1. Custom patterns can override built-in patterns by using the same `id`
 
 ## Pattern Loading
 
@@ -450,6 +450,7 @@ patterns = loader.load_patterns(custom_patterns_dir="./custom_patterns")
 ```
 
 The loader:
+
 - Validates patterns against the schema
 - Supports custom patterns that override built-in patterns
 - Caches loaded patterns for performance
@@ -471,6 +472,7 @@ findings = matcher.match_patterns(
 ```
 
 The matcher:
+
 - Supports static, data_flow, and control_flow pattern matching
 - Returns `Finding` objects with full context
 - Includes related patterns from pattern relationships

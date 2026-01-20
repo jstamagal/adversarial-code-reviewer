@@ -82,5 +82,6 @@ repos:
         IDEA\.md|
         PRD\.md|
         TODO\.md|
-        README\.md
+        README\.md|
+        PATTERN_SCHEMA\.md
       )
