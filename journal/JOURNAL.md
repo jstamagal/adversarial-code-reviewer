@@ -1,9 +1,10 @@
-[current_iteration] = 35
-[next_iteration] = 36
-[my_task_was] = Fix Last Failing Prompt Injection Test (Phase 1.5, LLM security)
+[current_iteration] = 36
+[next_iteration] = 37
+[my_task_was] = Add comprehensive tests for logging infrastructure (Phase 1.2, Core Infrastructure)
 [completed] = True
-[what_worked] = Fixed remaining prompt injection test failure by: 1) Removed duplicate "bypass all security" pattern from code_execution_bypass category (it was overlapping with jailbreak category's "bypass all security" pattern, causing wrong category detection), 2) Added more flexible pattern "show.*system\s+prompt" to output_manipulation category to handle cases like "show me your system prompt", 3) Added pattern "execute.*without.*checks" to code_execution_bypass category to handle "execute without security checks" and "execute without validation". All 32 tests now pass (755/755 tests = 100%).
-[what_did_not_work] = Initial approach of just removing duplicate pattern was insufficient - it broke test_detect_code_execution_bypass which expected "bypass all checks" and "execute without security checks" to be detected. Had to add back specific patterns for these cases while avoiding the overlapping "bypass all security" pattern. The solution was to use more specific patterns: "bypass\s+(?:all\s+)?checks" (without "security" option) and "execute.*without.*checks" (catches both "without validation" and "without security checks" without being overly broad).
-[tests_passing] = 755/755 tests passing (100%). All 32 prompt_injection tests pass, including the previously failing test_detect_multiple_categories.
-[tests_failing] = No failing tests. All 755 tests pass.
-[notes_for_next_agent] = Phase 1 is now 100% complete for test coverage (755/755 tests passing). All prompt injection detection issues have been resolved. The tool is ready for the next phase of development or any remaining incomplete tasks from Phase 1 (such as adding license headers, setting up CI/CD, etc.).
+[what_worked] = Successfully added 14 comprehensive tests for logging infrastructure to tests/unit/test_utils.py. Tests cover: default log level (INFO), verbose level (DEBUG), quiet level (ERROR), custom level, quiet overrides verbose, handler presence, handler level, log format verification, date format verification, no duplicate handlers, stderr output, actual log message generation, level filtering, and get_logger returns same instance. All 14 new tests pass. Total test count increased from 755 to 769 tests (100% passing).
+[what_did_not_work] = Initial test for checking logger handler stream access had type checking issues (Handler base class doesn't expose stream attribute). Fixed by using hasattr() check before accessing stream attribute. Also had to handle None case for formatter._fmt field which can be None.
+[tests_passing] = 769/769 tests passing (100%). All 19 utils tests pass (up from 12). Logger.py coverage increased to 84%.
+[tests_failing] = No failing tests. All 769 tests pass.
+[notes_for_next_agent] = Successfully completed TODO item "Add tests for logging" from section 1.2. Logging infrastructure is now well-tested. Next highest priority incomplete Phase 1 tasks are: Add tests for error handling, Add memory usage logging, or implementing CFG/DFG functionality and tests. Core infrastructure tests are strengthening test coverage.
+
