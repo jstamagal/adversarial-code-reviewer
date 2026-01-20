@@ -44,18 +44,19 @@ class ASTParser:
         self.language = Language(tspython.language())
         self.parser = Parser(self.language)
 
-    def parse(self, code: str, file: str = "<string>") -> Optional[Node]:
+    def parse(self, code: str, file: str = "<string>", recover: bool = False) -> Optional[Node]:
         """Parse code string into AST.
 
         Args:
             code: Source code string
             file: File path for error reporting
+            recover: If True, attempt to recover from syntax errors and continue parsing
 
         Returns:
             AST root node or None if parsing fails
 
         Raises:
-            ParseError: If code contains syntax errors
+            ParseError: If code contains syntax errors and recover=False
         """
         if not code or not code.strip():
             return None
@@ -65,8 +66,16 @@ class ASTParser:
             root = cast(Node, tree.root_node)
 
             if root.has_error:
-                errors = self._collect_errors(root, code)
-                raise ParseError(f"Syntax errors found: {', '.join(errors)}", file, 0)
+                if recover:
+                    errors = self._collect_errors_with_suggestions(root, code)
+                    if errors:
+                        for error_info in errors:
+                            self._log_syntax_error(error_info, file)
+                    return root
+                else:
+                    errors = self._collect_errors_with_suggestions(root, code)
+                    error_messages = [e["message"] for e in errors]
+                    raise ParseError(f"Syntax errors found: {', '.join(error_messages)}", file, 0)
 
             return root
 
@@ -75,11 +84,12 @@ class ASTParser:
                 raise ParseError(f"Failed to parse code: {e}", file, 0) from e
             raise
 
-    def parse_file(self, file_path: Path) -> Optional[Node]:
+    def parse_file(self, file_path: Path, recover: bool = False) -> Optional[Node]:
         """Parse a Python file.
 
         Args:
             file_path: Path to Python file
+            recover: If True, attempt to recover from syntax errors
 
         Returns:
             AST root node or None if file is empty
@@ -104,7 +114,7 @@ class ASTParser:
             except Exception as e:
                 raise ParseError(f"Failed to read file {file_path}: {e}", str(file_path), 0) from e
 
-        return self.parse(code, str(file_path))
+        return self.parse(code, str(file_path), recover=recover)
 
     def get_functions(self, root: Node) -> List[Node]:
         """Extract all function definitions from AST.
@@ -232,6 +242,182 @@ class ASTParser:
             SHA256 hash of the code
         """
         return hashlib.sha256(code.encode("utf-8")).hexdigest()
+
+    def _collect_errors_with_suggestions(self, root: Node, code: str) -> List[dict]:
+        """Collect all syntax errors from AST with helpful suggestions.
+
+        Args:
+            root: AST root node
+            code: Original source code
+
+        Returns:
+            List of error dictionaries with line, message, and suggestion
+        """
+        errors = []
+        lines = code.split("\n")
+
+        def visit(node: Node):
+            line_num = node.start_point.row + 1
+            if line_num - 1 < len(lines):
+                line_content = lines[line_num - 1].strip()
+
+                if node.is_missing:
+                    suggestion = self._suggest_fix_for_missing(node, line_content)
+                    errors.append(
+                        {
+                            "line": line_num,
+                            "message": f"Missing syntax at line {line_num}",
+                            "suggestion": suggestion,
+                            "context": line_content,
+                        }
+                    )
+                if node.is_error:
+                    suggestion = self._suggest_fix_for_error(node, line_content)
+                    errors.append(
+                        {
+                            "line": line_num,
+                            "message": f"Syntax error at line {line_num}",
+                            "suggestion": suggestion,
+                            "context": line_content,
+                        }
+                    )
+            for child in node.children:
+                visit(child)
+
+        visit(root)
+        return errors
+
+    def _suggest_fix_for_missing(self, node: Node, line_content: str) -> str:
+        """Suggest fix for missing syntax node.
+
+        Args:
+            node: Missing syntax node
+            line_content: Content of the line with error
+
+        Returns:
+            Suggestion message
+        """
+        suggestions = []
+
+        if line_content.endswith(":") and any(
+            keyword in line_content
+            for keyword in [
+                "def ",
+                "class ",
+                "if ",
+                "elif ",
+                "else:",
+                "for ",
+                "while ",
+                "try:",
+                "except ",
+                "with ",
+                "async def ",
+            ]
+        ):
+            suggestions.append("Add indented code block after this line")
+
+        if line_content.startswith("import ") and "," in line_content:
+            suggestions.append("Ensure imports are properly separated")
+
+        if "lambda" in line_content and ":" not in line_content:
+            suggestions.append("Add colon after lambda expression")
+
+        if line_content.startswith(("return ", "yield ", "raise ")) and not line_content.endswith(
+            ("(", "[", "{", "'", '"')
+        ):
+            suggestions.append("Add value after return/yield/raise")
+
+        return "; ".join(suggestions) if suggestions else "Check syntax in this line"
+
+    def _suggest_fix_for_error(self, node: Node, line_content: str) -> str:
+        """Suggest fix for syntax error node.
+
+        Args:
+            node: Error node
+            line_content: Content of the line with error
+
+        Returns:
+            Suggestion message
+        """
+        suggestions = []
+
+        if "=" in line_content and "==" not in line_content and line_content.endswith("="):
+            suggestions.append("Missing value after assignment operator")
+
+        if "def " in line_content and ":" not in line_content:
+            suggestions.append("Add colon after function definition")
+
+        if (
+            "if " in line_content
+            and "elif " not in line_content
+            and "else:" not in line_content
+            and ":" not in line_content
+        ):
+            suggestions.append("Add colon after if condition")
+
+        if ":" in line_content and not any(
+            line_content.lstrip().startswith(k)
+            for k in [
+                "def ",
+                "class ",
+                "if ",
+                "elif ",
+                "else:",
+                "for ",
+                "while ",
+                "try:",
+                "except ",
+                "with ",
+                "async def ",
+            ]
+        ):
+            suggestions.append("Check if colon is used correctly")
+
+        if line_content.count("(") != line_content.count(")"):
+            suggestions.append(
+                f"{'Missing' if line_content.count('(') > line_content.count(')') else 'Extra'} parentheses"
+            )
+
+        if line_content.count("[") != line_content.count("]"):
+            suggestions.append(
+                f"{'Missing' if line_content.count('[') > line_content.count(']') else 'Extra'} brackets"
+            )
+
+        if line_content.count("{") != line_content.count("}"):
+            suggestions.append(
+                f"{'Missing' if line_content.count('{') > line_content.count('}') else 'Extra'} braces"
+            )
+
+        if '"""' in line_content or "'''" in line_content:
+            if line_content.count('"""') % 2 != 0 or line_content.count("'''") % 2 != 0:
+                suggestions.append("Unclosed multiline string")
+
+        if '"' in line_content and line_content.count('"') % 2 != 0:
+            suggestions.append("Unclosed double-quoted string")
+
+        if "'" in line_content and line_content.count("'") % 2 != 0:
+            suggestions.append("Unclosed single-quoted string")
+
+        return (
+            "; ".join(suggestions) if suggestions else "Check indentation, punctuation, and syntax"
+        )
+
+    def _log_syntax_error(self, error_info: dict, file: str):
+        """Log a syntax error with helpful information.
+
+        Args:
+            error_info: Error information dictionary
+            file: File path
+        """
+        from acr.utils.logger import get_logger
+
+        logger = get_logger(__name__)
+        logger.warning(f"Syntax error in {file}:{error_info['line']}: {error_info['message']}")
+        if error_info.get("suggestion"):
+            logger.warning(f"  Suggestion: {error_info['suggestion']}")
+        if error_info.get("context"):
+            logger.warning(f"  Context: {error_info['context']}")
 
     def _collect_errors(self, root: Node) -> List[str]:
         """Collect all syntax errors from AST.

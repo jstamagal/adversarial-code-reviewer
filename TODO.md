@@ -53,10 +53,11 @@ Agent 1: Your task is to REVIEW, SCRUTINIZE, and REFINE this TODO.md and PRD.md 
 - ⚠️ Development tools (pytest, black, flake8, mypy) - partial, needs CI/CD setup
 - ⚠️ Requirements files - managed via pyproject.toml
 
-**Week 2-3: Core Infrastructure** - 🔄 IN PROGRESS (90% complete)
+ **Week 2-3: Core Infrastructure** - 🔄 IN PROGRESS (92% complete)
 - ✅ Configuration management (acr/config/ with Pydantic models, loader, validator, schema)
 - ✅ Logging infrastructure (acr/utils/logger.py with structured logging)
 - ✅ Error handling framework (acr/utils/errors.py with custom exceptions)
+- ✅ Syntax error recovery (acr/core/ast_parser.py with 9 new recovery tests)
 - ✅ Sensitive data detection (acr/llm/redaction.py with 5 passing tests)
 - ✅ Caching foundation (acr/utils/cache.py with 19 passing tests)
 
@@ -189,14 +190,14 @@ Agent 1: Your task is to REVIEW, SCRUTINIZE, and REFINE this TODO.md and PRD.md 
     - [x] Add tests for logging
 
  - [x] Implement error handling framework
-   - [x] Create custom exception hierarchy
-   - [x] Implement parse error handling with clear line numbers
-   - [ ] Implement syntax error recovery
-   - [ ] Implement circular dependency detection
-   - [ ] Implement graceful degradation strategies
-   - [ ] Add user-friendly error messages
-   - [ ] Add error recovery mechanisms
-   - [x] Add tests for error handling
+    - [x] Create custom exception hierarchy
+    - [x] Implement parse error handling with clear line numbers
+    - [x] Implement syntax error recovery
+    - [ ] Implement circular dependency detection
+    - [ ] Implement graceful degradation strategies
+    - [ ] Add user-friendly error messages
+    - [ ] Add error recovery mechanisms
+    - [x] Add tests for error handling
 
 - [x] Implement sensitive data detection
   - [x] Detect API keys (patterns: sk-.*, api_key.*, token.*)
