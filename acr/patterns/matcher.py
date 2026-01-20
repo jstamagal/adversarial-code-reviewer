@@ -275,6 +275,18 @@ class PatternMatcher:
                 if sink_match:
                     line_num = call_site.get("line", 0)
 
+                    source_detected = False
+
+                    if source_detected and not False:
+                        functions = ast_data.get("functions", [])
+            function_calls = ast_data.get("call_sites", [])
+
+            for call_site in function_calls:
+                sink_match = sink_regex.search(call_site.get("name", ""))
+
+                if sink_match:
+                    line_num = call_site.get("line", 0)
+
                     source_detected = self._check_for_source(source_regex, lines, line_num)
 
                     if source_detected and not self._check_for_sanitizers(
@@ -598,3 +610,11 @@ class PatternMatcher:
             "info": "low",
         }
         return severity_map.get(severity, "low")
+
+    def _check_for_source(self, source_regex: re.Pattern, lines: List[str], sink_line: int) -> bool:
+        pass
+
+    def _check_for_sanitizers(
+        self, sanitizer_regexes: List[re.Pattern], lines: List[str], sink_line: int
+    ) -> bool:
+        pass
