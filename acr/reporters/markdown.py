@@ -128,6 +128,11 @@ class MarkdownReporter(BaseReporter):
                         for ref in finding.references:
                             lines.append(f"- {ref}")
 
+                    if finding.related_patterns:
+                        lines.append("\n**Related Patterns:**")
+                        for pattern_id in finding.related_patterns:
+                            lines.append(f"- `{pattern_id}`")
+
                     if finding.state != "open":
                         lines.append(f"\n**Status:** {finding.state}")
 

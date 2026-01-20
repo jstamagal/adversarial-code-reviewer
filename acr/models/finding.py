@@ -68,6 +68,7 @@ class Finding(BaseModel):
 
     references: List[str] = Field(default_factory=list, description="Reference links")
     related_findings: List[str] = Field(default_factory=list, description="Related finding IDs")
+    related_patterns: List[str] = Field(default_factory=list, description="Related pattern IDs")
 
     state: str = Field(default="open", description="Finding state")
 

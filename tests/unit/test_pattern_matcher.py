@@ -802,3 +802,134 @@ remediation:
         """Test that matcher handles nonexistent custom patterns directory gracefully."""
         matcher = PatternMatcher(custom_patterns_dir="/nonexistent/directory")
         assert len(matcher.patterns) > 0
+
+
+class TestPatternMatcherRelationships:
+    """Test pattern relationship extraction and population."""
+
+    def test_extract_related_patterns_empty(self):
+        """Test that empty relationships field returns empty list."""
+        pattern = Pattern(
+            id="test-pattern",
+            name="Test Pattern",
+            description="Test description",
+            severity=SeverityLevel.HIGH,
+            category="test",
+            templates=[StaticPatternTemplate(pattern=r"test_function", confidence="high")],
+            attack_vector="Test attack vector",
+            remediation=PatternRemediation(description="Test remediation"),
+        )
+        matcher = PatternMatcher()
+        related = matcher._extract_related_patterns(pattern)
+        assert related == []
+
+    def test_extract_related_patterns_enables(self):
+        """Test extracting enabled patterns from relationships."""
+        pattern = Pattern(
+            id="test-pattern",
+            name="Test Pattern",
+            description="Test description",
+            severity=SeverityLevel.HIGH,
+            category="test",
+            templates=[StaticPatternTemplate(pattern=r"test_function", confidence="high")],
+            attack_vector="Test attack vector",
+            remediation=PatternRemediation(description="Test remediation"),
+            relationships={"enables": ["pattern-a", "pattern-b"]},
+        )
+        matcher = PatternMatcher()
+        related = matcher._extract_related_patterns(pattern)
+        assert "pattern-a" in related
+        assert "pattern-b" in related
+
+    def test_extract_related_patterns_all_types(self):
+        """Test extracting all relationship types."""
+        pattern = Pattern(
+            id="test-pattern",
+            name="Test Pattern",
+            description="Test description",
+            severity=SeverityLevel.HIGH,
+            category="test",
+            templates=[StaticPatternTemplate(pattern=r"test_function", confidence="high")],
+            attack_vector="Test attack vector",
+            remediation=PatternRemediation(description="Test remediation"),
+            relationships={
+                "enables": ["pattern-a"],
+                "enabled_by": ["pattern-b"],
+                "related": ["pattern-c", "pattern-d"],
+            },
+        )
+        matcher = PatternMatcher()
+        related = matcher._extract_related_patterns(pattern)
+        assert len(related) == 4
+        assert "pattern-a" in related
+        assert "pattern-b" in related
+        assert "pattern-c" in related
+        assert "pattern-d" in related
+
+    def test_extract_related_patterns_removes_duplicates(self):
+        """Test that duplicate pattern IDs are removed."""
+        pattern = Pattern(
+            id="test-pattern",
+            name="Test Pattern",
+            description="Test description",
+            severity=SeverityLevel.HIGH,
+            category="test",
+            templates=[StaticPatternTemplate(pattern=r"test_function", confidence="high")],
+            attack_vector="Test attack vector",
+            remediation=PatternRemediation(description="Test remediation"),
+            relationships={
+                "enables": ["pattern-a"],
+                "related": ["pattern-a", "pattern-b"],
+            },
+        )
+        matcher = PatternMatcher()
+        related = matcher._extract_related_patterns(pattern)
+        assert related.count("pattern-a") == 1
+        assert "pattern-b" in related
+        assert len(related) == 2
+
+    def test_finding_includes_related_patterns_static(self):
+        """Test that static pattern matching includes related patterns in finding."""
+        pattern = Pattern(
+            id="test-pattern",
+            name="Test Pattern",
+            description="Test description",
+            severity=SeverityLevel.HIGH,
+            category="test",
+            templates=[StaticPatternTemplate(pattern=r"vulnerable_function", confidence="high")],
+            attack_vector="Test attack vector",
+            remediation=PatternRemediation(description="Test remediation"),
+            relationships={"enables": ["related-a", "related-b"]},
+        )
+        matcher = PatternMatcher(patterns=[pattern])
+        code = "def vulnerable_function(x): pass"
+        findings = matcher.match_pattern(pattern, code, "test.py", None)
+
+        assert len(findings) == 1
+        assert findings[0].related_patterns == ["related-a", "related-b"]
+
+    def test_finding_includes_related_patterns_data_flow(self):
+        """Test that data flow pattern matching includes related patterns in finding."""
+        pattern = Pattern(
+            id="test-pattern",
+            name="Test Pattern",
+            description="Test description",
+            severity=SeverityLevel.HIGH,
+            category="test",
+            templates=[
+                DataFlowPatternTemplate(source=r"request\.", sink=r"execute\(", confidence="high")
+            ],
+            attack_vector="Test attack vector",
+            remediation=PatternRemediation(description="Test remediation"),
+            relationships={"related": ["related-x", "related-y"]},
+        )
+        matcher = PatternMatcher(patterns=[pattern])
+        code = "request.json\ncursor.execute()"
+        ast_data = {
+            "call_sites": [{"name": "cursor.execute", "line": 2, "function": "main"}],
+            "functions": [],
+        }
+        findings = matcher.match_pattern(pattern, code, "test.py", ast_data)
+
+        if findings:
+            assert findings[0].related_patterns == ["related-x", "related-y"]

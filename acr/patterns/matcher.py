@@ -182,6 +182,7 @@ class PatternMatcher:
                     impact=impact,
                     remediation=remediation,
                     references=pattern.references,
+                    related_patterns=self._extract_related_patterns(pattern),
                 )
 
                 findings.append(finding)
@@ -230,6 +231,7 @@ class PatternMatcher:
                     impact=impact,
                     remediation=remediation,
                     references=pattern.references,
+                    related_patterns=self._extract_related_patterns(pattern),
                 )
 
                 findings.append(finding)
@@ -322,6 +324,7 @@ class PatternMatcher:
                             impact=impact,
                             remediation=remediation,
                             references=pattern.references,
+                            related_patterns=self._extract_related_patterns(pattern),
                         )
 
                         findings.append(finding)
@@ -386,6 +389,7 @@ class PatternMatcher:
                             impact=impact,
                             remediation=remediation,
                             references=pattern.references,
+                            related_patterns=self._extract_related_patterns(pattern),
                         )
 
                         findings.append(finding)
@@ -504,6 +508,7 @@ class PatternMatcher:
                         impact=impact,
                         remediation=remediation,
                         references=pattern.references,
+                        related_patterns=self._extract_related_patterns(pattern),
                     )
 
                     findings.append(finding)
@@ -586,6 +591,24 @@ class PatternMatcher:
         hash_obj = hashlib.sha256(hash_input.encode())
         hash_short = hash_obj.hexdigest()[:8]
         return f"ACR-2025-{hash_short.upper()}"
+
+    def _extract_related_patterns(self, pattern: Pattern) -> List[str]:
+        """Extract related pattern IDs from pattern relationships.
+
+        Args:
+            pattern: Attack pattern with relationships field
+
+        Returns:
+            List of related pattern IDs
+        """
+        related_patterns = []
+
+        if pattern.relationships:
+            related_patterns.extend(pattern.relationships.get("enables", []))
+            related_patterns.extend(pattern.relationships.get("enabled_by", []))
+            related_patterns.extend(pattern.relationships.get("related", []))
+
+        return list(set(related_patterns))
 
     def _severity_to_impact(self, severity: str) -> str:
         """Convert severity level to impact level.

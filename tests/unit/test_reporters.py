@@ -254,6 +254,19 @@ def test_markdown_reporter_references():
     assert "https://cwe.mitre.org/data/definitions/89.html" in report
 
 
+def test_markdown_reporter_related_patterns():
+    """Test Markdown reporter includes related patterns."""
+    reporter = MarkdownReporter()
+    finding = create_test_finding("001", "high", "high", "injection", "test.py", 10)
+    finding.related_patterns = ["sql-injection", "command-injection", "xss"]
+    report = reporter.generate([finding])
+
+    assert "**Related Patterns:**" in report
+    assert "`sql-injection`" in report
+    assert "`command-injection`" in report
+    assert "`xss`" in report
+
+
 def test_markdown_reporter_file_summary():
     """Test Markdown reporter includes file summary."""
     reporter = MarkdownReporter()
