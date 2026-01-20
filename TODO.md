@@ -132,9 +132,9 @@ Agent 1: Your task is to REVIEW, SCRUTINIZE, and REFINE this TODO.md and PRD.md 
   - [x] Set up pyproject.toml with project metadata
   - [x] Create setup.py for package installation
   - [x] Initialize git repository
-  - [x] Create .gitignore file
-  - [x] Set up LICENSE file (choose MIT or Apache 2.0)
-  - [ ] Add license headers to all source files
+   - [x] Create .gitignore file
+   - [x] Set up LICENSE file (choose MIT or Apache 2.0)
+   - [x] Add license headers to all source files
 
 - [x] Legal and compliance setup
   - [x] Choose software license (recommend MIT)
