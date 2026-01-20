@@ -73,7 +73,7 @@ repos:
   rev: v0.39.0
   hooks:
   - id: markdownlint
-    args: [--fix]
+    args: [--fix, --config, .markdownlint.json]
     exclude: |
       (?x)^(
         journal/.*|

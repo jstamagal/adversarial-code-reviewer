@@ -172,11 +172,11 @@ Agent 1: Your task is to REVIEW, SCRUTINIZE, and REFINE this TODO.md and PRD.md 
     - [x] Set up pre-commit hooks
     - [x] Create GitHub workflow for CI
 
-- [x] Create initial documentation
-  - [x] Write README.md with project description
-  - [x] Write CONTRIBUTING.md (archived)
-  - [ ] Write INSTALLATION.md
-  - [x] Create docs/ directory structure
+ - [x] Create initial documentation
+   - [x] Write README.md with project description
+   - [x] Write CONTRIBUTING.md (archived)
+   - [x] Write INSTALLATION.md
+   - [x] Create docs/ directory structure
 
 ### 1.2 Core Infrastructure (Weeks 2-3)
 
