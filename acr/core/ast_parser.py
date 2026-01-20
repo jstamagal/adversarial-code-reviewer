@@ -468,11 +468,14 @@ class ASTParser:
             Import dictionary
         """
         result = {"module": None, "name": None}
+        dotted_names = []
         for child in node.children:
             if child.type == "dotted_name":
-                result["module"] = child.text.decode("utf-8")
-            elif child.type == "identifier":
-                result["name"] = child.text.decode("utf-8")
+                dotted_names.append(child.text.decode("utf-8"))
+        if len(dotted_names) >= 1:
+            result["module"] = dotted_names[0]
+        if len(dotted_names) >= 2:
+            result["name"] = dotted_names[1]
         return result
 
     def _get_called_function_name(self, call_node: Node) -> Optional[str]:
