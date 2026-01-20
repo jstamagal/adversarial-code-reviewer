@@ -14,8 +14,7 @@
 
 """Tests for taint tracker module."""
 
-import pytest
-from acr.core.taint_tracker import TaintTracker, TaintedVar, TaintPath
+from acr.core.taint_tracker import TaintedVar, TaintPath, TaintTracker
 
 
 class MockDFG:

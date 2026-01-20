@@ -14,10 +14,7 @@
 
 """Config model."""
 
-from typing import Dict, Any
-from pydantic import BaseModel
 
 from acr.config.schema import ACRConfig
-
 
 __all__ = ["ACRConfig"]

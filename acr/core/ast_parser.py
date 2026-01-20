@@ -16,7 +16,7 @@
 
 import hashlib
 from pathlib import Path
-from typing import Any, List, Optional, cast
+from typing import List, Optional, cast
 
 try:
     import tree_sitter_python as tspython

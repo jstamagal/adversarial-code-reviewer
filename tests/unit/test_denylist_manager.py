@@ -14,9 +14,10 @@
 
 """Tests for DenylistManager."""
 
-import pytest
 from pathlib import Path
+
 from pydantic import BaseModel
+
 from acr.denylist.manager import DenylistManager
 
 

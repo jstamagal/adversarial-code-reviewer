@@ -14,25 +14,24 @@
 
 """Tests for graceful degradation system."""
 
+
 import pytest
-from unittest.mock import patch
 
 from acr.utils.degradation import (
+    DegradationContext,
     DegradationLevel,
     DegradationReason,
-    DegradationEvent,
     DegradationTracker,
+    analysis_fallback,
     get_tracker,
-    reset_tracker,
     graceful_fallback,
     llm_fallback,
     parse_fallback,
-    analysis_fallback,
-    with_partial_results,
+    reset_tracker,
     safe_iterate,
-    DegradationContext,
+    with_partial_results,
 )
-from acr.utils.errors import ACRError, LLMError, AnalysisError, ParseError
+from acr.utils.errors import AnalysisError, LLMError, ParseError
 
 
 class TestDegradationTracker:

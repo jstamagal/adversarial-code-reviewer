@@ -14,15 +14,14 @@
 
 """Tests for pattern loader functionality."""
 
-import pytest
 from pathlib import Path
 
 from acr.patterns.loader import PatternLoader
 from acr.patterns.schema import (
+    DataFlowPatternTemplate,
     Pattern,
     SeverityLevel,
     StaticPatternTemplate,
-    DataFlowPatternTemplate,
 )
 
 

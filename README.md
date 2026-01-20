@@ -8,6 +8,7 @@ Traditional code review: "Here's what you could improve"
 Adversarial code review: "Here's how I can exploit your code"
 
 ACR forces defensive thinking during development by:
+
 - Finding unintended behaviors through adversarial testing
 - Breaking edge cases systematically
 - Abusing features in unanticipated ways

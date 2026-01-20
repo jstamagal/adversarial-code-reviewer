@@ -14,8 +14,8 @@
 
 """Confidence scoring for vulnerability findings."""
 
-from typing import Dict, List, Literal, Optional, Any
 import re
+from typing import Any, Dict, Literal, Optional
 
 from acr.models.finding import Finding
 

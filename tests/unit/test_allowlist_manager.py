@@ -14,11 +14,10 @@
 
 """Tests for allowlist manager."""
 
-import pytest
 from pathlib import Path
-import tempfile
+
 from acr.allowlist.manager import AllowlistManager
-from acr.models.finding import Finding, FindingLocation, FindingImpact, FindingRemediation
+from acr.models.finding import Finding, FindingImpact, FindingLocation, FindingRemediation
 
 
 class TestAllowlistManager:
@@ -172,10 +171,12 @@ class TestAllowlistManager:
     def test_priority_line_over_pattern(self, tmp_path: Path):
         """Test that line exclusions take priority."""
         allowlist_file = tmp_path / ".acr-ignore"
-        allowlist_file.write_text("""
+        allowlist_file.write_text(
+            """
 test.py:42
 pattern:sql_injection
-""")
+"""
+        )
         manager = AllowlistManager(allowlist_file)
 
         finding = self.create_finding(file_path="test.py", line_number=42, category="sql_injection")

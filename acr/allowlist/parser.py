@@ -16,8 +16,10 @@
 
 import re
 from pathlib import Path
-from typing import Optional, Dict, List
+from typing import Dict, List, Optional
+
 from pydantic import BaseModel, Field
+
 from acr.utils.logger import get_logger
 
 logger = get_logger(__name__)
@@ -55,7 +57,7 @@ class AllowlistParser:
             return
 
         try:
-            with open(self.file_path, "r", encoding="utf-8") as f:
+            with open(self.file_path, encoding="utf-8") as f:
                 lines = f.readlines()
         except Exception as e:
             logger.warning(f"Failed to read allowlist file {self.file_path}: {e}")

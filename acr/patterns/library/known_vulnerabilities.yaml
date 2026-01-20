@@ -13,205 +13,205 @@ description: |
   transitive dependencies with known CVEs.
 
 references:
-  - https://owasp.org/www-project-top-ten/2017/A9_2017-Using_Components_with_Known_Vulnerabilities
-  - https://cwe.mitre.org/data/definitions/937.html
-  - https://cheatsheetseries.owasp.org/cheatsheets/Using_Components_with_Known_Vulnerabilities_Cheat_Sheet.html
-  - https://nvd.nist.gov/
+- https://owasp.org/www-project-top-ten/2017/A9_2017-Using_Components_with_Known_Vulnerabilities
+- https://cwe.mitre.org/data/definitions/937.html
+- https://cheatsheetseries.owasp.org/cheatsheets/Using_Components_with_Known_Vulnerabilities_Cheat_Sheet.html
+- https://nvd.nist.gov/
 
 affected_languages:
-  - python
-  - javascript
-  - typescript
-  - go
-  - java
-  - ruby
+- python
+- javascript
+- typescript
+- go
+- java
+- ruby
 
 affected_frameworks:
-  - flask
-  - django
-  - fastapi
-  - express
-  - nestjs
-  - spring
+- flask
+- django
+- fastapi
+- express
+- nestjs
+- spring
 
 vulnerability_types:
-  - outdated_dependency: "Dependency version with known CVEs"
-  - unpinned_version: "Dependency not pinned to specific version"
-  - abandoned_package: "Using unmaintained or abandoned packages"
-  - vulnerable_transitive: "Transitive dependency with known vulnerability"
-  - dependency_confusion: "Package name conflict in public/private registry"
-  - typosquatting: "Malicious package with similar name to legitimate package"
+- outdated_dependency: Dependency version with known CVEs
+- unpinned_version: Dependency not pinned to specific version
+- abandoned_package: Using unmaintained or abandoned packages
+- vulnerable_transitive: Transitive dependency with known vulnerability
+- dependency_confusion: Package name conflict in public/private registry
+- typosquatting: Malicious package with similar name to legitimate package
 
 detection:
   static:
-    - pattern: "(django\\s*[<>=!]+\\s*(1\\.1[0-9]|1\\.\\d[^0-9]|0\\..*))"
-      description: Django version with known vulnerabilities (older versions have unfixed CVEs)
-      confidence: high
+  - pattern: (django\s*[<>=!]+\s*(1\.1[0-9]|1\.\d[^0-9]|0\..*))
+    description: Django version with known vulnerabilities (older versions have unfixed CVEs)
+    confidence: high
 
-    - pattern: "(flask\\s*[<>=!]+\\s*(0\\.[0-9]|0\\.1[0-2]|1\\.0))"
-      description: Flask version with known vulnerabilities (outdated)
-      confidence: high
+  - pattern: (flask\s*[<>=!]+\s*(0\.[0-9]|0\.1[0-2]|1\.0))
+    description: Flask version with known vulnerabilities (outdated)
+    confidence: high
 
-    - pattern: "(express\\s*[<>=!]+\\s*[<4\\.0\\.0])"
-      description: Express.js version < 4.0.0 (end of life)
-      confidence: high
+  - pattern: (express\s*[<>=!]+\s*[<4\.0\.0])
+    description: Express.js version < 4.0.0 (end of life)
+    confidence: high
 
-    - pattern: "(requests\\s*[<>=!]+\\s*2\\.20\\.0)"
-      description: Python requests < 2.20.0 (multiple CVEs)
-      confidence: high
+  - pattern: (requests\s*[<>=!]+\s*2\.20\.0)
+    description: Python requests < 2.20.0 (multiple CVEs)
+    confidence: high
 
-    - pattern: "(urllib3\\s*[<>=!]+\\s*1\\.24\\.2)"
-      description: urllib3 < 1.24.2 (multiple CVEs including DoS, header injection)
-      confidence: high
+  - pattern: (urllib3\s*[<>=!]+\s*1\.24\.2)
+    description: urllib3 < 1.24.2 (multiple CVEs including DoS, header injection)
+    confidence: high
 
-    - pattern: "(pillow\\s*[<>=!]+\\s*6\\.0\\.0)"
-      description: Pillow < 6.0.0 (multiple CVEs in image processing)
-      confidence: high
+  - pattern: (pillow\s*[<>=!]+\s*6\.0\.0)
+    description: Pillow < 6.0.0 (multiple CVEs in image processing)
+    confidence: high
 
-    - pattern: "(pyyaml\\s*[<>=!]+\\s*5\\.1)"
-      description: PyYAML < 5.1 (arbitrary code execution vulnerability)
-      confidence: high
+  - pattern: (pyyaml\s*[<>=!]+\s*5\.1)
+    description: PyYAML < 5.1 (arbitrary code execution vulnerability)
+    confidence: high
 
-    - pattern: "(flask\\s*,\\s*django)"
-      description: Using both Flask and Django may indicate dependency bloat
-      confidence: low
+  - pattern: (flask\s*,\s*django)
+    description: Using both Flask and Django may indicate dependency bloat
+    confidence: low
 
-    - pattern: "(bcrypt\\s*[<>=!]+\\s*3\\.1\\.7)"
-      description: bcrypt < 3.1.7 (password hashing vulnerabilities)
-      confidence: high
+  - pattern: (bcrypt\s*[<>=!]+\s*3\.1\.7)
+    description: bcrypt < 3.1.7 (password hashing vulnerabilities)
+    confidence: high
 
-    - pattern: "(cryptography\\s*[<>=!]+\\s*2\\.6\\.1)"
-      description: cryptography < 2.6.1 (multiple CVEs in cryptographic functions)
-      confidence: high
+  - pattern: (cryptography\s*[<>=!]+\s*2\.6\.1)
+    description: cryptography < 2.6.1 (multiple CVEs in cryptographic functions)
+    confidence: high
 
-    - pattern: "(jinja2\\s*[<>=!]+\\s*2\\.10\\.1)"
-      description: Jinja2 < 2.10.1 (multiple vulnerabilities including RCE)
-      confidence: high
+  - pattern: (jinja2\s*[<>=!]+\s*2\.10\.1)
+    description: Jinja2 < 2.10.1 (multiple vulnerabilities including RCE)
+    confidence: high
 
-    - pattern: "(lxml\\s*[<>=!]+\\s*4\\.2\\.5)"
-      description: lxml < 4.2.5 (XXE and other XML vulnerabilities)
-      confidence: high
+  - pattern: (lxml\s*[<>=!]+\s*4\.2\.5)
+    description: lxml < 4.2.5 (XXE and other XML vulnerabilities)
+    confidence: high
 
-    - pattern: "(numpy\\s*[<>=!]+\\s*1\\.16\\.0)"
-      description: numpy < 1.16.0 (buffer overflow vulnerabilities)
-      confidence: medium
+  - pattern: (numpy\s*[<>=!]+\s*1\.16\.0)
+    description: numpy < 1.16.0 (buffer overflow vulnerabilities)
+    confidence: medium
 
-    - pattern: "(tornado\\s*[<>=!]+\\s*4\\.5\\.3)"
-      description: Tornado < 4.5.3 (multiple vulnerabilities)
-      confidence: medium
+  - pattern: (tornado\s*[<>=!]+\s*4\.5\.3)
+    description: Tornado < 4.5.3 (multiple vulnerabilities)
+    confidence: medium
 
-    - pattern: "(werkzeug\\s*[<>=!]+\\s*0\\.14\\.1)"
-      description: Werkzeug < 0.14.1 (debugger pin vulnerability in Flask)
-      confidence: high
+  - pattern: (werkzeug\s*[<>=!]+\s*0\.14\.1)
+    description: Werkzeug < 0.14.1 (debugger pin vulnerability in Flask)
+    confidence: high
 
-    - pattern: "(marked\\s*[<>=!]+\\s*[<0\\.4\\.0])"
-      description: marked < 0.4.0 (XSS vulnerability in markdown parser)
-      confidence: high
+  - pattern: (marked\s*[<>=!]+\s*[<0\.4\.0])
+    description: marked < 0.4.0 (XSS vulnerability in markdown parser)
+    confidence: high
 
-    - pattern: "(lodash\\s*[<>=!]+\\s*[<4\\.17\\.11])"
-      description: lodash < 4.17.11 (multiple CVEs including prototype pollution)
-      confidence: high
+  - pattern: (lodash\s*[<>=!]+\s*[<4\.17\.11])
+    description: lodash < 4.17.11 (multiple CVEs including prototype pollution)
+    confidence: high
 
-    - pattern: "(axios\\s*[<>=!]+\\s*[<0\\.19\\.0])"
-      description: axios < 0.19.0 (SSRF vulnerability)
-      confidence: medium
+  - pattern: (axios\s*[<>=!]+\s*[<0\.19\.0])
+    description: axios < 0.19.0 (SSRF vulnerability)
+    confidence: medium
 
-    - pattern: "(request\\s*,)"
-      description: "request package is deprecated and unmaintained (use axios or fetch instead)"
-      confidence: high
+  - pattern: (request\s*,)
+    description: request package is deprecated and unmaintained (use axios or fetch instead)
+    confidence: high
 
-    - pattern: "(node-fetch\\s*[<>=!]+\\s*[<2\\.6\\.1])"
-      description: node-fetch < 2.6.1 (SSRF and other vulnerabilities)
-      confidence: high
+  - pattern: (node-fetch\s*[<>=!]+\s*[<2\.6\.1])
+    description: node-fetch < 2.6.1 (SSRF and other vulnerabilities)
+    confidence: high
 
-    - pattern: "(koa\\s*[<>=!]+\\s*[<2\\.7\\.0])"
-      description: Koa < 2.7.0 (multiple vulnerabilities)
-      confidence: medium
+  - pattern: (koa\s*[<>=!]+\s*[<2\.7\.0])
+    description: Koa < 2.7.0 (multiple vulnerabilities)
+    confidence: medium
 
-    - pattern: "(react\\s*[<>=!]+\\s*[<16\\.8\\.0])"
-      description: React < 16.8.0 (multiple XSS and other vulnerabilities)
-      confidence: medium
+  - pattern: (react\s*[<>=!]+\s*[<16\.8\.0])
+    description: React < 16.8.0 (multiple XSS and other vulnerabilities)
+    confidence: medium
 
-    - pattern: "(react-dom\\s*[<>=!]+\\s*[<16\\.8\\.0])"
-      description: react-dom < 16.8.0 (multiple XSS vulnerabilities)
-      confidence: medium
+  - pattern: (react-dom\s*[<>=!]+\s*[<16\.8\.0])
+    description: react-dom < 16.8.0 (multiple XSS vulnerabilities)
+    confidence: medium
 
-    - pattern: "(handlebars\\s*[<>=!]+\\s*[<4\\.1\\.0])"
-      description: Handlebars < 4.1.0 (RCE and XSS vulnerabilities)
-      confidence: high
+  - pattern: (handlebars\s*[<>=!]+\s*[<4\.1\.0])
+    description: Handlebars < 4.1.0 (RCE and XSS vulnerabilities)
+    confidence: high
 
-    - pattern: "(uglify-js\\s*,)"
-      description: uglify-js is deprecated and has known vulnerabilities (use terser instead)
-      confidence: high
+  - pattern: (uglify-js\s*,)
+    description: uglify-js is deprecated and has known vulnerabilities (use terser instead)
+    confidence: high
 
-    - pattern: "(jquery\\s*[<>=!]+\\s*[<3\\.4\\.0])"
-      description: jQuery < 3.4.0 (XSS vulnerabilities)
-      confidence: high
+  - pattern: (jquery\s*[<>=!]+\s*[<3\.4\.0])
+    description: jQuery < 3.4.0 (XSS vulnerabilities)
+    confidence: high
 
-    - pattern: "^[\\s]*[^#\\s][^=\\s]+\\s*~=\\s*['\"]?\\d+\\.\\d+\\.\\d+['\"]?\\s*$"
-      description: Dependency with caret (^) or tilde (~) may allow vulnerable versions
-      confidence: medium
+  - pattern: ^[\s]*[^#\s][^=\s]+\s*~=\s*['"]?\d+\.\d+\.\d+['"]?\s*$
+    description: Dependency with caret (^) or tilde (~) may allow vulnerable versions
+    confidence: medium
 
-    - pattern: "(pickle\\s*[<>=!]+\\s*)"
-      description: Using pickle module for serialization (historically vulnerable)
-      confidence: medium
+  - pattern: (pickle\s*[<>=!]+\s*)
+    description: Using pickle module for serialization (historically vulnerable)
+    confidence: medium
 
-    - pattern: "(subprocess\\s*,\\s*shlex)"
-      description: Using subprocess with shlex (may have shell injection risks in older Python)
-      confidence: low
+  - pattern: (subprocess\s*,\s*shlex)
+    description: Using subprocess with shlex (may have shell injection risks in older Python)
+    confidence: low
 
-    - pattern: "(xml\\.etree\\.ElementTree)"
-      description: Using ElementTree without protection (XXE vulnerable in older Python)
-      confidence: low
+  - pattern: (xml\.etree\.ElementTree)
+    description: Using ElementTree without protection (XXE vulnerable in older Python)
+    confidence: low
 
-    - pattern: "(xmlrpc\\.server|xmlrpc\\.client)"
-      description: xmlrpc module has multiple historical vulnerabilities
-      confidence: high
+  - pattern: (xmlrpc\.server|xmlrpc\.client)
+    description: xmlrpc module has multiple historical vulnerabilities
+    confidence: high
 
-    - pattern: "(hashlib\\.md5\\s*,\\s*hashlib\\.sha1)"
-      description: Using MD5 or SHA-1 (weak cryptographic hashes)
-      confidence: medium
+  - pattern: (hashlib\.md5\s*,\s*hashlib\.sha1)
+    description: Using MD5 or SHA-1 (weak cryptographic hashes)
+    confidence: medium
 
-    - pattern: "^(\\s*)import\\s+os\\s*$"
-      description: Direct os module import without context (may be used for unsafe operations)
-      confidence: low
+  - pattern: ^(\s*)import\s+os\s*$
+    description: Direct os module import without context (may be used for unsafe operations)
+    confidence: low
 
-    - pattern: "^(\\s*)import\\s+sys\\s*$"
-      description: Direct sys module import without context (may be used for unsafe operations)
-      confidence: low
+  - pattern: ^(\s*)import\s+sys\s*$
+    description: Direct sys module import without context (may be used for unsafe operations)
+    confidence: low
 
-    - pattern: "(ssl\\.PROTOCOL_TLSv1\\s*|ssl\\.PROTOCOL_SSLv3\\s*|ssl\\.PROTOCOL_TLSv1_1\\s*)"
-      description: Using deprecated/insecure TLS/SSL protocols
-      confidence: high
+  - pattern: (ssl\.PROTOCOL_TLSv1\s*|ssl\.PROTOCOL_SSLv3\s*|ssl\.PROTOCOL_TLSv1_1\s*)
+    description: Using deprecated/insecure TLS/SSL protocols
+    confidence: high
 
-    - pattern: "(ssl\\.create_default_context\\(\\s*\\))"
-      description: Using default SSL context without options (may allow weak protocols)
-      confidence: medium
+  - pattern: (ssl\.create_default_context\(\s*\))
+    description: Using default SSL context without options (may allow weak protocols)
+    confidence: medium
 
-    - pattern: "^(\\s*)eval\\s*\\(\\s*"
-      description: Using eval() function (historical security concerns)
-      confidence: high
+  - pattern: ^(\s*)eval\s*\(\s*
+    description: Using eval() function (historical security concerns)
+    confidence: high
 
-    - pattern: "(compile\\s*\\(\\s*\\w+\\s*,\\s*['\"]exec['\"])"
-      description: Using compile() with exec mode (code injection risk)
-      confidence: high
+  - pattern: (compile\s*\(\s*\w+\s*,\s*['"]exec['"])
+    description: Using compile() with exec mode (code injection risk)
+    confidence: high
 
-    - pattern: "(types\\.FunctionType\\s*,\\s*compile\\s*\\()"
-      description: Dynamic code execution pattern
-      confidence: high
+  - pattern: (types\.FunctionType\s*,\s*compile\s*\()
+    description: Dynamic code execution pattern
+    confidence: high
 
-    - pattern: "(importlib\\s*,\\s*__import__\\s*\\(\\s*\\w+\\s*\\+\\s*\\w+)"
-      description: Dynamic module import from user input
-      confidence: high
+  - pattern: (importlib\s*,\s*__import__\s*\(\s*\w+\s*\+\s*\w+)
+    description: Dynamic module import from user input
+    confidence: high
 
   data_flow:
-    - source: "(request\\.(args|form|json|params|view_args)|req\\.(params|query|body))"
-      sink: "(eval\\(|exec\\(|compile\\(|__import__\\(|importlib\\.import_module\\()"
-      sanitizers: "(re\\.sub|re\\.escape|isinstance\\()"
+  - source: (request\.(args|form|json|params|view_args)|req\.(params|query|body))
+    sink: (eval\(|exec\(|compile\(|__import__\(|importlib\.import_module\()
+    sanitizers: (re\.sub|re\.escape|isinstance\()
 
-    - source: "(open\\(\\s*\\w+|read\\(\\s*\\w+)"
-      sink: "(pickle\\.loads|pickle\\.load|yaml\\.load\\(\\s*\\w+\\s*\\))"
-      sanitizers: "(safe_load|loads\\(\\s*\\w+\\s*,\\s*encoding)"
+  - source: (open\(\s*\w+|read\(\s*\w+)
+    sink: (pickle\.loads|pickle\.load|yaml\.load\(\s*\w+\s*\))
+    sanitizers: (safe_load|loads\(\s*\w+\s*,\s*encoding)
 
 remediation:
   description: Regularly update all dependencies to the latest secure versions. Use dependency scanning tools, pin specific versions, monitor for security advisories, and implement automated dependency updates.
@@ -331,305 +331,305 @@ remediation:
 
 examples:
   vulnerable:
-    - |
-      # Python: Outdated Django with known CVEs
-      # setup.py or requirements.txt
-      install_requires=[
-          'django==1.11.29',  # CVE-2019-19844, CVE-2020-9402, CVE-2021-3347
-          'flask==0.12.5',   # Multiple CVEs
-          'requests==2.18.4', # CVE-2018-18074
-          'pillow==4.0.0',   # CVE-2018-16312, CVE-2018-16313
-      ]
+  - |
+    # Python: Outdated Django with known CVEs
+    # setup.py or requirements.txt
+    install_requires=[
+        'django==1.11.29',  # CVE-2019-19844, CVE-2020-9402, CVE-2021-3347
+        'flask==0.12.5',   # Multiple CVEs
+        'requests==2.18.4', # CVE-2018-18074
+        'pillow==4.0.0',   # CVE-2018-16312, CVE-2018-16313
+    ]
 
-    - |
-      # Python: Unpinned dependencies
-      install_requires=[
-          'django',
-          'flask',
-          'requests',
-      ]
+  - |
+    # Python: Unpinned dependencies
+    install_requires=[
+        'django',
+        'flask',
+        'requests',
+    ]
 
-    - |
-      # Python: Using deprecated package
-      # pip install request  # Wrong package name, should be requests
-      import request
+  - |
+    # Python: Using deprecated package
+    # pip install request  # Wrong package name, should be requests
+    import request
 
-    - |
-      # Python: PyYAML with known RCE
-      # requirements.txt
-      pyyaml==5.0.1  # CVE-2020-14343 (RCE via unsafe_load)
+  - |
+    # Python: PyYAML with known RCE
+    # requirements.txt
+    pyyaml==5.0.1  # CVE-2020-14343 (RCE via unsafe_load)
 
-    - |
-      # Python: urllib3 with vulnerabilities
-      # requirements.txt
-      urllib3<1.24.2  # CVE-2018-20060, CVE-2018-20062
+  - |
+    # Python: urllib3 with vulnerabilities
+    # requirements.txt
+    urllib3<1.24.2  # CVE-2018-20060, CVE-2018-20062
 
-    - |
-      # JavaScript: Vulnerable Express versions
-      // package.json
-      {
-        "dependencies": {
-          "express": "3.21.2",  // End of life, multiple CVEs
-          "connect": "2.30.2"    // Multiple CVEs
-        }
+  - |
+    # JavaScript: Vulnerable Express versions
+    // package.json
+    {
+      "dependencies": {
+        "express": "3.21.2",  // End of life, multiple CVEs
+        "connect": "2.30.2"    // Multiple CVEs
       }
+    }
 
-    - |
-      # JavaScript: Lodash prototype pollution
-      // package.json
-      {
-        "dependencies": {
-          "lodash": "<4.17.11"  // CVE-2019-10744 (prototype pollution)
-        }
+  - |
+    # JavaScript: Lodash prototype pollution
+    // package.json
+    {
+      "dependencies": {
+        "lodash": "<4.17.11"  // CVE-2019-10744 (prototype pollution)
       }
+    }
 
-    - |
-      # JavaScript: Using deprecated 'request' package
-      // package.json
-      {
-        "dependencies": {
-          "request": "2.88.0"  // Deprecated, unmaintained
-        }
+  - |
+    # JavaScript: Using deprecated 'request' package
+    // package.json
+    {
+      "dependencies": {
+        "request": "2.88.0"  // Deprecated, unmaintained
       }
+    }
 
-    - |
-      # JavaScript: Vulnerable marked (markdown parser)
-      // package.json
-      {
-        "dependencies": {
-          "marked": "<0.4.0"  // CVE-2017-15705 (XSS)
-        }
+  - |
+    # JavaScript: Vulnerable marked (markdown parser)
+    // package.json
+    {
+      "dependencies": {
+        "marked": "<0.4.0"  // CVE-2017-15705 (XSS)
       }
+    }
 
-    - |
-      # JavaScript: Node-fetch SSRF
-      // package.json
-      {
-        "dependencies": {
-          "node-fetch": "<2.6.1"  // CVE-2022-0235 (SSRF)
-        }
+  - |
+    # JavaScript: Node-fetch SSRF
+    // package.json
+    {
+      "dependencies": {
+        "node-fetch": "<2.6.1"  // CVE-2022-0235 (SSRF)
       }
+    }
 
-    - |
-      # JavaScript: jQuery XSS vulnerabilities
-      // package.json
-      {
-        "dependencies": {
-          "jquery": "<3.4.0"  // CVE-2019-11358 (XSS)
-        }
+  - |
+    # JavaScript: jQuery XSS vulnerabilities
+    // package.json
+    {
+      "dependencies": {
+        "jquery": "<3.4.0"  // CVE-2019-11358 (XSS)
       }
+    }
 
-    - |
-      # Python: Using insecure SSL/TLS protocols
-      import ssl
-      # VULNERABLE: SSLv3 and TLSv1 are deprecated
-      context = ssl.create_default_context()
-      context.options |= ssl.OP_NO_SSLv3
-      context.options |= ssl.OP_NO_TLSv1
-      context.options |= ssl.OP_NO_TLSv1_1
+  - |
+    # Python: Using insecure SSL/TLS protocols
+    import ssl
+    # VULNERABLE: SSLv3 and TLSv1 are deprecated
+    context = ssl.create_default_context()
+    context.options |= ssl.OP_NO_SSLv3
+    context.options |= ssl.OP_NO_TLSv1
+    context.options |= ssl.OP_NO_TLSv1_1
 
-    - |
-      # Python: Weak cryptographic hashes
-      import hashlib
-      # VULNERABLE: MD5 and SHA-1 are cryptographically broken
-      hash_md5 = hashlib.md5()
-      hash_sha1 = hashlib.sha1()
+  - |
+    # Python: Weak cryptographic hashes
+    import hashlib
+    # VULNERABLE: MD5 and SHA-1 are cryptographically broken
+    hash_md5 = hashlib.md5()
+    hash_sha1 = hashlib.sha1()
 
-    - |
-      # Python: xmlrpc vulnerabilities
-      from xmlrpc.server import SimpleXMLRPCServer
-      from xmlrpc.client import ServerProxy
-      # xmlrpc modules have multiple historical vulnerabilities
+  - |
+    # Python: xmlrpc vulnerabilities
+    from xmlrpc.server import SimpleXMLRPCServer
+    from xmlrpc.client import ServerProxy
+    # xmlrpc modules have multiple historical vulnerabilities
 
-    - |
-      # JavaScript: Uglify-js (deprecated)
-      // package.json
-      {
-        "devDependencies": {
-          "uglify-js": "3.3.9"  // Deprecated, has known CVEs, use terser instead
-        }
+  - |
+    # JavaScript: Uglify-js (deprecated)
+    // package.json
+    {
+      "devDependencies": {
+        "uglify-js": "3.3.9"  // Deprecated, has known CVEs, use terser instead
       }
+    }
 
-    - |
-      # JavaScript: Tilde version allows vulnerable updates
-      // package.json
-      {
-        "dependencies": {
-          "express": "~4.16.0",  // May install 4.16.x with vulnerabilities
-          "lodash": "~4.17.10"  # May install versions < 4.17.11
-        }
+  - |
+    # JavaScript: Tilde version allows vulnerable updates
+    // package.json
+    {
+      "dependencies": {
+        "express": "~4.16.0",  // May install 4.16.x with vulnerabilities
+        "lodash": "~4.17.10"  # May install versions < 4.17.11
       }
+    }
 
   secure:
-    - |
-      # SECURE: Updated and pinned dependencies
-      # requirements.txt
-      django==4.2.7
-      flask==3.0.0
-      requests==2.31.0
-      pillow==10.1.0
-      pyyaml==6.0.1
-      urllib3==2.1.0
+  - |
+    # SECURE: Updated and pinned dependencies
+    # requirements.txt
+    django==4.2.7
+    flask==3.0.0
+    requests==2.31.0
+    pillow==10.1.0
+    pyyaml==6.0.1
+    urllib3==2.1.0
 
-    - |
-      # SECURE: Using pip-audit for vulnerability scanning
-      # requirements.txt
-      pip install pip-audit
-      pip-audit --desc --format json > audit-report.json
+  - |
+    # SECURE: Using pip-audit for vulnerability scanning
+    # requirements.txt
+    pip install pip-audit
+    pip-audit --desc --format json > audit-report.json
 
-    - |
-      # SECURE: Using safety for dependency checking
-      # requirements.txt
-      pip install safety
-      safety check --json > safety-report.json
+  - |
+    # SECURE: Using safety for dependency checking
+    # requirements.txt
+    pip install safety
+    safety check --json > safety-report.json
 
-    - |
-      # SECURE: Pinning with caret for minor updates
-      # package.json
-      {
-        "dependencies": {
-          "express": "^4.18.2",
-          "lodash": "^4.17.21",
-          "axios": "^1.6.2",
-          "react": "^18.2.0"
-        }
+  - |
+    # SECURE: Pinning with caret for minor updates
+    # package.json
+    {
+      "dependencies": {
+        "express": "^4.18.2",
+        "lodash": "^4.17.21",
+        "axios": "^1.6.2",
+        "react": "^18.2.0"
       }
+    }
 
-    - |
-      # SECURE: Automated dependency updates with Dependabot
-      # .github/dependabot.yml
-      version: 2
-      updates:
-        - package-ecosystem: "pip"
-          directory: "/"
-          schedule:
-            interval: "weekly"
-          open-pull-requests-limit: 10
+  - |
+    # SECURE: Automated dependency updates with Dependabot
+    # .github/dependabot.yml
+    version: 2
+    updates:
+      - package-ecosystem: "pip"
+        directory: "/"
+        schedule:
+          interval: "weekly"
+        open-pull-requests-limit: 10
 
-    - |
-      # SECURE: Using npm audit
-      # package.json scripts
-      {
-        "scripts": {
-          "audit": "npm audit",
-          "audit:fix": "npm audit fix",
-          "audit:production": "npm audit --production"
-        }
+  - |
+    # SECURE: Using npm audit
+    # package.json scripts
+    {
+      "scripts": {
+        "audit": "npm audit",
+        "audit:fix": "npm audit fix",
+        "audit:production": "npm audit --production"
       }
+    }
 
-    - |
-      # SECURE: Using Snyk for continuous monitoring
-      # snyk.yml
-      version: 1.0.0
-      org: my-org
-      project: my-project
-      # snyk monitor && snyk test
+  - |
+    # SECURE: Using Snyk for continuous monitoring
+    # snyk.yml
+    version: 1.0.0
+    org: my-org
+    project: my-project
+    # snyk monitor && snyk test
 
-    - |
-      # SECURE: Secure SSL/TLS configuration
-      import ssl
-      context = ssl.create_default_context()
-      # Minimum TLS 1.2
-      context.minimum_version = ssl.TLSVersion.TLSv1_2
-      context.verify_mode = ssl.CERT_REQUIRED
+  - |
+    # SECURE: Secure SSL/TLS configuration
+    import ssl
+    context = ssl.create_default_context()
+    # Minimum TLS 1.2
+    context.minimum_version = ssl.TLSVersion.TLSv1_2
+    context.verify_mode = ssl.CERT_REQUIRED
 
-    - |
-      # SECURE: Using strong cryptographic hashes
-      import hashlib
-      # Use SHA-256 or better
-      hash_sha256 = hashlib.sha256()
-      hash_sha512 = hashlib.sha512()
+  - |
+    # SECURE: Using strong cryptographic hashes
+    import hashlib
+    # Use SHA-256 or better
+    hash_sha256 = hashlib.sha256()
+    hash_sha512 = hashlib.sha512()
 
-    - |
-      # SECURE: Poetry with lock file
-      # pyproject.toml
-      [tool.poetry.dependencies]
-      python = "^3.8"
-      django = "^4.2"
-      flask = "^3.0"
-      requests = "^2.31"
+  - |
+    # SECURE: Poetry with lock file
+    # pyproject.toml
+    [tool.poetry.dependencies]
+    python = "^3.8"
+    django = "^4.2"
+    flask = "^3.0"
+    requests = "^2.31"
 
-      # poetry.lock ensures reproducible builds
-      # poetry update --lock
+    # poetry.lock ensures reproducible builds
+    # poetry update --lock
 
-    - |
-      # SECURE: Pipenv with lock file
-      # Pipfile
-      [packages]
-      django = "~=4.2"
-      flask = "~=3.0"
+  - |
+    # SECURE: Pipenv with lock file
+    # Pipfile
+    [packages]
+    django = "~=4.2"
+    flask = "~=3.0"
 
-      [dev-packages]
-      pip-audit = "*"
+    [dev-packages]
+    pip-audit = "*"
 
-      # Pipfile.lock ensures reproducible builds
-      # pipenv lock
+    # Pipfile.lock ensures reproducible builds
+    # pipenv lock
 
-    - |
-      # SECURE: CI/CD pipeline with dependency scanning
-      # .github/workflows/security.yml
-      name: Security Scan
-      on: [push, pull_request]
-      jobs:
-        scan:
-          runs-on: ubuntu-latest
-          steps:
-            - uses: actions/checkout@v3
-            - name: pip-audit
-              run: pip-audit
-            - name: npm audit
-              run: npm audit --audit-level=moderate
+  - |
+    # SECURE: CI/CD pipeline with dependency scanning
+    # .github/workflows/security.yml
+    name: Security Scan
+    on: [push, pull_request]
+    jobs:
+      scan:
+        runs-on: ubuntu-latest
+        steps:
+          - uses: actions/checkout@v3
+          - name: pip-audit
+            run: pip-audit
+          - name: npm audit
+            run: npm audit --audit-level=moderate
 
-    - |
-      # SECURE: Using Renovate for automated updates
-      # renovate.json
-      {
-        "extends": ["config:base"],
-        "schedule": ["every weekend"],
-        "labels": ["dependencies"],
-        "automerge": false
-      }
+  - |
+    # SECURE: Using Renovate for automated updates
+    # renovate.json
+    {
+      "extends": ["config:base"],
+      "schedule": ["every weekend"],
+      "labels": ["dependencies"],
+      "automerge": false
+    }
 
 attack_vectors:
-  - vector: "CVE Exploitation in Django 1.11"
-    payload: "Target Django 1.11 application with known CVE-2019-19844 (account hijacking via password reset)"
-    description: "Django 1.11 has multiple unfixed CVEs including account hijacking via password reset, potential SQL injection, and denial of service. Attackers can exploit these known vulnerabilities to gain unauthorized access, steal data, or disrupt services."
+- vector: CVE Exploitation in Django 1.11
+  payload: Target Django 1.11 application with known CVE-2019-19844 (account hijacking via password reset)
+  description: Django 1.11 has multiple unfixed CVEs including account hijacking via password reset, potential SQL injection, and denial of service. Attackers can exploit these known vulnerabilities to gain unauthorized access, steal data, or disrupt services.
 
-  - vector: "Prototype Pollution in Lodash < 4.17.11"
-    payload: "Manipulate Object.prototype via vulnerable lodash functions like merge, set, zipObjectDeep"
-    description: "Lodash < 4.17.11 is vulnerable to prototype pollution attacks. By crafting malicious JSON payloads, attackers can modify the prototype of all JavaScript objects, leading to remote code execution, privilege escalation, or application crashes."
+- vector: Prototype Pollution in Lodash < 4.17.11
+  payload: Manipulate Object.prototype via vulnerable lodash functions like merge, set, zipObjectDeep
+  description: Lodash < 4.17.11 is vulnerable to prototype pollution attacks. By crafting malicious JSON payloads, attackers can modify the prototype of all JavaScript objects, leading to remote code execution, privilege escalation, or application crashes.
 
-  - vector: "SSRF via node-fetch < 2.6.1"
-    payload: "Redirect request to internal resources via arbitrary redirect URLs"
-    description: "node-fetch < 2.6.1 allows server-side request forgery (SSRF) through arbitrary redirect URLs. Attackers can use this to scan internal networks, access cloud metadata services, or reach restricted internal endpoints."
+- vector: SSRF via node-fetch < 2.6.1
+  payload: Redirect request to internal resources via arbitrary redirect URLs
+  description: node-fetch < 2.6.1 allows server-side request forgery (SSRF) through arbitrary redirect URLs. Attackers can use this to scan internal networks, access cloud metadata services, or reach restricted internal endpoints.
 
-  - vector: "XSS via jQuery < 3.4.0"
-    payload: "<img src=x onerror=alert(1)> injected via vulnerable jQuery .html() or .append() methods"
-    description: "jQuery < 3.4.0 has an XSS vulnerability where cross-site scripting attacks can occur via the .html() prefilter. Attackers can inject malicious scripts into trusted content, leading to data theft or account takeover."
+- vector: XSS via jQuery < 3.4.0
+  payload: <img src=x onerror=alert(1)> injected via vulnerable jQuery .html() or .append() methods
+  description: jQuery < 3.4.0 has an XSS vulnerability where cross-site scripting attacks can occur via the .html() prefilter. Attackers can inject malicious scripts into trusted content, leading to data theft or account takeover.
 
-  - vector: "RCE via PyYAML < 5.1"
-    payload: "Crafted YAML payload with !!python/object/new:os.system or similar tags"
-    description: "PyYAML < 5.1 is vulnerable to remote code execution through unsafe YAML deserialization. By crafting malicious YAML files with Python object tags, attackers can execute arbitrary code on the system."
+- vector: RCE via PyYAML < 5.1
+  payload: Crafted YAML payload with !!python/object/new:os.system or similar tags
+  description: PyYAML < 5.1 is vulnerable to remote code execution through unsafe YAML deserialization. By crafting malicious YAML files with Python object tags, attackers can execute arbitrary code on the system.
 
-  - vector: "Denial of Service via urllib3 < 1.24.2"
-    payload: "Send crafted HTTP requests with large headers to trigger CVE-2018-20060"
-    description: "urllib3 < 1.24.2 is vulnerable to denial of service attacks via crafted HTTP requests with large headers. Attackers can crash applications or exhaust server resources."
+- vector: Denial of Service via urllib3 < 1.24.2
+  payload: Send crafted HTTP requests with large headers to trigger CVE-2018-20060
+  description: urllib3 < 1.24.2 is vulnerable to denial of service attacks via crafted HTTP requests with large headers. Attackers can crash applications or exhaust server resources.
 
-  - vector: "XSS via Marked < 0.4.0"
-    payload: "Malicious markdown with <img src=x onerror=alert(1)> to bypass sanitization"
-    description: "Marked < 0.4.0 is vulnerable to XSS through improperly sanitized markdown. Attackers can inject malicious HTML/JavaScript into rendered markdown content, leading to script execution in users' browsers."
+- vector: XSS via Marked < 0.4.0
+  payload: Malicious markdown with <img src=x onerror=alert(1)> to bypass sanitization
+  description: Marked < 0.4.0 is vulnerable to XSS through improperly sanitized markdown. Attackers can inject malicious HTML/JavaScript into rendered markdown content, leading to script execution in users' browsers.
 
-  - vector: "Information Disclosure via Werkzeug < 0.14.1"
-    payload: "Access Flask debugger in production environment"
-    description: "Werkzeug < 0.14.1 (Flask's WSGI server) has a debugger vulnerability that can expose the debugger in production. If debug mode is accidentally enabled, attackers can execute arbitrary code through the interactive debugger."
+- vector: Information Disclosure via Werkzeug < 0.14.1
+  payload: Access Flask debugger in production environment
+  description: Werkzeug < 0.14.1 (Flask's WSGI server) has a debugger vulnerability that can expose the debugger in production. If debug mode is accidentally enabled, attackers can execute arbitrary code through the interactive debugger.
 
-  - vector: "XML External Entity (XXE) via lxml < 4.2.5"
-    payload: "Crafted XML with malicious DTD to read files or make network requests"
-    description: "lxml < 4.2.5 is vulnerable to XXE attacks when parsing XML documents. Attackers can exploit this to read sensitive files, perform SSRF attacks, or cause denial of service."
+- vector: XML External Entity (XXE) via lxml < 4.2.5
+  payload: Crafted XML with malicious DTD to read files or make network requests
+  description: lxml < 4.2.5 is vulnerable to XXE attacks when parsing XML documents. Attackers can exploit this to read sensitive files, perform SSRF attacks, or cause denial of service.
 
-  - vector: "Password Reset Hijacking in Django 1.11"
-    payload: "Manipulate password reset tokens to hijack arbitrary user accounts"
-    description: "Django 1.11.29 (and earlier) has a password reset token vulnerability (CVE-2019-19844) where tokens can be brute-forced or manipulated, allowing attackers to reset passwords for any user account."
+- vector: Password Reset Hijacking in Django 1.11
+  payload: Manipulate password reset tokens to hijack arbitrary user accounts
+  description: Django 1.11.29 (and earlier) has a password reset token vulnerability (CVE-2019-19844) where tokens can be brute-forced or manipulated, allowing attackers to reset passwords for any user account.
 
 llm_prompts:
   analyze: |

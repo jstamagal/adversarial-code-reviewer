@@ -14,10 +14,10 @@
 
 """Analysis result caching."""
 
-from typing import Optional, Dict, Any, TypeVar
 import hashlib
 import json
 from pathlib import Path
+from typing import Any, Dict, Optional, TypeVar
 
 try:
     import diskcache

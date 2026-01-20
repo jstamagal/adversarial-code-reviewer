@@ -14,16 +14,17 @@
 
 """Tests for keyring credential storage."""
 
+from unittest.mock import MagicMock, patch
+
 import pytest
-from unittest.mock import patch, MagicMock
 
 from acr.config.credentials import (
-    set_credential,
-    get_credential,
-    delete_credential,
-    list_credentials,
-    is_keyring_available,
     KEYRING_SERVICE,
+    delete_credential,
+    get_credential,
+    is_keyring_available,
+    list_credentials,
+    set_credential,
 )
 
 

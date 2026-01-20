@@ -14,9 +14,8 @@
 
 """Tests for sink identification."""
 
-import pytest
 
-from acr.core.sink_identification import SinkIdentifier, Sink
+from acr.core.sink_identification import SinkIdentifier
 
 
 class TestSQLSinkIdentification:

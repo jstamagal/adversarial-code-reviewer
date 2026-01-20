@@ -19,8 +19,8 @@ from acr.core import (
     ast_parser,
     cfg_builder,
     dfg_builder,
-    taint_tracker,
     legacy_support,
+    taint_tracker,
 )
 
 __all__ = [

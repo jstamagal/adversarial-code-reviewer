@@ -11,76 +11,76 @@ description: |
   configured and secured to prevent information disclosure.
 
 references:
-  - https://owasp.org/www-project-web-security-testing-guide/v42/4-Web_Application_Security_Testing/11-Input_Validation_Testing/03-Testing_for_Path_Traversal
-  - https://cwe.mitre.org/data/definitions/200.html
-  - https://flask.palletsprojects.io/en/2.3.x/api/#flask.send_file
+- https://owasp.org/www-project-web-security-testing-guide/v42/4-Web_Application_Security_Testing/11-Input_Validation_Testing/03-Testing_for_Path_Traversal
+- https://cwe.mitre.org/data/definitions/200.html
+- https://flask.palletsprojects.io/en/2.3.x/api/#flask.send_file
 
 affected_languages:
-  - python
+- python
 
 affected_frameworks:
-  - flask
+- flask
 
 vulnerability_types:
-  - Path traversal via static files
-  - Directory listing
-  - Serving sensitive files
-  - Unrestricted file access
+- Path traversal via static files
+- Directory listing
+- Serving sensitive files
+- Unrestricted file access
 
 detection:
   static:
-    - pattern: "send_from_directory\\(\\s*[\"'].*?[\"']\\s*,\\s*[\"'].*?[\"']"
-      description: Serving files from user-controlled path
-      confidence: high
-      requires_language: [python]
-      requires_framework: [flask]
+  - pattern: send_from_directory\(\s*["'].*?["']\s*,\s*["'].*?["']
+    description: Serving files from user-controlled path
+    confidence: high
+    requires_language: [python]
+    requires_framework: [flask]
 
-    - pattern: "send_file\\([^)]*request\\.[^)]*\\)"
-      description: Serving file with user-controlled path
-      confidence: critical
-      requires_language: [python]
-      requires_framework: [flask]
+  - pattern: send_file\([^)]*request\.[^)]*\)
+    description: Serving file with user-controlled path
+    confidence: critical
+    requires_language: [python]
+    requires_framework: [flask]
 
-    - pattern: "send_file\\(\\s*\\w+\\s*\\+\\s*request\\.[^)]*\\)"
-      description: Concatenating request data into file path
-      confidence: critical
-      requires_language: [python]
-      requires_framework: [flask]
+  - pattern: send_file\(\s*\w+\s*\+\s*request\.[^)]*\)
+    description: Concatenating request data into file path
+    confidence: critical
+    requires_language: [python]
+    requires_framework: [flask]
 
-    - pattern: "app\\.static_folder\\s*=\\s*[\"'].*?[\"']"
-      description: Setting static folder without validation
-      confidence: medium
-      requires_language: [python]
-      requires_framework: [flask]
+  - pattern: app\.static_folder\s*=\s*["'].*?["']
+    description: Setting static folder without validation
+    confidence: medium
+    requires_language: [python]
+    requires_framework: [flask]
 
-    - pattern: "Blueprint\\([^)]*static_folder\\s*=\\s*\\w+\\s*\\+\\s*request"
-      description: Setting static folder with user input
-      confidence: critical
-      requires_language: [python]
-      requires_framework: [flask]
+  - pattern: Blueprint\([^)]*static_folder\s*=\s*\w+\s*\+\s*request
+    description: Setting static folder with user input
+    confidence: critical
+    requires_language: [python]
+    requires_framework: [flask]
 
-    - pattern: "app\\.static_url_path\\s*=\\s*[\"'][^'\"]*[\"']"
-      description: Exposing static URL without authentication
-      confidence: low
-      requires_language: [python]
-      requires_framework: [flask]
+  - pattern: app\.static_url_path\s*=\s*["'][^'"]*["']
+    description: Exposing static URL without authentication
+    confidence: low
+    requires_language: [python]
+    requires_framework: [flask]
 
-    - pattern: "open\\(\\s*os\\.path\\.join\\([^)]*request\\.[^)]*\\)"
-      description: Opening file with request data (path traversal risk)
-      confidence: high
-      requires_language: [python]
-      requires_framework: [flask]
+  - pattern: open\(\s*os\.path\.join\([^)]*request\.[^)]*\)
+    description: Opening file with request data (path traversal risk)
+    confidence: high
+    requires_language: [python]
+    requires_framework: [flask]
 
-    - pattern: "FileStorage\\.save\\(\\s*\\w+\\s*\\+\\s*request\\.[^)]*\\)"
-      description: Saving file with user-controlled path
-      confidence: high
-      requires_language: [python]
-      requires_framework: [flask]
+  - pattern: FileStorage\.save\(\s*\w+\s*\+\s*request\.[^)]*\)
+    description: Saving file with user-controlled path
+    confidence: high
+    requires_language: [python]
+    requires_framework: [flask]
 
   data_flow:
-    - source: "request\\.(args|form|json|files|values)"
-      sink: "(send_file|send_from_directory|open|FileStorage\\.save)"
-      sanitizers: "(sanitize|validate|safe|check|basename|abspath|normpath)"
+  - source: request\.(args|form|json|files|values)
+    sink: (send_file|send_from_directory|open|FileStorage\.save)
+    sanitizers: (sanitize|validate|safe|check|basename|abspath|normpath)
 
 remediation:
   description: Validate and sanitize file paths before serving
@@ -189,176 +189,176 @@ remediation:
 
 examples:
   vulnerable:
-    - |
-      @app.route('/static/<path:filename>')
-      def serve_static(filename):
-          # User can request any file
-          return send_from_directory('/var/www', filename)
+  - |
+    @app.route('/static/<path:filename>')
+    def serve_static(filename):
+        # User can request any file
+        return send_from_directory('/var/www', filename)
 
-    - |
-      @app.route('/download')
-      def download():
-          file = request.args.get('file')
-          # No validation - allows path traversal
-          return send_file(f'/uploads/{file}')
+  - |
+    @app.route('/download')
+    def download():
+        file = request.args.get('file')
+        # No validation - allows path traversal
+        return send_file(f'/uploads/{file}')
 
-    - |
-      @app.route('/files')
-      def list_files():
-          folder = request.args.get('folder', 'default')
-          # No validation - can list any directory
-          files = os.listdir(f'/var/www/{folder}')
-          return jsonify(files)
+  - |
+    @app.route('/files')
+    def list_files():
+        folder = request.args.get('folder', 'default')
+        # No validation - can list any directory
+        files = os.listdir(f'/var/www/{folder}')
+        return jsonify(files)
 
-    - |
-      @app.route('/avatar/<user_id>')
-      def avatar(user_id):
-          # No validation - can request any file
-          return send_file(f'/uploads/{user_id}.jpg')
+  - |
+    @app.route('/avatar/<user_id>')
+    def avatar(user_id):
+        # No validation - can request any file
+        return send_file(f'/uploads/{user_id}.jpg')
 
-    - |
-      @app.route('/backup/<filename>')
-      def download_backup(filename):
-          # Exposing backup files without authentication
-          return send_from_directory('/backups', filename)
+  - |
+    @app.route('/backup/<filename>')
+    def download_backup(filename):
+        # Exposing backup files without authentication
+        return send_from_directory('/backups', filename)
 
   secure:
-    - |
-      from flask import Flask, request, send_file, abort
-      import os
+  - |
+    from flask import Flask, request, send_file, abort
+    import os
 
-      app = Flask(__name__)
+    app = Flask(__name__)
 
-      ALLOWED_EXTENSIONS = {'jpg', 'jpeg', 'png', 'gif'}
-      STATIC_DIR = '/var/www/static'
+    ALLOWED_EXTENSIONS = {'jpg', 'jpeg', 'png', 'gif'}
+    STATIC_DIR = '/var/www/static'
 
-      @app.route('/avatar/<user_id>')
-      def avatar(user_id):
-          # Validate user ID format
-          if not user_id.isalnum():
-              abort(400, 'Invalid user ID')
+    @app.route('/avatar/<user_id>')
+    def avatar(user_id):
+        # Validate user ID format
+        if not user_id.isalnum():
+            abort(400, 'Invalid user ID')
 
-          filename = f'{user_id}.jpg'
-          filepath = os.path.join(STATIC_DIR, filename)
+        filename = f'{user_id}.jpg'
+        filepath = os.path.join(STATIC_DIR, filename)
 
-          # Prevent directory traversal
-          if '..' in filepath or not filepath.startswith(STATIC_DIR):
-              abort(403, 'Access denied')
+        # Prevent directory traversal
+        if '..' in filepath or not filepath.startswith(STATIC_DIR):
+            abort(403, 'Access denied')
 
-          if not os.path.isfile(filepath):
-              abort(404, 'File not found')
+        if not os.path.isfile(filepath):
+            abort(404, 'File not found')
 
-          return send_file(filepath)
+        return send_file(filepath)
 
-    - |
-      from flask import Flask, request, send_file, abort
-      import os
+  - |
+    from flask import Flask, request, send_file, abort
+    import os
 
-      app = Flask(__name__)
+    app = Flask(__name__)
 
-      STATIC_DIR = '/var/www/static'
-      ALLOWED_FILES = {
-          'logo.png': os.path.join(STATIC_DIR, 'logo.png'),
-          'style.css': os.path.join(STATIC_DIR, 'style.css')
-      }
+    STATIC_DIR = '/var/www/static'
+    ALLOWED_FILES = {
+        'logo.png': os.path.join(STATIC_DIR, 'logo.png'),
+        'style.css': os.path.join(STATIC_DIR, 'style.css')
+    }
 
-      @app.route('/static/<filename>')
-      def serve_static(filename):
-          if filename not in ALLOWED_FILES:
-              abort(404, 'File not found')
+    @app.route('/static/<filename>')
+    def serve_static(filename):
+        if filename not in ALLOWED_FILES:
+            abort(404, 'File not found')
 
-          return send_file(ALLOWED_FILES[filename])
+        return send_file(ALLOWED_FILES[filename])
 
-    - |
-      from flask import Flask, request, send_file, abort
-      from functools import wraps
+  - |
+    from flask import Flask, request, send_file, abort
+    from functools import wraps
 
-      app = Flask(__name__)
+    app = Flask(__name__)
 
-      STATIC_DIR = '/var/www/static'
+    STATIC_DIR = '/var/www/static'
 
-      def auth_required(f):
-          @wraps(f)
-          def decorated_function(*args, **kwargs):
-              if not session.get('authenticated'):
-                  abort(401, 'Unauthorized')
-              return f(*args, **kwargs)
-          return decorated_function
+    def auth_required(f):
+        @wraps(f)
+        def decorated_function(*args, **kwargs):
+            if not session.get('authenticated'):
+                abort(401, 'Unauthorized')
+            return f(*args, **kwargs)
+        return decorated_function
 
-      @app.route('/admin/files/<path:filename>')
-      @auth_required
-      def admin_files(filename):
-          if not session.get('is_admin'):
-              abort(403, 'Forbidden')
+    @app.route('/admin/files/<path:filename>')
+    @auth_required
+    def admin_files(filename):
+        if not session.get('is_admin'):
+            abort(403, 'Forbidden')
 
-          filepath = os.path.join(STATIC_DIR, 'admin', filename)
+        filepath = os.path.join(STATIC_DIR, 'admin', filename)
 
-          if '..' in filepath or not filepath.startswith(STATIC_DIR):
-              abort(400, 'Invalid path')
+        if '..' in filepath or not filepath.startswith(STATIC_DIR):
+            abort(400, 'Invalid path')
 
-          return send_file(filepath)
+        return send_file(filepath)
 
-    - |
-      from flask import Flask, request, send_file, abort
-      import os
+  - |
+    from flask import Flask, request, send_file, abort
+    import os
 
-      app = Flask(__name__)
+    app = Flask(__name__)
 
-      STATIC_DIR = '/var/www/static'
+    STATIC_DIR = '/var/www/static'
 
-      @app.route('/document/<doc_id>')
-      def document(doc_id):
-          # Allow-list of permitted documents
-          permitted_files = {
-              'welcome': 'welcome.pdf',
-              'manual': 'user_manual.pdf'
-          }
+    @app.route('/document/<doc_id>')
+    def document(doc_id):
+        # Allow-list of permitted documents
+        permitted_files = {
+            'welcome': 'welcome.pdf',
+            'manual': 'user_manual.pdf'
+        }
 
-          if doc_id not in permitted_files:
-              abort(404, 'Document not found')
+        if doc_id not in permitted_files:
+            abort(404, 'Document not found')
 
-          filepath = os.path.join(STATIC_DIR, permitted_files[doc_id])
-          return send_file(filepath)
+        filepath = os.path.join(STATIC_DIR, permitted_files[doc_id])
+        return send_file(filepath)
 
 attack_vectors:
-  - vector: "Path Traversal via ../"
-    description: Include directory traversal sequences in filename
-    impact: Can access files outside intended directory
+- vector: Path Traversal via ../
+  description: Include directory traversal sequences in filename
+  impact: Can access files outside intended directory
 
-  - vector: "Absolute Path Traversal"
-    description: Use absolute path starting with / to access any file
-    impact: Can read/write files anywhere on filesystem
+- vector: Absolute Path Traversal
+  description: Use absolute path starting with / to access any file
+  impact: Can read/write files anywhere on filesystem
 
-  - vector: "NULL Byte Injection"
-    description: Insert null bytes to bypass file extension checks
-    impact: Can access files with different extensions
+- vector: NULL Byte Injection
+  description: Insert null bytes to bypass file extension checks
+  impact: Can access files with different extensions
 
-  - vector: "Symbolic Link Attack"
-    description: Access file via symbolic link to sensitive location
-    impact: Can bypass directory restrictions
+- vector: Symbolic Link Attack
+  description: Access file via symbolic link to sensitive location
+  impact: Can bypass directory restrictions
 
-  - vector: "Directory Enumeration"
-    description: Request directories to list file contents
-    impact: Can enumerate server files and structure
+- vector: Directory Enumeration
+  description: Request directories to list file contents
+  impact: Can enumerate server files and structure
 
-  - vector: "Sensitive File Access"
-    description: Request configuration files, backups, or source code
-    impact: Can steal secrets, credentials, source code
+- vector: Sensitive File Access
+  description: Request configuration files, backups, or source code
+  impact: Can steal secrets, credentials, source code
 
 security_recommendations:
-  - Never use user input directly in file paths
-  - Validate and sanitize all filenames
-  - Check for path traversal characters (.., /)
-  - Use absolute paths for base directories
-  - Verify file paths are within allowed directory
-  - Use allow-list for permitted files
-  - Restrict file extensions
-  - Require authentication for sensitive files
-  - Use send_from_directory with careful path validation
-  - Implement proper error handling (404, 403)
-  - Never serve files from arbitrary user directories
-  - Consider using a dedicated file storage service
-  - Log and monitor file access attempts
+- Never use user input directly in file paths
+- Validate and sanitize all filenames
+- Check for path traversal characters (.., /)
+- Use absolute paths for base directories
+- Verify file paths are within allowed directory
+- Use allow-list for permitted files
+- Restrict file extensions
+- Require authentication for sensitive files
+- Use send_from_directory with careful path validation
+- Implement proper error handling (404, 403)
+- Never serve files from arbitrary user directories
+- Consider using a dedicated file storage service
+- Log and monitor file access attempts
 
 llm_prompts:
   analyze: |

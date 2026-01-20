@@ -16,8 +16,9 @@
 
 from pathlib import Path
 from typing import Optional
-from acr.models.finding import Finding
+
 from acr.denylist.parser import DenylistParser
+from acr.models.finding import Finding
 from acr.utils.logger import get_logger
 
 logger = get_logger(__name__)

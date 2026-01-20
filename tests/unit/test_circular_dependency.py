@@ -19,7 +19,7 @@ from pathlib import Path
 
 import pytest
 
-from acr.core.circular_dependency import CircularDependencyDetector, CircularDependency
+from acr.core.circular_dependency import CircularDependency, CircularDependencyDetector
 
 
 @pytest.fixture

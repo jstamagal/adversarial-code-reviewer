@@ -14,11 +14,11 @@
 
 """Main analyzer implementation."""
 
-from typing import List, Optional, Union, Dict, Any, cast
 from pathlib import Path
+from typing import Any, List, Union, cast
 
-from acr.models.finding import Finding
 from acr.core.ast_parser import ASTParser
+from acr.models.finding import Finding
 
 
 class Analyzer:

@@ -16,7 +16,6 @@
 
 import hashlib
 from pathlib import Path
-from typing import Any
 
 
 def compute_file_hash(file_path: Path) -> str:

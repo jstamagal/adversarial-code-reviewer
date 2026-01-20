@@ -14,14 +14,13 @@
 
 """Prompt templates for LLM interactions."""
 
-import re
-from typing import Dict, Any, List, Optional
+from typing import Any, Dict, List, Optional
 
 
 class PromptTemplates:
     """Prompt templates for various LLM tasks."""
 
-    SYSTEM_PROMPT = """You are an expert security analyst and penetration tester specializing in identifying vulnerabilities in code. 
+    SYSTEM_PROMPT = """You are an expert security analyst and penetration tester specializing in identifying vulnerabilities in code.
 Your task is to analyze code from an adversarial perspective - think like an attacker trying to exploit the code.
 Provide concrete, actionable attack vectors with specific payloads and exploitation steps.
 Be thorough but concise in your analysis."""
@@ -86,7 +85,8 @@ return jsonify(json.loads(user_input))
         if context_str:
             prompt_parts.append(f"Context:\n{context_str}\n")
 
-        prompt_parts.append(f"""Attack Pattern: {pattern}
+        prompt_parts.append(
+            f"""Attack Pattern: {pattern}
 
 Code to Analyze:
 {PromptTemplates._format_code_snippet(code)}
@@ -102,7 +102,8 @@ Provide your analysis in the following format:
 Vulnerability: [brief description]
 Attack Vector 1: [specific payload and steps]
 Attack Vector 2: [alternative payload if applicable]
-Impact: [confidentiality/integrity/availability impact]""")
+Impact: [confidentiality/integrity/availability impact]"""
+        )
 
         return "\n".join(prompt_parts)
 
@@ -120,7 +121,8 @@ Impact: [confidentiality/integrity/availability impact]""")
         prompt_parts = [PromptTemplates.SYSTEM_PROMPT]
 
         finding_str = PromptTemplates._format_finding(finding)
-        prompt_parts.append(f"""Vulnerability Finding:
+        prompt_parts.append(
+            f"""Vulnerability Finding:
 {finding_str}
 
 Code:
@@ -133,7 +135,8 @@ Task:
 4. Assess the business impact and potential consequences
 5. Provide context on why this is a security concern
 
-Provide a comprehensive explanation that a developer can understand and act upon.""")
+Provide a comprehensive explanation that a developer can understand and act upon."""
+        )
 
         return "\n".join(prompt_parts)
 
@@ -152,7 +155,8 @@ Provide a comprehensive explanation that a developer can understand and act upon
         prompt_parts = [PromptTemplates.SYSTEM_PROMPT]
         prompt_parts.append(PromptTemplates.FEW_SHOT_REMEDIATION_EXAMPLES)
 
-        prompt_parts.append(f"""Attack Pattern: {pattern}
+        prompt_parts.append(
+            f"""Attack Pattern: {pattern}
 Language: {language}
 
 Vulnerable Code:
@@ -171,7 +175,8 @@ Remediation Code:
 ```{language}
 [your secure code here]
 ```
-Explanation: [why this is secure and how it fixes the issue]""")
+Explanation: [why this is secure and how it fixes the issue]"""
+        )
 
         return "\n".join(prompt_parts)
 
@@ -190,9 +195,11 @@ Explanation: [why this is secure and how it fixes the issue]""")
             Prompt string
         """
         prompt_parts = [PromptTemplates.SYSTEM_PROMPT]
-        prompt_parts.append("""You specialize in identifying business logic vulnerabilities 
+        prompt_parts.append(
+            """You specialize in identifying business logic vulnerabilities
 that go beyond standard technical vulnerabilities. Look for ways to subvert business rules,
-bypass intended workflows, or abuse the application's logic.""")
+bypass intended workflows, or abuse the application's logic."""
+        )
 
         context_str = PromptTemplates._format_context(context)
         prompt_parts.append(f"Context:\n{context_str}\n")
@@ -202,7 +209,8 @@ bypass intended workflows, or abuse the application's logic.""")
                 "Business Rules:\n" + "\n".join(f"- {rule}" for rule in business_rules) + "\n"
             )
 
-        prompt_parts.append(f"""Code:
+        prompt_parts.append(
+            f"""Code:
 {PromptTemplates._format_code_snippet(code)}
 
 Task:
@@ -216,7 +224,8 @@ Provide your analysis in the following format:
 Business Logic: [description of the logic being implemented]
 Abuse Scenario 1: [step-by-step abuse scenario]
 Abuse Scenario 2: [alternative abuse scenario]
-Business Impact: [how this affects the business]""")
+Business Impact: [how this affects the business]"""
+        )
 
         return "\n".join(prompt_parts)
 

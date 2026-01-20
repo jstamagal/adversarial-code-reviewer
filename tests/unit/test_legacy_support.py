@@ -14,10 +14,10 @@
 
 """Tests for legacy code support."""
 
-import pytest
 from pathlib import Path
-from acr.core.legacy_support import LegacySupport
+
 from acr.config.schema import ACRConfig, LanguageConfig
+from acr.core.legacy_support import LegacySupport
 
 
 class TestLegacySupport:

@@ -14,7 +14,7 @@
 
 """CLI commands for ACR."""
 
-from acr.cli import scan, attack, report, init, config, patterns, version, doctor, completion
+from acr.cli import attack, completion, config, doctor, init, patterns, report, scan, version
 
 __all__ = [
     "scan",

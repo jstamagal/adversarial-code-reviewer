@@ -14,8 +14,10 @@
 
 """Tests for AST parser."""
 
-import pytest
 from pathlib import Path
+
+import pytest
+
 from acr.core.ast_parser import ASTParser
 from acr.utils.errors import ParseError
 
@@ -59,10 +61,12 @@ def broken_function(
     def test_parse_file(self, parser, tmp_path):
         """Test parsing a file."""
         test_file = tmp_path / "test.py"
-        test_file.write_text("""
+        test_file.write_text(
+            """
 def test():
     pass
-""")
+"""
+        )
 
         ast = parser.parse_file(test_file)
         assert ast is not None

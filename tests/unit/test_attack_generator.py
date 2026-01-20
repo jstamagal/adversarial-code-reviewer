@@ -14,8 +14,10 @@
 
 """Unit tests for attack generator."""
 
-import pytest
 from unittest.mock import MagicMock, patch
+
+import pytest
+
 from acr.llm.attack_generator import AttackGenerator
 
 

@@ -14,6 +14,6 @@
 
 """Report generators."""
 
-from acr.reporters import markdown, json_reporter, base
+from acr.reporters import base, json_reporter, markdown
 
 __all__ = ["markdown", "json_reporter", "base"]

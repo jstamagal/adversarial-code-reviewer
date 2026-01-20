@@ -14,9 +14,8 @@
 
 """Tests for Control Flow Graph builder."""
 
-import pytest
-from acr.core.cfg_builder import CFGBuilder, BasicBlock
 from acr.core.ast_parser import ASTParser
+from acr.core.cfg_builder import BasicBlock, CFGBuilder
 
 
 class TestCFGBuilderBasic:

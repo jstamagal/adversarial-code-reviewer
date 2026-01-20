@@ -14,15 +14,15 @@
 
 """Unit tests for data models."""
 
-import pytest
 from typing import cast
+
+from acr.models.aggregator import FindingAggregator
 from acr.models.finding import (
     Finding,
-    FindingLocation,
     FindingImpact,
+    FindingLocation,
     FindingRemediation,
 )
-from acr.models.aggregator import FindingAggregator
 
 
 def test_finding_creation():

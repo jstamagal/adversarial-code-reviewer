@@ -1,4 +1,4 @@
-- Read TODO.md 
+- Read TODO.md
 - Read journal/JOURNAL.md
 - Pick the next highest priority task to complete.
 - Read PRD.md if you need to reference it.

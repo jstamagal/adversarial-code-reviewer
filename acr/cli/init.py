@@ -14,12 +14,12 @@
 
 """Init command implementation."""
 
-import os
 from pathlib import Path
 from typing import Optional
 
 import click
 import yaml
+
 from acr.utils.logger import get_logger
 
 logger = get_logger(__name__)
@@ -82,7 +82,7 @@ def cli(ctx: click.Context, force: bool, project_name: Optional[str]) -> None:
         click.echo("Use --force to overwrite existing configuration.")
         raise click.Abort()
 
-    logger.info(f"Initializing ACR configuration...")
+    logger.info("Initializing ACR configuration...")
 
     if config_file.exists():
         logger.warning(f"Overwriting existing {config_file}")

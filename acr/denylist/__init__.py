@@ -14,7 +14,7 @@
 
 """Denylist module for forcing findings to be included."""
 
-from acr.denylist.parser import DenylistParser
 from acr.denylist.manager import DenylistManager
+from acr.denylist.parser import DenylistParser
 
 __all__ = ["DenylistParser", "DenylistManager"]

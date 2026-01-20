@@ -15,7 +15,7 @@
 """Configuration validator implementation."""
 
 from pathlib import Path
-from typing import Any, Dict, List, Tuple
+from typing import Any, Dict, List
 
 from acr.config.schema import ACRConfig
 from acr.utils.errors import ConfigurationError

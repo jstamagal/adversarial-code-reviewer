@@ -14,10 +14,9 @@
 
 """Tests for allowlist parser."""
 
-import pytest
 from pathlib import Path
-import tempfile
-from acr.allowlist.parser import AllowlistParser, AllowlistEntry
+
+from acr.allowlist.parser import AllowlistEntry, AllowlistParser
 
 
 class TestAllowlistEntry:
@@ -64,10 +63,12 @@ class TestAllowlistParser:
     def test_parse_line_exclusions(self, tmp_path: Path):
         """Test parsing line exclusions."""
         allowlist_file = tmp_path / ".acr-ignore"
-        allowlist_file.write_text("""
+        allowlist_file.write_text(
+            """
 test.py:42
 another.py:100
-""")
+"""
+        )
         parser = AllowlistParser(allowlist_file)
         parser.parse()
         assert len(parser.entries) == 2
@@ -78,12 +79,14 @@ another.py:100
     def test_parse_with_comments(self, tmp_path: Path):
         """Test parsing file with comments."""
         allowlist_file = tmp_path / ".acr-ignore"
-        allowlist_file.write_text("""
+        allowlist_file.write_text(
+            """
 # Comment line
 test.py:42  # This is a comment
 
 another.py:100  # Another comment
-""")
+"""
+        )
         parser = AllowlistParser(allowlist_file)
         parser.parse()
         assert len(parser.entries) == 2
@@ -93,10 +96,12 @@ another.py:100  # Another comment
     def test_parse_regex_exclusions(self, tmp_path: Path):
         """Test parsing regex exclusions."""
         allowlist_file = tmp_path / ".acr-ignore"
-        allowlist_file.write_text("""
+        allowlist_file.write_text(
+            """
 regex:^.*_test\\.py$
 regex:^vendor/.*$
-""")
+"""
+        )
         parser = AllowlistParser(allowlist_file)
         parser.parse()
         assert len(parser.entries) == 2
@@ -108,11 +113,13 @@ regex:^vendor/.*$
     def test_parse_pattern_exclusions(self, tmp_path: Path):
         """Test parsing pattern exclusions."""
         allowlist_file = tmp_path / ".acr-ignore"
-        allowlist_file.write_text("""
+        allowlist_file.write_text(
+            """
 pattern:sql_injection
 pattern:xss
 broken_authentication
-""")
+"""
+        )
         parser = AllowlistParser(allowlist_file)
         parser.parse()
         assert len(parser.entries) == 3
@@ -124,11 +131,13 @@ broken_authentication
     def test_parse_mixed_entries(self, tmp_path: Path):
         """Test parsing mixed entry types."""
         allowlist_file = tmp_path / ".acr-ignore"
-        allowlist_file.write_text("""
+        allowlist_file.write_text(
+            """
 test.py:42
 regex:.*_test\\.py$
 pattern:sql_injection
-""")
+"""
+        )
         parser = AllowlistParser(allowlist_file)
         parser.parse()
         assert len(parser.entries) == 3
@@ -191,10 +200,12 @@ pattern:sql_injection
     def test_get_entries(self, tmp_path: Path):
         """Test getting all entries."""
         allowlist_file = tmp_path / ".acr-ignore"
-        allowlist_file.write_text("""
+        allowlist_file.write_text(
+            """
 test.py:42  # Comment 1
 regex:.*\\.py$  # Comment 2
-""")
+"""
+        )
         parser = AllowlistParser(allowlist_file)
         parser.parse()
         entries = parser.get_entries()
@@ -205,11 +216,13 @@ regex:.*\\.py$  # Comment 2
     def test_multiple_line_exclusions_same_file(self, tmp_path: Path):
         """Test multiple line exclusions for same file."""
         allowlist_file = tmp_path / ".acr-ignore"
-        allowlist_file.write_text("""
+        allowlist_file.write_text(
+            """
 test.py:10
 test.py:20
 test.py:30
-""")
+"""
+        )
         parser = AllowlistParser(allowlist_file)
         parser.parse()
         assert parser.is_line_excluded("test.py", 10)
@@ -229,10 +242,12 @@ test.py:30
     def test_pattern_prefix_optional(self, tmp_path: Path):
         """Test that pattern: prefix is optional."""
         allowlist_file = tmp_path / ".acr-ignore"
-        allowlist_file.write_text("""
+        allowlist_file.write_text(
+            """
 sql_injection
 pattern:xss
-""")
+"""
+        )
         parser = AllowlistParser(allowlist_file)
         parser.parse()
         assert parser.is_pattern_excluded("sql_injection")

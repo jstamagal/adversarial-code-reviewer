@@ -14,10 +14,11 @@
 
 """Tests for LLM client implementations."""
 
-import pytest
-from unittest.mock import Mock, patch, MagicMock
+from unittest.mock import Mock, patch
 
-from acr.llm.client import AnthropicClient, OpenAIClient, create_client, LLMClient
+import pytest
+
+from acr.llm.client import AnthropicClient, LLMClient, OpenAIClient, create_client
 
 
 class TestLLMClient:

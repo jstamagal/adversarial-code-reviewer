@@ -14,9 +14,9 @@
 
 """Prompt injection protection for LLM interactions."""
 
-import re
 import logging
-from typing import Tuple, Dict, List, Optional
+import re
+from typing import Dict, List, Optional, Tuple
 
 logger = logging.getLogger(__name__)
 

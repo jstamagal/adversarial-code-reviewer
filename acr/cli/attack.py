@@ -145,7 +145,7 @@ def _display_finding_attack(finding: Finding, index: int, verbose: bool) -> None
     if finding.owasp_id:
         console.print(f"[bold]OWASP:[/bold] {finding.owasp_id}")
 
-    console.print(f"\n[bold]Location:[/bold]")
+    console.print("\n[bold]Location:[/bold]")
     console.print(f"  File: {finding.location.file}")
     console.print(f"  Line: {finding.location.line}")
     if finding.location.function:
@@ -153,21 +153,21 @@ def _display_finding_attack(finding: Finding, index: int, verbose: bool) -> None
     if finding.location.class_name:
         console.print(f"  Class: {finding.location.class_name}")
 
-    console.print(f"\n[bold]Description:[/bold]")
+    console.print("\n[bold]Description:[/bold]")
     console.print(finding.description)
 
-    console.print(f"\n[bold cyan]Attack Vector:[/bold cyan]")
+    console.print("\n[bold cyan]Attack Vector:[/bold cyan]")
     if finding.attack_vector:
         md = Markdown(finding.attack_vector)
         console.print(md)
 
     if finding.remediation:
-        console.print(f"\n[bold green]Remediation:[/bold green]")
+        console.print("\n[bold green]Remediation:[/bold green]")
         if finding.remediation.description:
             console.print(finding.remediation.description)
 
         if verbose and finding.remediation.code_before:
-            console.print(f"\n[bold red]Vulnerable Code:[/bold red]")
+            console.print("\n[bold red]Vulnerable Code:[/bold red]")
             try:
                 syntax = Syntax(finding.remediation.code_before, "python", theme="monokai")
                 console.print(syntax)
@@ -175,7 +175,7 @@ def _display_finding_attack(finding: Finding, index: int, verbose: bool) -> None
                 console.print(finding.remediation.code_before)
 
         if verbose and finding.remediation.code_after:
-            console.print(f"\n[bold green]Secure Code:[/bold green]")
+            console.print("\n[bold green]Secure Code:[/bold green]")
             try:
                 syntax = Syntax(finding.remediation.code_after, "python", theme="monokai")
                 console.print(syntax)
@@ -183,7 +183,7 @@ def _display_finding_attack(finding: Finding, index: int, verbose: bool) -> None
                 console.print(finding.remediation.code_after)
 
     if finding.references:
-        console.print(f"\n[bold]References:[/bold]")
+        console.print("\n[bold]References:[/bold]")
         for ref in finding.references:
             console.print(f"  - {ref}")
 

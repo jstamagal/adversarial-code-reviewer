@@ -16,6 +16,7 @@
 
 import logging
 from typing import Optional
+
 import keyring
 
 logger = logging.getLogger(__name__)

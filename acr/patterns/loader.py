@@ -14,18 +14,18 @@
 
 """Pattern loader implementation."""
 
-from typing import List, Optional, Dict, Any, Union
-from pathlib import Path
 from datetime import datetime
+from pathlib import Path
+from typing import Any, Dict, List, Optional, Union
 
 import yaml
 
 from acr.patterns.schema import (
-    Pattern,
-    PatternRemediation,
-    PatternImpact,
-    StaticPatternTemplate,
     DataFlowPatternTemplate,
+    Pattern,
+    PatternImpact,
+    PatternRemediation,
+    StaticPatternTemplate,
 )
 
 

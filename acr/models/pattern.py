@@ -14,7 +14,8 @@
 
 """Pattern model."""
 
-from typing import List, Optional, Dict, Any, Literal
+from typing import Any, Dict, List, Literal, Optional
+
 from pydantic import BaseModel, Field
 
 

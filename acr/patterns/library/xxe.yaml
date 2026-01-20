@@ -2,8 +2,8 @@ id: xxe
 name: XML External Entity (XXE) Injection
 category: injection
 severity: critical
-cwe: "CWE-611"
-owasp: "A5:2017-Broken Access Control"
+cwe: CWE-611
+owasp: A5:2017-Broken Access Control
 confidence: high
 description: |
   XXE (XML External Entity) injection is a vulnerability that allows an attacker to interfere with an
@@ -12,17 +12,17 @@ description: |
   denial of service.
 
 affected_languages:
-  - python
-  - javascript
-  - typescript
+- python
+- javascript
+- typescript
 
 affected_frameworks:
-  - generic
+- generic
 
 references:
-  - "https://owasp.org/www-community/attacks/XML_External_Entity_(XXE)_Processing"
-  - "https://cwe.mitre.org/data/definitions/611.html"
-  - "https://portswigger.net/web-security/xxe"
+- https://owasp.org/www-community/attacks/XML_External_Entity_(XXE)_Processing
+- https://cwe.mitre.org/data/definitions/611.html
+- https://portswigger.net/web-security/xxe
 
 detection:
   static:
@@ -213,11 +213,11 @@ detection:
       confidence: medium
 
   data_flow:
-    - source: "request\\.(body|data|json|form)"
-      sink: "(xml\\.etree|xml\\.sax|xml\\.dom|minidom|lxml)\\.\\w+\\(.*\\)"
-      sanitizers:
-        - "defusedxml\\."
-        - "resolve_entities=False|noent=False|dtdload=False"
+  - source: request\.(body|data|json|form)
+    sink: (xml\.etree|xml\.sax|xml\.dom|minidom|lxml)\.\w+\(.*\)
+    sanitizers:
+    - defusedxml\.
+    - resolve_entities=False|noent=False|dtdload=False
 
 remediation:
   description: |

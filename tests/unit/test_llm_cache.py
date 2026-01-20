@@ -14,10 +14,11 @@
 
 """Tests for LLM cache."""
 
-import pytest
-from acr.llm.cache import LLMCache
-import tempfile
 import shutil
+
+import pytest
+
+from acr.llm.cache import LLMCache
 
 
 @pytest.fixture

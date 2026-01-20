@@ -14,14 +14,14 @@
 
 """JSON report generator."""
 
-from typing import List, Dict, Any
-from pathlib import Path
-from datetime import datetime
 import json
+from datetime import datetime
+from pathlib import Path
+from typing import Any, Dict, List
 
-from acr.reporters.base import BaseReporter
-from acr.models.finding import Finding
 from acr.models.aggregator import FindingAggregator
+from acr.models.finding import Finding
+from acr.reporters.base import BaseReporter
 
 
 class JSONReporter(BaseReporter):

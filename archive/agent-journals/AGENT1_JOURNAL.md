@@ -1,6 +1,7 @@
 # Agent 1 Journal - Review Phase
 
 ## Agent Information
+
 - **Agent ID**: 1
 - **Phase**: 2
 - **Task**: Review, scrutinize, and refine PRD.md and TODO.md from Agent 0
@@ -19,6 +20,7 @@ Agent 1 was tasked with critically reviewing the PRD and TODO created by Agent 0
 **Issue**: Phase 1 (MVP) timeline is unrealistic - 8 weeks is insufficient
 
 **Details**:
+
 - 8 weeks to build a complete language analyzer + 20 attack patterns + LLM integration + CLI + reports + tests + docs
 - Configuration and logging infrastructure alone: 2-3 weeks
 - Code analysis engine (AST, CFG, DFG, taint): 3-4 weeks
@@ -35,6 +37,7 @@ Agent 1 was tasked with critically reviewing the PRD and TODO created by Agent 0
 **Issue**: Phase 4 timeline is compressed
 
 **Details**:
+
 - Week 21 to implement Go analyzer (1 week)
 - Week 21 to implement Rust analyzer (1 week)
 - Week 22 for GraphQL (1 week)
@@ -49,6 +52,7 @@ Agent 1 was tasked with critically reviewing the PRD and TODO created by Agent 0
 **Issue**: Property-based test generation mentioned in both "excluded from MVP" and "included in core features"
 
 **Details**:
+
 - Section 4.1 Phase 1 states: "No property-based test generation"
 - Section 2.1.3 Property-Based Test Generation is in Core Features
 - Section 4.2 Phase 2 has "Property-based test generation" as scope
@@ -60,6 +64,7 @@ Agent 1 was tasked with critically reviewing the PRD and TODO created by Agent 0
 **Issue**: Report format contradiction
 
 **Details**:
+
 - Section 2.4.2 lists: Markdown, JSON, YAML, SARIF, HTML as formats
 - Section 4.1 Phase 1 scope: "Markdown and JSON output formats only"
 - SARIF is also in Section 2.4.2 but marked as Phase 2 in Section 4.2
@@ -71,6 +76,7 @@ Agent 1 was tasked with critically reviewing the PRD and TODO created by Agent 0
 **Issue**: CI/CD integration timing
 
 **Details**:
+
 - Pre-commit hooks are essential for developer workflow
 - Section 2.5.1 mentions pre-commit hooks as integration point
 - Section 3.5 has pre-commit hooks in Phase 3 (Week 18)
@@ -85,6 +91,7 @@ Agent 1 was tasked with critically reviewing the PRD and TODO created by Agent 0
 **Issue**: No error handling/recovery strategy
 
 **Details**:
+
 - What happens if code doesn't parse?
 - How to handle syntax errors in target code?
 - What if AST generation fails?
@@ -98,6 +105,7 @@ Agent 1 was tasked with critically reviewing the PRD and TODO created by Agent 0
 **Issue**: Large file/large codebase handling
 
 **Details**:
+
 - Performance target mentions 100k LOC in 10 minutes
 - No strategy for files >10k lines
 - No strategy for incremental analysis
@@ -111,6 +119,7 @@ Agent 1 was tasked with critically reviewing the PRD and TODO created by Agent 0
 **Issue**: Configuration file complexity
 
 **Details**:
+
 - .acrrc.yaml tries to support all languages and frameworks upfront
 - Complex configuration may overwhelm new users
 - No way to auto-detect language/framework
@@ -123,6 +132,7 @@ Agent 1 was tasked with critically reviewing the PRD and TODO created by Agent 0
 **Issue**: No false positive management strategy
 
 **Details**:
+
 - Section 6.2 mentions "confidence scoring"
 - Section 11.1 mentions "machine learning to reduce false positives"
 - Section 3.5.3 mentions "Mark findings as false positives"
@@ -136,6 +146,7 @@ Agent 1 was tasked with critically reviewing the PRD and TODO created by Agent 0
 **Issue**: Data redaction from LLM prompts not implemented
 
 **Details**:
+
 - Section 6.1: "Sensitive data in code is redacted from LLM prompts"
 - No task in TODO.md for implementing redaction
 - No description of what constitutes "sensitive data"
@@ -147,6 +158,7 @@ Agent 1 was tasked with critically reviewing the PRD and TODO created by Agent 0
 **Issue**: Third-party library vulnerabilities missing
 
 **Details**:
+
 - Section 2.1.1 mentions "Using Components with Known Vulnerabilities" as a category
 - No tasks in TODO.md for integrating with dependency scanners
 - No mention of CVE database integration
@@ -159,6 +171,7 @@ Agent 1 was tasked with critically reviewing the PRD and TODO created by Agent 0
 **Issue**: Exit code logic incomplete
 
 **Details**:
+
 - Section 2.5.1 defines exit codes 0-5
 - What if there are mixed severities?
 - What if both high and medium vulnerabilities are found?
@@ -171,6 +184,7 @@ Agent 1 was tasked with critically reviewing the PRD and TODO created by Agent 0
 **Issue**: Business logic understanding is underspecified
 
 **Details**:
+
 - "Understand business logic and tries to subvert it" (Section 1.5)
 - Section 2.1.2: "Understand business logic flows"
 - Section 4.1: "LLM integration for intelligent attacks"
@@ -185,6 +199,7 @@ Agent 1 was tasked with critically reviewing the PRD and TODO created by Agent 0
 **Issue**: Test cases missing edge cases
 
 **Details**:
+
 - Section 8 mentions general testing types
 - No specific mention of testing with:
   - Code using dependency injection
@@ -202,6 +217,7 @@ Agent 1 was tasked with critically reviewing the PRD and TODO created by Agent 0
 **Issue**: Performance metrics undefined
 
 **Details**:
+
 - "1000 LOC per minute" - what kind of code? Simple? Complex?
 - "False positive rate < 15%" - against what benchmark? OWASP Juice Shop?
 - "Pattern coverage 90%" - which patterns? How measured?
@@ -215,6 +231,7 @@ Agent 1 was tasked with critically reviewing the PRD and TODO created by Agent 0
 **Issue**: No mention of ACR's own security
 
 **Details**:
+
 - How are API keys stored securely?
 - How is the .acrrc.yaml file protected (contains API keys)?
 - What if ACR is used as part of a supply chain attack?
@@ -227,6 +244,7 @@ Agent 1 was tasked with critically reviewing the PRD and TODO created by Agent 0
 **Issue**: No mention of attack code sandboxing
 
 **Details**:
+
 - Section 6.2: "Test code is sandboxed when executed"
 - No task in TODO.md for implementing sandboxing
 - No specification of sandboxing mechanism (Docker? chroot? restricted Python?)
@@ -240,6 +258,7 @@ Agent 1 was tasked with critically reviewing the PRD and TODO created by Agent 0
 **Issue**: No vulnerability tracking/management workflow
 
 **Details**:
+
 - How do users track vulnerability remediation over time?
 - What if the same vulnerability appears in multiple scans?
 - No mention of vulnerability ID or tracking across scans
@@ -252,6 +271,7 @@ Agent 1 was tasked with critically reviewing the PRD and TODO created by Agent 0
 **Issue**: No diff-based analysis
 
 **Details**:
+
 - For large codebases, full re-scans are wasteful
 - No way to analyze only changed code
 - CI/CD workflows would benefit immensely from diff-based analysis
@@ -263,6 +283,7 @@ Agent 1 was tasked with critically reviewing the PRD and TODO created by Agent 0
 **Issue**: Interactive mode features vague
 
 **Details**:
+
 - Section 2.3.3 lists interactive features
 - Section 3.5 (Weeks 11-12) implements it
 - No mockups or detailed interaction flows
@@ -277,6 +298,7 @@ Agent 1 was tasked with critically reviewing the PRD and TODO created by Agent 0
 #### 2.1 Missing Task Categories
 
 **Missing**: Error handling and recovery tasks
+
 - No tasks for handling parse errors
 - No tasks for handling syntax errors
 - No tasks for graceful degradation
@@ -287,6 +309,7 @@ Agent 1 was tasked with critically reviewing the PRD and TODO created by Agent 0
 ---
 
 **Missing**: Large codebase handling
+
 - No tasks for incremental analysis
 - No tasks for diff-based analysis
 - No tasks for memory optimization
@@ -297,6 +320,7 @@ Agent 1 was tasked with critically reviewing the PRD and TODO created by Agent 0
 ---
 
 **Missing**: False positive management
+
 - No tasks for implementing allowlist
 - No tasks for implementing denylist
 - No tasks for persisting false positive annotations
@@ -307,6 +331,7 @@ Agent 1 was tasked with critically reviewing the PRD and TODO created by Agent 0
 ---
 
 **Missing**: Vulnerability tracking
+
 - No tasks for vulnerability ID generation
 - No tasks for tracking vulnerabilities across scans
 - No tasks for vulnerability lifecycle management
@@ -317,6 +342,7 @@ Agent 1 was tasked with critically reviewing the PRD and TODO created by Agent 0
 ---
 
 **Missing**: Sensitive data redaction
+
 - No tasks for implementing sensitive data detection
 - No tasks for implementing redaction logic
 - No tasks for configuring redaction rules
@@ -326,6 +352,7 @@ Agent 1 was tasked with critically reviewing the PRD and TODO created by Agent 0
 ---
 
 **Missing**: Dependency scanning integration
+
 - No tasks for integrating with dependency scanners
 - No tasks for CVE database lookup
 - No tasks for dependency vulnerability patterns
@@ -335,6 +362,7 @@ Agent 1 was tasked with critically reviewing the PRD and TODO created by Agent 0
 ---
 
 **Missing**: Sandbox implementation
+
 - No tasks for implementing test sandboxing
 - No tasks for Docker/container-based isolation
 - No tasks for resource limiting
@@ -348,6 +376,7 @@ Agent 1 was tasked with critically reviewing the PRD and TODO created by Agent 0
 **Issue**: Some tasks are too broad
 
 **Details**:
+
 - "Implement AST parsing for Python" - this is a 2-3 week task, broken down only into sub-tasks
 - "Create core attack patterns (OWASP Top 10)" - each pattern is a 2-3 day task
 
@@ -358,6 +387,7 @@ Agent 1 was tasked with critically reviewing the PRD and TODO created by Agent 0
 **Issue**: Some tasks are missing sub-tasks
 
 **Details**:
+
 - "Implement control flow analysis" - no mention of handling try/except, finally, with statements
 - "Implement data flow analysis" - no mention of handling object attributes, dictionary access, list operations
 
@@ -370,6 +400,7 @@ Agent 1 was tasked with critically reviewing the PRD and TODO created by Agent 0
 **Issue**: Missing performance baseline establishment
 
 **Details**:
+
 - "Establish baseline metrics" - but no task to create baseline codebases
 - No task to create benchmark suite
 - No task to establish regression test suite
@@ -381,6 +412,7 @@ Agent 1 was tasked with critically reviewing the PRD and TODO created by Agent 0
 **Issue**: Missing edge case tests
 
 **Details**:
+
 - No tasks for testing with:
   - Malformed code
   - Code with circular imports
@@ -399,6 +431,7 @@ Agent 1 was tasked with critically reviewing the PRD and TODO created by Agent 0
 **Issue**: Task order could cause blocking
 
 **Details**:
+
 - LLM integration (Week 4-5) before sensitive data redaction (not in TODO)
 - Test generation (Phase 2) before sandboxing (not in TODO)
 - Pattern matching before creating patterns (this is correct)
@@ -414,6 +447,7 @@ Agent 1 was tasked with critically reviewing the PRD and TODO created by Agent 0
 **Concern**: Python is a good choice, but the dependency list is minimal
 
 **Details**:
+
 - No mention of AST manipulation libraries (astroid, asttools)
 - No mention of graph libraries for CFG/DFG (networkx)
 - No mention of caching libraries (diskcache, joblib)
@@ -426,6 +460,7 @@ Agent 1 was tasked with critically reviewing the PRD and TODO created by Agent 0
 **Concern**: tree-sitter integration complexity
 
 **Details**:
+
 - tree-sitter requires language grammars to be compiled
 - No mention of grammar installation/management
 - No mention of handling different Python versions in tree-sitter
@@ -439,6 +474,7 @@ Agent 1 was tasked with critically reviewing the PRD and TODO created by Agent 0
 **Concern**: Too many languages too quickly
 
 **Details**:
+
 - Adding 3 new languages (Java/Kotlin, Go, Rust) in 6 weeks (Phase 4)
 - Each requires: parser, AST visitor, CFG, DFG, patterns, tests
 - That's 6 languages in total by end of Phase 4
@@ -450,6 +486,7 @@ Agent 1 was tasked with critically reviewing the PRD and TODO created by Agent 0
 **Concern**: Integration phase (Phase 3) might be too late
 
 **Details**:
+
 - CI/CD integration is critical for enterprise adoption
 - Pre-commit hooks are critical for developer adoption
 - These should be available by Phase 2
@@ -464,6 +501,7 @@ Agent 1 was tasked with critically reviewing the PRD and TODO created by Agent 0
 **After Refinement**: 85% (issues identified and documented)
 
 The PRD and TODO are comprehensive in feature coverage but have significant issues with:
+
 1. Timeline realism (estimated 20-25% longer than stated)
 2. Missing error handling and edge case strategies
 3. Some feature contradictions that need clarification
@@ -473,7 +511,8 @@ However, these are all addressable. The core architecture is sound, the feature 
 
 ## Changes Made
 
-### PRD.md Edits:
+### PRD.md Edits
+
 1. Clarified MVP scope vs. core features (property-based testing timing)
 2. Clarified report format rollout schedule
 3. Added error handling strategy section
@@ -485,7 +524,8 @@ However, these are all addressable. The core architecture is sound, the feature 
 9. Clarified timeline expectations and added contingency notes
 10. Added dependency scanning integration section
 
-### TODO.md Edits:
+### TODO.md Edits
+
 1. Added error handling tasks
 2. Added performance optimization tasks
 3. Added false positive management tasks
@@ -500,6 +540,7 @@ However, these are all addressable. The core architecture is sound, the feature 
 ## Next Steps for Agent 2
 
 Agent 2 should:
+
 1. Review the refinements I've made
 2. Look for any remaining gaps or inconsistencies
 3. Consider if there are alternative approaches not explored

@@ -15,7 +15,8 @@
 """Tests for entry point identification."""
 
 import pytest
-from acr.core.entry_points import EntryPointIdentifier, EntryPoint
+
+from acr.core.entry_points import EntryPoint, EntryPointIdentifier
 
 
 @pytest.fixture

@@ -11,70 +11,70 @@ description: |
   cryptographic algorithms.
 
 references:
-  - https://owasp.org/www-community/attacks/Weak_Cryptography
-  - https://cwe.mitre.org/data/definitions/327.html
-  - https://cwe.mitre.org/data/definitions/328.html
+- https://owasp.org/www-community/attacks/Weak_Cryptography
+- https://cwe.mitre.org/data/definitions/327.html
+- https://cwe.mitre.org/data/definitions/328.html
 
 affected_languages:
-  - python
+- python
 
 affected_frameworks:
-  - flask
-  - django
-  - fastapi
+- flask
+- django
+- fastapi
 
 vulnerability_types:
-  - MD5 hash usage
-  - SHA1 hash usage
-  - DES encryption
-  - RC4 encryption
+- MD5 hash usage
+- SHA1 hash usage
+- DES encryption
+- RC4 encryption
 
 detection:
   static:
-    - pattern: "hashlib\\.md5\\(.*\\)"
-      description: Using MD5 hash (broken, collisions possible)
-      confidence: high
-      requires_language: [python]
+  - pattern: hashlib\.md5\(.*\)
+    description: Using MD5 hash (broken, collisions possible)
+    confidence: high
+    requires_language: [python]
 
-    - pattern: "hashlib\\.sha1\\(.*\\)"
-      description: Using SHA1 hash (deprecated, collisions possible)
-      confidence: high
-      requires_language: [python]
+  - pattern: hashlib\.sha1\(.*\)
+    description: Using SHA1 hash (deprecated, collisions possible)
+    confidence: high
+    requires_language: [python]
 
-    - pattern: "\\bimport\\s+hashlib[\\s\\S]*?md5"
-      description: Importing MD5 from hashlib
-      confidence: medium
-      requires_language: [python]
+  - pattern: \bimport\s+hashlib[\s\S]*?md5
+    description: Importing MD5 from hashlib
+    confidence: medium
+    requires_language: [python]
 
-    - pattern: "\\bimport\\s+Crypto\\.Cipher\\.DES"
-      description: Using DES encryption (weak, 56-bit key)
-      confidence: high
-      requires_language: [python]
+  - pattern: \bimport\s+Crypto\.Cipher\.DES
+    description: Using DES encryption (weak, 56-bit key)
+    confidence: high
+    requires_language: [python]
 
-    - pattern: "\\bimport\\s+Crypto\\.Cipher\\.ARC4"
-      description: Using RC4 encryption (weak, broken)
-      confidence: high
-      requires_language: [python]
+  - pattern: \bimport\s+Crypto\.Cipher\.ARC4
+    description: Using RC4 encryption (weak, broken)
+    confidence: high
+    requires_language: [python]
 
-    - pattern: "\\bimport\\s+cryptography\\.hazmat\\.primitives\\.ciphers\\.algorithms\\.DES"
-      description: Using DES encryption (weak, 56-bit key)
-      confidence: high
-      requires_language: [python]
+  - pattern: \bimport\s+cryptography\.hazmat\.primitives\.ciphers\.algorithms\.DES
+    description: Using DES encryption (weak, 56-bit key)
+    confidence: high
+    requires_language: [python]
 
-    - pattern: "hashlib\\.new\\(['\"]md5['\"]"
-      description: Creating MD5 hash via new()
-      confidence: high
-      requires_language: [python]
+  - pattern: hashlib\.new\(['"]md5['"]
+    description: Creating MD5 hash via new()
+    confidence: high
+    requires_language: [python]
 
-    - pattern: "hashlib\\.new\\(['\"]sha1['\"]"
-      description: Creating SHA1 hash via new()
-      confidence: high
-      requires_language: [python]
+  - pattern: hashlib\.new\(['"]sha1['"]
+    description: Creating SHA1 hash via new()
+    confidence: high
+    requires_language: [python]
 
   data_flow:
-    - source: "request.(json|form|args|values|body|data|headers)"
-      sink: "(md5|sha1|hashlib|hash)"
-      sanitizers: []
+  - source: request.(json|form|args|values|body|data|headers)
+    sink: (md5|sha1|hashlib|hash)
+    sanitizers: []
 
 remediation:
   description: Replace weak algorithms with strong cryptographic primitives
@@ -117,89 +117,89 @@ remediation:
 
 examples:
   vulnerable:
-    - |
-      import hashlib
+  - |
+    import hashlib
 
-      @app.route('/hash')
-      def hash_endpoint():
-          data = request.args.get('data')
-          return hashlib.md5(data.encode()).hexdigest()
+    @app.route('/hash')
+    def hash_endpoint():
+        data = request.args.get('data')
+        return hashlib.md5(data.encode()).hexdigest()
 
-    - |
-      import hashlib
+  - |
+    import hashlib
 
-      def generate_checksum(filename: str) -> str:
-          with open(filename, 'rb') as f:
-              return hashlib.sha1(f.read()).hexdigest()
+    def generate_checksum(filename: str) -> str:
+        with open(filename, 'rb') as f:
+            return hashlib.sha1(f.read()).hexdigest()
 
-    - |
-      from Crypto.Cipher import DES
+  - |
+    from Crypto.Cipher import DES
 
-      def encrypt_data(key: bytes, data: bytes) -> bytes:
-          cipher = DES.new(key, DES.MODE_ECB)
-          return cipher.encrypt(data)
+    def encrypt_data(key: bytes, data: bytes) -> bytes:
+        cipher = DES.new(key, DES.MODE_ECB)
+        return cipher.encrypt(data)
 
-    - |
-      import hashlib
+  - |
+    import hashlib
 
-      def create_session_id(user_id: str) -> str:
-          return hashlib.md5(f"{user_id}:{time.time()}".encode()).hexdigest()
+    def create_session_id(user_id: str) -> str:
+        return hashlib.md5(f"{user_id}:{time.time()}".encode()).hexdigest()
 
   secure:
-    - |
-      import hashlib
+  - |
+    import hashlib
 
-      @app.route('/hash')
-      def hash_endpoint():
-          data = request.args.get('data')
-          return hashlib.sha256(data.encode()).hexdigest()
+    @app.route('/hash')
+    def hash_endpoint():
+        data = request.args.get('data')
+        return hashlib.sha256(data.encode()).hexdigest()
 
-    - |
-      import hashlib
+  - |
+    import hashlib
 
-      def generate_checksum(filename: str) -> str:
-          with open(filename, 'rb') as f:
-              return hashlib.sha256(f.read()).hexdigest()
+    def generate_checksum(filename: str) -> str:
+        with open(filename, 'rb') as f:
+            return hashlib.sha256(f.read()).hexdigest()
 
-    - |
-      from Crypto.Cipher import AES
+  - |
+    from Crypto.Cipher import AES
 
-      def encrypt_data(key: bytes, data: bytes) -> bytes:
-          cipher = AES.new(key, AES.MODE_GCM)
-          ciphertext, tag = cipher.encrypt_and_digest(data)
-          return cipher.nonce + tag + ciphertext
+    def encrypt_data(key: bytes, data: bytes) -> bytes:
+        cipher = AES.new(key, AES.MODE_GCM)
+        ciphertext, tag = cipher.encrypt_and_digest(data)
+        return cipher.nonce + tag + ciphertext
 
-    - |
-      import secrets
+  - |
+    import secrets
 
-      def create_session_id(user_id: str) -> str:
-          return secrets.token_hex(32)
+    def create_session_id(user_id: str) -> str:
+        return secrets.token_hex(32)
 
 attack_vectors:
-  - vector: "MD5 Collision Attack"
-    description: Generate two different inputs with same MD5 hash to bypass checks
-    impact: Can bypass integrity checks, create fraudulent certificates
+- vector: MD5 Collision Attack
+  description: Generate two different inputs with same MD5 hash to bypass checks
+  impact: Can bypass integrity checks, create fraudulent certificates
 
-  - vector: "SHA1 Collision Attack"
-    description: Generate two different inputs with same SHA1 hash (Shattered attack)
-    impact: Can bypass digital signatures, create fraudulent documents
+- vector: SHA1 Collision Attack
+  description: Generate two different inputs with same SHA1 hash (Shattered attack)
+  impact: Can bypass digital signatures, create fraudulent documents
 
-  - vector: "DES Brute Force"
-    description: Brute force DES encryption (2^56 keys, feasible with modern hardware)
-    impact: Can decrypt sensitive data in hours/days
+- vector: DES Brute Force
+  description: Brute force DES encryption (2^56 keys, feasible with modern hardware)
+  impact: Can decrypt sensitive data in hours/days
 
-  - vector: "RC4 Key Recovery"
-    description: Exploit RC4 biases to recover encryption key
-    impact: Can decrypt intercepted communications
+- vector: RC4 Key Recovery
+  description: Exploit RC4 biases to recover encryption key
+  impact: Can decrypt intercepted communications
 
 security_recommendations:
-  - Use SHA-256 or SHA-3 instead of MD5/SHA1
-  - Use AES-256 instead of DES/RC4 for encryption
-  - Use PBKDF2, bcrypt, or Argon2 for password hashing
-  - Use HMAC for message authentication
-  - Never use MD5 or SHA1 for security-critical operations
-  - Use secrets module for generating random values
-  - Use modern authenticated encryption modes (GCM, CCM)
+- Use SHA-256 or SHA-3 instead of MD5/SHA1
+- Use AES-256 instead of DES/RC4 for encryption
+- Use PBKDF2, bcrypt, or Argon2 for password hashing
+- Use HMAC for message authentication
+- Never use MD5 or SHA1 for security-critical operations
+- Use secrets module for generating random values
+- Use modern authenticated encryption modes (GCM, CCM)
 
 llm_prompts:
   analyze: |

@@ -14,10 +14,9 @@
 
 """Tests for DenylistParser."""
 
-import pytest
 from pathlib import Path
-import tempfile
-from acr.denylist.parser import DenylistParser, DenylistEntry
+
+from acr.denylist.parser import DenylistEntry, DenylistParser
 
 
 class TestDenylistParser:
@@ -42,12 +41,14 @@ class TestDenylistParser:
     def test_parse_file_patterns(self, tmp_path: Path):
         """Test parsing file patterns."""
         denylist_file = tmp_path / "test-denylist.txt"
-        denylist_file.write_text("""
+        denylist_file.write_text(
+            """
 # Test denylist
 src/auth.py
 test_.*\\.py
 file:admin/
-""")
+"""
+        )
         parser = DenylistParser(denylist_file)
         parser.parse()
 
@@ -61,12 +62,14 @@ file:admin/
     def test_parse_function_patterns(self, tmp_path: Path):
         """Test parsing function patterns."""
         denylist_file = tmp_path / "test-denylist.txt"
-        denylist_file.write_text("""
+        denylist_file.write_text(
+            """
 auth.py:login
 function:user.py:authenticate
 user.py->validate_password
 logout()
-""")
+"""
+        )
         parser = DenylistParser(denylist_file)
         parser.parse()
 
@@ -79,10 +82,12 @@ logout()
     def test_parse_comments(self, tmp_path: Path):
         """Test parsing entries with comments."""
         denylist_file = tmp_path / "test-denylist.txt"
-        denylist_file.write_text("""
+        denylist_file.write_text(
+            """
 src/auth.py  # Critical authentication code
 function:login  # Entry point
-""")
+"""
+        )
         parser = DenylistParser(denylist_file)
         parser.parse()
 
@@ -93,12 +98,14 @@ function:login  # Entry point
     def test_parse_inline_and_hash_comments(self, tmp_path: Path):
         """Test parsing with both inline comments and hash-only lines."""
         denylist_file = tmp_path / "test-denylist.txt"
-        denylist_file.write_text("""
+        denylist_file.write_text(
+            """
 # This is a comment
 src/auth.py  # Inline comment
 # Another comment
 login()
-""")
+"""
+        )
         parser = DenylistParser(denylist_file)
         parser.parse()
 
@@ -107,13 +114,15 @@ login()
     def test_parse_whitespace_handling(self, tmp_path: Path):
         """Test that whitespace is handled correctly."""
         denylist_file = tmp_path / "test-denylist.txt"
-        denylist_file.write_text("""
-    
+        denylist_file.write_text(
+            """
+
     src/auth.py
-    
+
     login()
-    
-""")
+
+"""
+        )
         parser = DenylistParser(denylist_file)
         parser.parse()
 
@@ -122,11 +131,13 @@ login()
     def test_is_file_denied(self, tmp_path: Path):
         """Test file denial matching."""
         denylist_file = tmp_path / "test-denylist.txt"
-        denylist_file.write_text("""
+        denylist_file.write_text(
+            """
 src/auth.py
 test_.*\\.py
 file:admin/
-""")
+"""
+        )
         parser = DenylistParser(denylist_file)
         parser.parse()
 
@@ -140,12 +151,14 @@ file:admin/
     def test_is_function_denied(self, tmp_path: Path):
         """Test function denial matching."""
         denylist_file = tmp_path / "test-denylist.txt"
-        denylist_file.write_text("""
+        denylist_file.write_text(
+            """
 function:auth.py:login
 function:user.py:authenticate
 function:user.py->validate_password
 logout()
-""")
+"""
+        )
         parser = DenylistParser(denylist_file)
         parser.parse()
 
@@ -159,11 +172,13 @@ logout()
     def test_invalid_regex_handling(self, tmp_path: Path, caplog):
         """Test that invalid regex patterns are logged but don't crash."""
         denylist_file = tmp_path / "test-denylist.txt"
-        denylist_file.write_text("""
+        denylist_file.write_text(
+            """
 src/auth.py
 [invalid(regex
 login()
-""")
+"""
+        )
         parser = DenylistParser(denylist_file)
         parser.parse()
 
@@ -173,10 +188,12 @@ login()
     def test_get_entries(self, tmp_path: Path):
         """Test getting all entries."""
         denylist_file = tmp_path / "test-denylist.txt"
-        denylist_file.write_text("""
+        denylist_file.write_text(
+            """
 src/auth.py  # Critical file
 login()  # Critical function
-""")
+"""
+        )
         parser = DenylistParser(denylist_file)
         parser.parse()
 
@@ -187,10 +204,12 @@ login()  # Critical function
     def test_file_prefix_handling(self, tmp_path: Path):
         """Test that file: prefix is properly stripped."""
         denylist_file = tmp_path / "test-denylist.txt"
-        denylist_file.write_text("""
+        denylist_file.write_text(
+            """
 file:src/auth.py
 src/user.py
-""")
+"""
+        )
         parser = DenylistParser(denylist_file)
         parser.parse()
 
@@ -199,10 +218,12 @@ src/user.py
     def test_function_prefix_handling(self, tmp_path: Path):
         """Test that function: prefix is properly stripped."""
         denylist_file = tmp_path / "test-denylist.txt"
-        denylist_file.write_text("""
+        denylist_file.write_text(
+            """
 function:login
 logout()
-""")
+"""
+        )
         parser = DenylistParser(denylist_file)
         parser.parse()
 
@@ -211,13 +232,15 @@ logout()
     def test_mixed_patterns(self, tmp_path: Path):
         """Test parsing mixed file and function patterns."""
         denylist_file = tmp_path / "test-denylist.txt"
-        denylist_file.write_text("""
+        denylist_file.write_text(
+            """
 src/auth.py
 login()
 test_.*\\.py
 user.py:authenticate
 admin/
-""")
+"""
+        )
         parser = DenylistParser(denylist_file)
         parser.parse()
 

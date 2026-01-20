@@ -116,9 +116,11 @@ def list_cmd(category: str, severity: str, custom_only: bool, custom_path: str) 
                 pattern.category,
                 f"[{severity_color}]{pattern.severity}[/{severity_color}]",
                 source,
-                pattern.description[:60] + "..."
-                if len(pattern.description) > 60
-                else pattern.description,
+                (
+                    pattern.description[:60] + "..."
+                    if len(pattern.description) > 60
+                    else pattern.description
+                ),
             )
 
         console.print(table)

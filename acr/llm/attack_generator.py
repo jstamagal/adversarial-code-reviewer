@@ -14,22 +14,21 @@
 
 """Intelligent attack generation using LLM."""
 
-import os
 import logging
-from typing import Optional, Dict, Any, List
+from typing import Any, Dict, List, Optional
 
 logger = logging.getLogger(__name__)
+from acr.config.loader import load_config
 from acr.llm.client import LLMClient, create_client, get_api_key
-from acr.llm.prompts import PromptTemplates
-from acr.llm.redaction import DataRedactor
 from acr.llm.prompt_injection import (
+    JAILBREAK_PREVENTION_SYSTEM_PROMPT,
+    OutputMonitor,
     PromptInjectorDetector,
     PromptSanitizer,
-    OutputMonitor,
-    JAILBREAK_PREVENTION_SYSTEM_PROMPT,
 )
-from acr.models.finding import Finding, FindingLocation, FindingImpact, FindingRemediation
-from acr.config.loader import load_config
+from acr.llm.prompts import PromptTemplates
+from acr.llm.redaction import DataRedactor
+from acr.models.finding import Finding, FindingImpact, FindingLocation, FindingRemediation
 
 
 class AttackGenerator:

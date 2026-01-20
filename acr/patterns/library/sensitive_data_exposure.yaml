@@ -11,93 +11,93 @@ description: |
   insecure storage, transmission, logging, or handling of sensitive data.
 
 references:
-  - https://owasp.org/www-project-top-ten/2017/A3_2017-Sensitive_Data_Exposure
-  - https://cwe.mitre.org/data/definitions/200.html
-  - https://cheatsheetseries.owasp.org/cheatsheets/Sensitive_Data_Protection_Cheat_Sheet.html
+- https://owasp.org/www-project-top-ten/2017/A3_2017-Sensitive_Data_Exposure
+- https://cwe.mitre.org/data/definitions/200.html
+- https://cheatsheetseries.owasp.org/cheatsheets/Sensitive_Data_Protection_Cheat_Sheet.html
 
 affected_languages:
-  - python
-  - javascript
-  - typescript
+- python
+- javascript
+- typescript
 
 affected_frameworks:
-  - flask
-  - django
-  - fastapi
-  - express
-  - nestjs
+- flask
+- django
+- fastapi
+- express
+- nestjs
 
 data_types:
-  - passwords: "User authentication credentials"
-  - credit_cards: "Payment card information"
-  - pii: "Personally Identifiable Information (SSN, DOB, addresses)"
-  - api_keys: "API keys and tokens"
-  - session_tokens: "Session identifiers and cookies"
-  - medical_data: "Protected Health Information (PHI)"
-  - secrets: "Application secrets and encryption keys"
+- passwords: User authentication credentials
+- credit_cards: Payment card information
+- pii: Personally Identifiable Information (SSN, DOB, addresses)
+- api_keys: API keys and tokens
+- session_tokens: Session identifiers and cookies
+- medical_data: Protected Health Information (PHI)
+- secrets: Application secrets and encryption keys
 
 detection:
   static:
-    - pattern: "(logging|logger|log\\.|console\\.log|print)\\s*\\(.*\\b(password|passwd|pwd|secret|token|api_key|credit_card|ssn|social_security|private_key)\\b"
-      description: Logging sensitive data directly
-      confidence: high
+  - pattern: (logging|logger|log\.|console\.log|print)\s*\(.*\b(password|passwd|pwd|secret|token|api_key|credit_card|ssn|social_security|private_key)\b
+    description: Logging sensitive data directly
+    confidence: high
 
-    - pattern: "password\\s*=\\s*[\"'][^\"']+[\"']"
-      description: Hardcoded password in plaintext
-      confidence: high
+  - pattern: password\s*=\s*["'][^"']+["']
+    description: Hardcoded password in plaintext
+    confidence: high
 
-    - pattern: "secret\\s*=\\s*[\"'][^\"']+[\"']"
-      description: Hardcoded secret in plaintext
-      confidence: high
+  - pattern: secret\s*=\s*["'][^"']+["']
+    description: Hardcoded secret in plaintext
+    confidence: high
 
-    - pattern: "api_key\\s*=\\s*[\"'][^\"']+[\"']"
-      description: Hardcoded API key in plaintext
-      confidence: high
+  - pattern: api_key\s*=\s*["'][^"']+["']
+    description: Hardcoded API key in plaintext
+    confidence: high
 
-    - pattern: "(hash|hashlib\\.(sha1|md5|sha224|sha256|sha384|sha512))\\(password"
-      description: Using weak/fast hashing for passwords without salt/iterations
-      confidence: medium
+  - pattern: (hash|hashlib\.(sha1|md5|sha224|sha256|sha384|sha512))\(password
+    description: Using weak/fast hashing for passwords without salt/iterations
+    confidence: medium
 
-    - pattern: "base64\\.(encode|decode)\\s*\\(.*\\b(password|secret|token|api_key)\\b"
-      description: Using base64 encoding (not encryption) for sensitive data
-      confidence: high
+  - pattern: base64\.(encode|decode)\s*\(.*\b(password|secret|token|api_key)\b
+    description: Using base64 encoding (not encryption) for sensitive data
+    confidence: high
 
-    - pattern: "(pickle|marshal)\\.(loads|dumps)\\s*\\(.*\\b(request\\.(args|form|json|data)|user_input)\\b"
-      description: Potentially deserializing untrusted data (risk of object injection)
-      confidence: high
+  - pattern: (pickle|marshal)\.(loads|dumps)\s*\(.*\b(request\.(args|form|json|data)|user_input)\b
+    description: Potentially deserializing untrusted data (risk of object injection)
+    confidence: high
 
-    - pattern: "app\\.run\\(.*ssl_context\\s*=\\s*(None|False)"
-      description: Running Flask app without SSL/TLS
-      confidence: high
-      requires_framework: [flask]
+  - pattern: app\.run\(.*ssl_context\s*=\s*(None|False)
+    description: Running Flask app without SSL/TLS
+    confidence: high
+    requires_framework: [flask]
 
-    - pattern: "DEBUG\\s*=\\s*True"
-      description: Debug mode enabled in production (exposes sensitive info)
-      confidence: medium
+  - pattern: DEBUG\s*=\s*True
+    description: Debug mode enabled in production (exposes sensitive info)
+    confidence: medium
 
-    - pattern: "(console\\.log|console\\.error|console\\.warn|console\\.info)\\(.*\\b(password|secret|token|apiKey|creditCard|ssn)\\b"
-      description: JavaScript console logging sensitive data
-      confidence: high
-      requires_language: [javascript, typescript]
+  - pattern: (console\.log|console\.error|console\.warn|console\.info)\(.*\b(password|secret|token|apiKey|creditCard|ssn)\b
+    description: JavaScript console logging sensitive data
+    confidence: high
+    requires_language: [javascript, typescript]
 
-    - pattern: "(localStorage|sessionStorage)\\.setItem\\(.*\\b(password|secret|token|apiKey|creditCard|ssn)\\b"
-      description: Storing sensitive data in browser storage (insecure)
-      confidence: high
-      requires_language: [javascript, typescript]
+  - pattern: (localStorage|sessionStorage)\.setItem\(.*\b(password|secret|token|apiKey|creditCard|ssn)\b
+    description: Storing sensitive data in browser storage (insecure)
+    confidence: high
+    requires_language: [javascript, typescript]
 
-    - pattern: "document\\.cookie\\s*=\\s*['\"]password="
-      description: Storing password in cookie (insecure)
-      confidence: high
-      requires_language: [javascript, typescript]
+  - pattern: document\.cookie\s*=\s*['"]password=
+    description: Storing password in cookie (insecure)
+    confidence: high
+    requires_language: [javascript, typescript]
 
   data_flow:
-    - source: "(password|secret|token|api_key|credit_card|ssn|session_id)"
-      sink: "(logging|logger|log\\.|print|console\\.log|localStorage|sessionStorage)"
-      sanitizers: []
+  - source: (password|secret|token|api_key|credit_card|ssn|session_id)
+    sink: (logging|logger|log\.|print|console\.log|localStorage|sessionStorage)
+    sanitizers: []
 
-    - source: "request.(json|form|args|values|body|data)"
-      sink: "(hash|hashlib\\.(sha1|md5|sha256))"
-      sanitizers: "(pbkdf2_hmac|bcrypt\\.hash|argon2\\.hash)"
+  - source: request.(json|form|args|values|body|data)
+    sink: (hash|hashlib\.(sha1|md5|sha256))
+    sanitizers: (pbkdf2_hmac|bcrypt\.hash|argon2\.hash)
 
 remediation:
   description: Use proper encryption, secure hashing, and never log or store sensitive data in plaintext
@@ -165,110 +165,110 @@ remediation:
 
 examples:
   vulnerable:
-    - |
-      import logging
+  - |
+    import logging
 
-      @app.route('/login', methods=['POST'])
-      def login():
-          username = request.form.get('username')
-          password = request.form.get('password')
+    @app.route('/login', methods=['POST'])
+    def login():
+        username = request.form.get('username')
+        password = request.form.get('password')
 
-          # VULNERABLE: Logging sensitive credentials
-          logging.info(f"Login attempt: {username}:{password}")
+        # VULNERABLE: Logging sensitive credentials
+        logging.info(f"Login attempt: {username}:{password}")
 
-          # VULNERABLE: Weak hashing
-          hashed_pw = hashlib.md5(password.encode()).hexdigest()
-          return authenticate(username, hashed_pw)
+        # VULNERABLE: Weak hashing
+        hashed_pw = hashlib.md5(password.encode()).hexdigest()
+        return authenticate(username, hashed_pw)
 
-    - |
-      // VULNERABLE: Storing API key in localStorage
-      function saveApiKey(key) {
-          localStorage.setItem('api_key', key);
-      }
+  - |
+    // VULNERABLE: Storing API key in localStorage
+    function saveApiKey(key) {
+        localStorage.setItem('api_key', key);
+    }
 
-    - |
-      // VULNERABLE: Sending password in query string
-      fetch(`/api/login?user=${username}&pass=${password}`)
-        .then(response => response.json())
+  - |
+    // VULNERABLE: Sending password in query string
+    fetch(`/api/login?user=${username}&pass=${password}`)
+      .then(response => response.json())
 
-    - |
-      # VULNERABLE: Base64 encoding (not encryption)
-      encoded = base64.b64encode(secret_key.encode()).decode()
-      transmit(encoded)
+  - |
+    # VULNERABLE: Base64 encoding (not encryption)
+    encoded = base64.b64encode(secret_key.encode()).decode()
+    transmit(encoded)
 
-    - |
-      # VULNERABLE: Debug mode exposes stack traces
-      app.debug = True
-      app.run()
+  - |
+    # VULNERABLE: Debug mode exposes stack traces
+    app.debug = True
+    app.run()
 
   secure:
-    - |
-      import logging
-      import bcrypt
-      import os
+  - |
+    import logging
+    import bcrypt
+    import os
 
-      @app.route('/login', methods=['POST'])
-      def login():
-          username = request.form.get('username')
-          password = request.form.get('password')
+    @app.route('/login', methods=['POST'])
+    def login():
+        username = request.form.get('username')
+        password = request.form.get('password')
 
-          # SECURE: Never log passwords
-          logging.info(f"Login attempt for user: {username}")
+        # SECURE: Never log passwords
+        logging.info(f"Login attempt for user: {username}")
 
-          # SECURE: Strong password hashing
-          salt = bcrypt.gensalt()
-          hashed_pw = bcrypt.hashpw(password.encode(), salt)
-          return authenticate(username, hashed_pw)
+        # SECURE: Strong password hashing
+        salt = bcrypt.gensalt()
+        hashed_pw = bcrypt.hashpw(password.encode(), salt)
+        return authenticate(username, hashed_pw)
 
-    - |
-      // SECURE: Use secure HttpOnly cookies
-      async function login(username, password) {
-          const response = await fetch('/api/login', {
-              method: 'POST',
-              credentials: 'include',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ username, password })
-          });
-          return response.json();
-      }
+  - |
+    // SECURE: Use secure HttpOnly cookies
+    async function login(username, password) {
+        const response = await fetch('/api/login', {
+            method: 'POST',
+            credentials: 'include',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ username, password })
+        });
+        return response.json();
+    }
 
-    - |
-      # SECURE: Use HTTPS and secure headers
-      from flask_talisman import Talisman
-      Talisman(app, force_https=True)
+  - |
+    # SECURE: Use HTTPS and secure headers
+    from flask_talisman import Talisman
+    Talisman(app, force_https=True)
 
-    - |
-      from cryptography.fernet import Fernet
+  - |
+    from cryptography.fernet import Fernet
 
-      # SECURE: Proper encryption
-      key = os.getenv('ENCRYPTION_KEY')
-      cipher = Fernet(key.encode())
-      encrypted = cipher.encrypt(secret_data.encode())
+    # SECURE: Proper encryption
+    key = os.getenv('ENCRYPTION_KEY')
+    cipher = Fernet(key.encode())
+    encrypted = cipher.encrypt(secret_data.encode())
 
 attack_vectors:
-  - vector: "Credential Theft via Logs"
-    payload: "admin123"
-    description: If passwords are logged, attackers with log access can steal credentials
+- vector: Credential Theft via Logs
+  payload: admin123
+  description: If passwords are logged, attackers with log access can steal credentials
 
-  - vector: "Man-in-the-Middle Attack"
-    payload: "Intercepting HTTP traffic to steal session tokens"
-    description: Sending sensitive data over HTTP allows network eavesdropping
+- vector: Man-in-the-Middle Attack
+  payload: Intercepting HTTP traffic to steal session tokens
+  description: Sending sensitive data over HTTP allows network eavesdropping
 
-  - vector: "Cookie Theft via XSS"
-    payload: "<script>alert(document.cookie)</script>"
-    description: Storing sensitive data in accessible cookies allows XSS to steal it
+- vector: Cookie Theft via XSS
+  payload: <script>alert(document.cookie)</script>
+  description: Storing sensitive data in accessible cookies allows XSS to steal it
 
-  - vector: "Storage Infiltration"
-    payload: "Reading localStorage/sessionStorage"
-    description: Client-side storage is accessible to any script running on the page
+- vector: Storage Infiltration
+  payload: Reading localStorage/sessionStorage
+  description: Client-side storage is accessible to any script running on the page
 
-  - vector: "Memory Dump Attack"
-    payload: "Dumping process memory to extract plaintext secrets"
-    description: Secrets kept in plaintext memory can be extracted via memory dumps
+- vector: Memory Dump Attack
+  payload: Dumping process memory to extract plaintext secrets
+  description: Secrets kept in plaintext memory can be extracted via memory dumps
 
-  - vector: "Weak Hash Cracking"
-    payload: "Using rainbow tables or GPU cracking on MD5/SHA1 hashes"
-    description: Weak/fast hashing without salt allows pre-computed hash attacks
+- vector: Weak Hash Cracking
+  payload: Using rainbow tables or GPU cracking on MD5/SHA1 hashes
+  description: Weak/fast hashing without salt allows pre-computed hash attacks
 
 llm_prompts:
   analyze: |

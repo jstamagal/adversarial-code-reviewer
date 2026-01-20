@@ -14,10 +14,9 @@
 
 """Unit tests for report generators."""
 
-from pathlib import Path
+from acr.models.finding import Finding, FindingImpact, FindingLocation, FindingRemediation
 from acr.reporters.json_reporter import JSONReporter
 from acr.reporters.markdown import MarkdownReporter
-from acr.models.finding import Finding, FindingLocation, FindingImpact, FindingRemediation
 
 
 def create_test_finding(

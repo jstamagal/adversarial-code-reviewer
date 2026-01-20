@@ -15,13 +15,12 @@
 """Sensitive data redaction for LLM calls."""
 
 import logging
-import re
 import math
-from typing import Tuple, Dict, List, Optional, Set
-from dataclasses import dataclass, field
+import re
+from dataclasses import dataclass
+from typing import Dict, List, Optional, Set, Tuple
 
 from acr.config.schema import RedactionConfig
-
 
 logger = logging.getLogger(__name__)
 

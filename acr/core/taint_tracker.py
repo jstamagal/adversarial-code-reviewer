@@ -14,13 +14,14 @@
 
 """Taint tracking implementation."""
 
-from typing import Set, List, Any, Optional, Dict, Tuple
 from dataclasses import dataclass
+from typing import Any, Dict, List, Optional, Set
+
 from ..utils.logger import get_logger
-from .entry_points import EntryPoint, EntryPointIdentifier
-from .sink_identification import Sink, SinkIdentifier
-from .dfg_builder import DFGBuilder
 from .cfg_builder import CFGBuilder
+from .dfg_builder import DFGBuilder
+from .entry_points import EntryPointIdentifier
+from .sink_identification import Sink, SinkIdentifier
 
 logger = get_logger(__name__)
 

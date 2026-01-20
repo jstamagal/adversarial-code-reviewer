@@ -1,6 +1,7 @@
 # Agent 0 Journal - Planning Phase
 
 ## Agent Information
+
 - **Agent ID**: 0
 - **Phase**: 1
 - **Task**: Initial planning and PRD development
@@ -13,6 +14,7 @@ Agent 0 was tasked with beginning the planning phase for the Adversarial Code Re
 ## Initial State Assessment
 
 ### IDEA.md Analysis
+
 The original IDEA.md contained a high-level elevator pitch for an adversarial code reviewer. Key concepts identified:
 
 1. **Core Value Proposition**: Flip the code review paradigm from helpful suggestions to adversarial attacks
@@ -29,15 +31,18 @@ The original IDEA.md contained a high-level elevator pitch for an adversarial co
 ### Initial Brainstorming - Features Beyond IDEA.md
 
 #### Attack Categories Expanded
+
 The original IDEA mentioned "finding unintended behaviors" and "breaking edge cases." I expanded this into a comprehensive attack pattern library including:
 
 **Core Injection Attacks** (beyond basic SQL):
+
 - SQL, NoSQL, LDAP, XPath, GraphQL injection
 - Command injection (shell, system, subprocess)
 - Template injection (Jinja2, Twig, ERB, etc.)
 - Header injection, log injection
 
 **Authentication & Authorization**:
+
 - Broken authentication
 - Privilege escalation
 - Session fixation
@@ -46,6 +51,7 @@ The original IDEA mentioned "finding unintended behaviors" and "breaking edge ca
 - API key abuse
 
 **Input Validation Failures**:
+
 - XSS (reflected, stored, DOM-based)
 - Path traversal
 - File upload abuse
@@ -53,6 +59,7 @@ The original IDEA mentioned "finding unintended behaviors" and "breaking edge ca
 - Format string vulnerabilities
 
 **State & Concurrency**:
+
 - Race conditions
 - TOCTOU vulnerabilities
 - Double-fetch bugs
@@ -60,6 +67,7 @@ The original IDEA mentioned "finding unintended behaviors" and "breaking edge ca
 - Deadlock detection
 
 **Business Logic Abuse**:
+
 - Price manipulation
 - Coupon stacking
 - Workflow bypass
@@ -67,6 +75,7 @@ The original IDEA mentioned "finding unintended behaviors" and "breaking edge ca
 - Resource exhaustion
 
 **Cryptography**:
+
 - Weak algorithms
 - Hard-coded keys
 - Insufficient entropy
@@ -74,6 +83,7 @@ The original IDEA mentioned "finding unintended behaviors" and "breaking edge ca
 - Timing attacks
 
 **Dependencies**:
+
 - Known vulnerabilities (CVEs)
 - Supply chain attacks
 - Dependency confusion
@@ -81,6 +91,7 @@ The original IDEA mentioned "finding unintended behaviors" and "breaking edge ca
 #### Language-Specific Considerations
 
 **Python** (primary focus for MVP):
+
 - Pickle deserialization
 - YAML.load()
 - eval/exec
@@ -90,6 +101,7 @@ The original IDEA mentioned "finding unintended behaviors" and "breaking edge ca
 - @dataclass validation
 
 **JavaScript/TypeScript**:
+
 - Prototype pollution
 - eval() / Function()
 - JSON.parse with reviver
@@ -98,6 +110,7 @@ The original IDEA mentioned "finding unintended behaviors" and "breaking edge ca
 - Type assertion abuse
 
 **Java/Kotlin**:
+
 - Deserialization
 - Reflection abuse
 - JNDI injection (Log4j style)
@@ -105,6 +118,7 @@ The original IDEA mentioned "finding unintended behaviors" and "breaking edge ca
 - Serialization
 
 **Go**:
+
 - SQL injection
 - Command injection
 - Template injection
@@ -112,6 +126,7 @@ The original IDEA mentioned "finding unintended behaviors" and "breaking edge ca
 - unsafe package
 
 **Rust**:
+
 - Unsafe blocks
 - FFI vulnerabilities
 - Deserialize untrusted
@@ -120,18 +135,21 @@ The original IDEA mentioned "finding unintended behaviors" and "breaking edge ca
 #### Architectural Decisions
 
 **Multi-Modal Analysis**:
+
 - Static analysis (AST, CFG, DFG)
 - LLM-powered intelligent attacks
 - Property-based test generation
 - Multi-step attack scenarios
 
 **Extensibility**:
+
 - Plugin system for custom patterns
 - Plugin system for new languages
 - Plugin system for custom reporters
 - Plugin system for custom integrations
 
 **Integration Points**:
+
 - CI/CD (GitHub Actions, GitLab CI, etc.)
 - IDE Extensions (VS Code, JetBrains)
 - Issue Trackers (GitHub Issues, Jira, Linear)
@@ -140,6 +158,7 @@ The original IDEA mentioned "finding unintended behaviors" and "breaking edge ca
 ### Technology Stack Rationale
 
 **Python as Core Language**:
+
 - Rich ecosystem for parsing (tree-sitter, astor)
 - Good LLM client libraries (openai, anthropic)
 - Strong type support with Pydantic
@@ -147,12 +166,14 @@ The original IDEA mentioned "finding unintended behaviors" and "breaking edge ca
 - Well-established testing (pytest)
 
 **tree-sitter for Parsing**:
+
 - Language-agnostic
 - Fast incremental parsing
 - Error recovery
 - Community-maintained grammars
 
 **LLM Integration**:
+
 - Claude 3.5 Sonnet (primary choice) - good balance of intelligence and cost
 - Claude 3.5 Haiku (for faster, cheaper operations)
 - OpenAI GPT-4/o1 (as alternative)
@@ -178,6 +199,7 @@ The PRD is organized into 13 main sections:
 13. **Glossary**: Common terms
 
 This structure ensures:
+
 - Complete coverage of all aspects
 - Clear phase boundaries
 - Measurable deliverables
@@ -187,6 +209,7 @@ This structure ensures:
 ### Key Design Decisions in PRD
 
 **Phased Development**:
+
 - Phase 1 (MVP): 8 weeks, Python + Flask only
 - Phase 2: 6 weeks, JS/TS + property-based testing
 - Phase 3: 4 weeks, integrations
@@ -194,6 +217,7 @@ This structure ensures:
 - Phase 5: 4 weeks, scale + polish
 
 **Progressive Complexity**:
+
 - Start with static analysis
 - Add LLM intelligence
 - Add property-based testing
@@ -201,6 +225,7 @@ This structure ensures:
 - Add symbolic execution (optional)
 
 **Developer Experience First**:
+
 - CLI-first approach
 - Clear error messages
 - Interactive mode
@@ -212,6 +237,7 @@ This structure ensures:
 ### Hierarchical Organization
 
 The TODO is organized by:
+
 1. **Phase**: Top-level grouping
 2. **Week**: Time-based breakdown
 3. **Task Area**: Functional grouping
@@ -220,6 +246,7 @@ The TODO is organized by:
 ### Task Granularity
 
 Each task is:
+
 - **Actionable**: Uses imperative verbs ("Implement", "Create", "Write")
 - **Specific**: Describes what needs to be done
 - **Testable**: Can be verified as complete
@@ -228,6 +255,7 @@ Each task is:
 ### Testing Integration
 
 Each major component has:
+
 - Unit tests (in the same task block)
 - Integration tests (separate section)
 - End-to-end tests (separate section)
@@ -306,24 +334,30 @@ Agent 1 should focus on **reviewing and scrutinizing** the PRD and TODO. Specifi
 ## Potential Blockers and Solutions
 
 ### Blocker 1: LLM API Costs
+
 **Risk**: Scanning large codebases could be expensive with LLM APIs
 **Mitigation**:
+
 - Caching implemented (cache by prompt hash)
 - Use cheaper models where possible (Haiku)
 - Local LLM support (Ollama) in Phase 5
 - Batch requests to reduce overhead
 
 ### Blocker 2: Analysis Speed
+
 **Risk**: Deep analysis could be slow for large codebases
 **Mitigation**:
+
 - Performance targets defined (1000 LOC/min)
 - Parallel processing in Phase 5
 - Incremental analysis
 - Configurable analysis depth
 
 ### Blocker 3: False Positive Rate
+
 **Risk**: High FP rate could overwhelm users
 **Mitigation**:
+
 - Target < 15% FP rate
 - Confidence scoring
 - Machine learning to reduce FPs
@@ -332,24 +366,29 @@ Agent 1 should focus on **reviewing and scrutinizing** the PRD and TODO. Specifi
 ## Alternative Approaches Considered
 
 ### Approach 1: Pure LLM-based Analysis
+
 **Rejected**: Too expensive, too slow, inconsistent results
 **Selected**: Hybrid approach - static analysis for speed, LLM for intelligence
 
 ### Approach 2: All-at-Once Implementation
+
 **Rejected**: Too risky, no early feedback
 **Selected**: Phased approach with MVP in 8 weeks
 
 ### Approach 3: Web-Based Dashboard First
+
 **Rejected**: Adds complexity, dev resources needed
 **Selected**: CLI first, web dashboard in roadmap
 
 ### Approach 4: Single-Language Support Forever
+
 **Rejected**: Limits market, competitive advantage is multi-language
 **Selected**: Multi-language support in phased approach
 
 ## Success Criteria for Agent 0
 
 I consider my work complete when:
+
 - [x] IDEA.md has been read and understood
 - [x] Comprehensive feature set has been brainstormed
 - [x] PRD.md has been created with zero ambiguity
@@ -363,6 +402,7 @@ I consider my work complete when:
 ## Commit Strategy
 
 I will create a commit after updating PROMPT.md to increment to Agent 1. This commit will include:
+
 - PRD.md (new comprehensive product requirements)
 - TODO.md (detailed implementation tasks)
 - AGENT0_JOURNAL.md (this journal)
@@ -375,6 +415,7 @@ This provides a clear checkpoint in the development process.
 The Adversarial Code Reviewer is a unique product that fills an important gap in the development ecosystem. As AI-generated code becomes more common, having AI that stress-tests from an adversarial perspective will become increasingly valuable.
 
 The phased approach allows for:
+
 - Early user feedback
 - Iterative improvement
 - Risk mitigation

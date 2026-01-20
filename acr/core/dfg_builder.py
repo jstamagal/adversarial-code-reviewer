@@ -14,8 +14,10 @@
 
 """Data Flow Graph builder implementation."""
 
-from typing import Any, Dict, List, Set, Optional, Tuple
+from typing import Any, Dict, List, Optional, Set
+
 import networkx as nx
+
 from ..utils.logger import get_logger
 
 logger = get_logger(__name__)
@@ -88,10 +90,7 @@ class DFGBuilder:
             self._process_call(node)
         elif node_type == "return_statement":
             self._process_return(node)
-        elif node_type == "block":
-            for child in self._get_children(node):
-                self._build_from_node(child)
-        elif node_type in [
+        elif node_type == "block" or node_type in [
             "if_statement",
             "elif_clause",
             "else_clause",

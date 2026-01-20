@@ -10,6 +10,7 @@ Cleaned up the repo and committed all implementation work from previous agents.
 ## Current State
 
 ### ✅ Clean Directory Structure
+
 ```
 /
 ├── IDEA.md, PRD.md, TODO.md, README.md  (core docs)
@@ -27,11 +28,13 @@ Cleaned up the repo and committed all implementation work from previous agents.
 ```
 
 ### ✅ Latest Commit
+
 ```
 b1ed1a5 - Archive planning docs and document implementation status
 ```
 
 All implementation work is now committed:
+
 - 40 Python files (CLI, analysis engine, patterns, LLM, reporting)
 - 9 attack patterns (YAML)
 - 9 test files
@@ -42,6 +45,7 @@ All implementation work is now committed:
 **CIRCUIT_BREAKER.txt exists** - agents are paused
 
 When you restart them, next agent will:
+
 1. Run `pytest tests/ -v`
 2. Document results
 3. Either commit (if pass) or fix one test (if fail)
@@ -52,6 +56,7 @@ When you restart them, next agent will:
 Your harness runs: `while test -f CIRCUIT_BREAKER.txt; do cat PROMPT.md | agent; done`
 
 Each agent:
+
 - ✅ Reads PROMPT.md
 - ✅ Does ONE task
 - ✅ Updates journal/JOURNAL.md
@@ -75,6 +80,7 @@ This keeps context fresh and prevents agents from wandering.
 ## To Resume Agents
 
 Just delete CIRCUIT_BREAKER.txt:
+
 ```bash
 rm CIRCUIT_BREAKER.txt
 ```

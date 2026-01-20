@@ -14,19 +14,17 @@
 
 """Pattern matcher implementation."""
 
-import re
-from typing import List, Optional, Any, Dict, cast
-from pathlib import Path
 import hashlib
+import re
+from typing import Dict, List, Optional
 
+from acr.models.finding import Finding, FindingImpact, FindingLocation, FindingRemediation
+from acr.patterns.loader import PatternLoader
 from acr.patterns.schema import (
+    DataFlowPatternTemplate,
     Pattern,
     StaticPatternTemplate,
-    DataFlowPatternTemplate,
 )
-from acr.models.finding import Finding, FindingLocation, FindingImpact, FindingRemediation
-from acr.patterns.loader import PatternLoader
-from acr.core.ast_parser import ASTParser
 from acr.utils.degradation import analysis_fallback, safe_iterate
 
 

@@ -3,12 +3,15 @@
 ## 1. Executive Summary
 
 ### 1.1 Product Name
+
 Adversarial Code Reviewer (ACR)
 
 ### 1.2 Product Vision
+
 A development tool that flips the code review paradigm by providing AI-driven adversarial analysis. Unlike traditional code reviewers that suggest improvements, ACR actively attacks code like a red team penetration tester—finding vulnerabilities, edge cases, and unintended behaviors before they reach production.
 
 ### 1.3 Target Users
+
 - Security-conscious developers
 - DevOps engineers
 - Security teams
@@ -16,10 +19,13 @@ A development tool that flips the code review paradigm by providing AI-driven ad
 - Organizations adopting AI-assisted development
 
 ### 1.4 Problem Statement
+
 As AI-assisted coding becomes ubiquitous, code is being written faster than ever. Traditional code review tools are collaborative and constructive, focusing on style, maintainability, and best practices. They lack the adversarial mindset that attackers use. Security reviews typically happen late in the development cycle, are expensive, and require specialized expertise.
 
 ### 1.5 Solution
+
 An AI-powered tool that:
+
 - Thinks like an attacker during development
 - Generates concrete exploitation attempts, not abstract warnings
 - Understands business logic and tries to subvert it
@@ -31,9 +37,11 @@ An AI-powered tool that:
 ### 2.1 Adversarial Analysis Engine
 
 #### 2.1.1 Attack Pattern Library
+
 **Description**: Comprehensive collection of known vulnerability patterns organized by category and severity.
 
 **Requirements**:
+
 - OWASP Top 10 patterns
 - CWE (Common Weakness Enumeration) patterns
 - Language-specific attack vectors
@@ -41,6 +49,7 @@ An AI-powered tool that:
 - Custom attack patterns
 
 **Categories**:
+
 - Injection (SQL, NoSQL, Command, LDAP, XPath, etc.)
 - Broken Authentication
 - Sensitive Data Exposure
@@ -79,36 +88,29 @@ An AI-powered tool that:
 - Man-in-the-Middle Opportunities
 
 **Advanced Python Patterns** (Phase 1-2):
+
 - Decorator vulnerabilities (unsafe caching, authorization bypass)
-- Metaclass abuse (__getattr__, __getattribute__ overrides)
-- Advanced dynamic execution (__import__ with vars, importlib, compile, types.FunctionType)
+- Metaclass abuse (**getattr**, **getattribute** overrides)
+- Advanced dynamic execution (**import** with vars, importlib, compile, types.FunctionType)
 - Async code vulnerabilities (event loop blocking, cancellation issues, resource cleanup)
 - Generator vulnerabilities (StopIteration leaks, generator exhaustion, yield from safety)
-- Reflection abuse (getattr on builtins, __dict__ manipulation)
+- Reflection abuse (getattr on builtins, **dict** manipulation)
 
 **ORM-Specific Patterns** (Phase 2+):
+
 - Django ORM vulnerabilities (user.filter bypass, exclude() authorization bypass)
 - SQLAlchemy vulnerabilities (raw SQL injection, session.flush() bypass)
 - MongoDB injection ($where, $ne operators)
 - Generic ORM issues (mass assignment, foreign object traversal, N+1 queries)
 
-**Cloud Security Patterns** (Phase 4+):
-- AWS SDK misconfigurations (hardcoded credentials, S3 bucket issues, IAM policies)
-- Azure SDK issues (storage key exposure, RBAC issues)
-- GCP client library vulnerabilities (service account keys, IAM roles)
-- Cloud-specific logging issues (sensitive data in logs)
+**Cloud Security Patterns** - DESCOPED (out of scope)
 
-**Container Security Patterns** (Phase 4+):
-- Dockerfile analysis (privileged containers, root user, insecure layers)
-- Kubernetes manifest analysis (RBAC issues, privilege escalation, secret management)
-- Container escape patterns in code
+**Container Security Patterns** - DESCOPED (out of scope)
 
-**Infrastructure-as-Code Patterns** (Phase 4+):
-- Terraform security misconfigurations
-- CloudFormation exposed resources
-- IaC-specific best practices violations
+**Infrastructure-as-Code Patterns** - DESCOPED (out of scope)
 
 **API Security Patterns** (Phase 2+):
+
 - API key validation issues
 - JWT manipulation
 - OAuth2 implementation issues
@@ -119,6 +121,7 @@ An AI-powered tool that:
 - OpenAPI spec inconsistencies
 
 **Web Security Patterns** (Phase 1+):
+
 - Clickjacking (X-Frame-Options, CSP)
 - Mixed Content (HTTP vs HTTPS)
 - MIME type confusion
@@ -128,6 +131,7 @@ An AI-powered tool that:
 - Reflected XSS in headers
 
 **Implementation Requirements**:
+
 - Extensible pattern format (YAML/JSON)
 - Pattern metadata: name, description, severity, category, affected languages/frameworks
 - Pattern templates with placeholders for context
@@ -135,9 +139,11 @@ An AI-powered tool that:
 - Pattern dependencies (e.g., requires certain language features)
 
 #### 2.1.2 Context-Aware Attack Generation
+
 **Description**: Generate attacks that are specific to the code being reviewed, not generic vulnerability scanning.
 
 **Requirements**:
+
 - Parse code structure (AST, control flow, data flow)
 - Identify entry points (API endpoints, web routes, command-line interfaces, public methods)
 - Trace data flow from untrusted sources to sensitive operations
@@ -147,17 +153,20 @@ An AI-powered tool that:
 - Identify third-party dependencies and their known vulnerabilities
 
 **Output**:
+
 - Specific attack vectors for each identified entry point
 - Exploitation scenarios with concrete payloads
 - Proof-of-concept code snippets
 - Expected vs. actual behavior descriptions
 
 #### 2.1.3 Property-Based Test Generation
+
 **Description**: Automatically generate property-based tests that validate code robustness against adversarial inputs.
 
 **Note**: This feature is deferred to Phase 2 (not MVP). Phase 1 focuses on static analysis and LLM-powered attack generation.
 
 **Requirements**:
+
 - Identify input parameters (function arguments, HTTP request bodies, query parameters)
 - Generate input domains (valid, boundary, invalid, malicious)
 - Define properties to test (invariants, relationships, constraints)
@@ -165,6 +174,7 @@ An AI-powered tool that:
 - Support for property-based testing frameworks (QuickCheck, Hypothesis, jsverify, etc.)
 
 **Test Types**:
+
 - Type system abuse
 - Range violations
 - Enumeration of all valid inputs (where feasible)
@@ -174,9 +184,11 @@ An AI-powered tool that:
 - Resource constraint testing
 
 #### 2.1.4 Multi-Modal Attack Scenario Creation
+
 **Description**: Create complex, multi-step attack scenarios that span multiple API calls or code paths.
 
 **Requirements**:
+
 - Track state across multiple interactions
 - Identify sequences of operations that create vulnerabilities
 - Generate attack chains
@@ -185,6 +197,7 @@ An AI-powered tool that:
 - Support for state confusion attacks
 
 **Scenario Types**:
+
 - Privilege escalation chains
 - Business logic abuse sequences
 - Race condition exploitation
@@ -194,9 +207,11 @@ An AI-powered tool that:
 - Session manipulation chains
 
 #### 2.1.5 Advanced Analysis Scenarios
+
 **Description**: Handle complex real-world codebase structures and edge cases.
 
 **Monorepo Analysis** (Phase 2+):
+
 - Detect monorepo structure (Nx, Turborepo, Bazel, workspaces)
 - Support per-package configuration
 - Analyze shared dependencies across packages
@@ -204,6 +219,7 @@ An AI-powered tool that:
 - Generate per-package reports or aggregate reports
 
 **Multi-Language Codebase Analysis** (Phase 2+):
+
 - Detect all languages in codebase
 - Analyze cross-language vulnerabilities (e.g., XSS from Python to JavaScript)
 - Correlate API endpoint definitions across languages
@@ -211,6 +227,7 @@ An AI-powered tool that:
 - Unified vulnerability reporting across languages
 
 **Legacy Code Support** (Phase 1+):
+
 - Officially support Python 3.8+ (explicit minimum version)
 - Provide warnings for Python < 3.8
 - Document known limitations with legacy code
@@ -218,6 +235,7 @@ An AI-powered tool that:
 - Graceful degradation when encountering unsupported syntax
 
 **Generated Code Analysis** (Phase 1+):
+
 - Detect common generated code patterns (protobuf, OpenAPI stubs, etc.)
 - Default to excluding generated code
 - Allow opt-in for analyzing generated code
@@ -227,30 +245,21 @@ An AI-powered tool that:
 ### 2.2 Language and Framework Support
 
 #### 2.2.1 Supported Languages (MVP)
-- Python (primary focus)
-- JavaScript/TypeScript
-- Java/Kotlin
-- Go
-- Rust
+
+- Python (primary and only focus for this project)
 
 #### 2.2.2 Framework Support
-**Web Frameworks**:
-- Flask, Django, FastAPI (Python)
-- Express, NestJS, Next.js (JavaScript/TypeScript)
-- Spring Boot (Java)
-- Gin, Echo (Go)
-- Actix, Axum (Rust)
 
-**Data Processing Frameworks**:
-- Pandas, NumPy (Python)
-- lodash, Ramda (JavaScript)
+**Web Frameworks** (Python only):
+
+- Flask, Django, FastAPI
 
 **API Standards**:
+
 - REST
-- GraphQL
-- gRPC
 
 #### 2.2.3 Extensibility
+
 - Plugin architecture for new languages
 - Custom AST parsers
 - Language-specific attack patterns
@@ -259,7 +268,9 @@ An AI-powered tool that:
 ### 2.3 User Interface
 
 #### 2.3.1 Command-Line Interface (CLI)
+
 **Core Commands**:
+
 ```bash
 acr scan <path>              # Scan codebase
 acr attack <file> <function> # Generate specific attacks
@@ -271,6 +282,7 @@ acr patterns                 # List/manage attack patterns
 ```
 
 **Options**:
+
 - `--severity <level>`: Filter by severity (critical, high, medium, low, info)
 - `--category <name>`: Filter by vulnerability category
 - `--output <format>`: Output format (json, yaml, markdown, html, sarif)
@@ -283,9 +295,11 @@ acr patterns                 # List/manage attack patterns
 - `--interactive`: Interactive mode for exploring findings
 
 #### 2.3.2 Configuration File
+
 **Location**: `.acrrc.yaml` in project root
 
 **Configuration Options**:
+
 ```yaml
 # Language-specific settings
 languages:
@@ -332,7 +346,9 @@ integrations:
 ```
 
 #### 2.3.3 Interactive Mode
+
 **Features**:
+
 - Navigate findings interactively
 - Drill down into attack vectors
 - View code snippets with highlighted vulnerabilities
@@ -343,6 +359,7 @@ integrations:
 ### 2.4 Output and Reporting
 
 #### 2.4.1 Finding Structure
+
 Each vulnerability finding must include:
 
 ```yaml
@@ -398,6 +415,7 @@ related_findings:
 ```
 
 #### 2.4.2 Report Formats
+
 **Markdown**: Human-readable report with sections, code blocks, tables (Phase 1+)
 
 **JSON**: Machine-readable format for integration with other tools (Phase 1+)
@@ -409,6 +427,7 @@ related_findings:
 **HTML**: Rich HTML report with interactive elements (Phase 3+)
 
 #### 2.4.3 Report Sections
+
 1. Executive Summary (high-level metrics, risk scores)
 2. Critical Findings (requires immediate attention)
 3. High Severity Findings
@@ -423,7 +442,9 @@ related_findings:
 ### 2.5 Integration Capabilities
 
 #### 2.5.1 CI/CD Integration
+
 **Platforms**:
+
 - GitHub Actions
 - GitLab CI/CD
 - CircleCI
@@ -432,12 +453,14 @@ related_findings:
 - Bitbucket Pipelines
 
 **Integration Points**:
+
 - Pre-commit hooks
 - Pull request checks
 - Merge gate checks
 - Scheduled scans
 
 **Exit Codes**:
+
 - 0: No vulnerabilities found
 - 1: Low severity vulnerabilities found
 - 2: Medium severity vulnerabilities found
@@ -445,33 +468,27 @@ related_findings:
 - 4: Critical vulnerabilities found
 - 5: Error occurred
 
-#### 2.5.2 IDE Extensions
-**Supported IDEs**:
-- VS Code
-- JetBrains IDEs (PyCharm, IntelliJ, WebStorm)
-- Neovim/Vim
-- Emacs
-
-**Features**:
-- Real-time inline vulnerability highlighting
-- Quick-fix suggestions
-- Contextual attack vector descriptions
-- Generate tests on-demand
-- Navigate to related findings
+#### 2.5.2 IDE Extensions - DESCOPED
+>
+> IDE extensions (VS Code, JetBrains, Neovim, Emacs) are out of scope. CLI is the interface.
 
 #### 2.5.3 Third-Party Integrations
+
 **Issue Trackers**:
+
 - GitHub Issues
 - Jira
 - Linear
 - Azure Boards
 
 **Communication**:
+
 - Slack webhooks
 - Microsoft Teams webhooks
 - Email notifications
 
 **Security Tools**:
+
 - Import/export from other security tools
 - Complement static analysis tools (SonarQube, Snyk)
 - Complement dependency scanners (Dependabot, Snyk, Trivy)
@@ -488,7 +505,9 @@ related_findings:
 ### 3.1 System Components
 
 #### 3.1.1 Code Analysis Engine
+
 **Responsibilities**:
+
 - Parse source code (AST generation)
 - Build control flow graphs
 - Build data flow graphs
@@ -497,72 +516,89 @@ related_findings:
 - Identify security boundaries
 
 **Technologies**:
+
 - Language-specific parsers (tree-sitter, astor, etc.)
 - Static analysis frameworks
 - Symbolic execution (optional, for advanced analysis)
 
 #### 3.1.2 Attack Pattern Engine
+
 **Responsibilities**:
+
 - Load and validate attack patterns
 - Match patterns against code structure
 - Generate concrete attacks
 - Generate proof-of-concept code
 
 **Technologies**:
+
 - Pattern matching engine
 - Template rendering
 - Code generation
 
 #### 3.1.3 Test Generation Engine
+
 **Responsibilities**:
+
 - Identify testable properties
 - Generate input domains
 - Create property-based tests
 - Create unit tests for specific attacks
 
 **Technologies**:
+
 - Property-based testing framework integration
 - Input generation algorithms
 - Test scaffolding
 
 #### 3.1.4 LLM Integration Layer
+
 **Responsibilities**:
+
 - Query LLM for intelligent attack generation
 - Context-aware business logic abuse scenarios
 - Natural language explanations
 - Remediation suggestions
 
 **Technologies**:
+
 - OpenAI API (GPT-4, o1)
 - Anthropic API (Claude 3.5 Sonnet, Claude 3.5 Haiku)
 - Local LLM support (optional, via Ollama, LM Studio)
 
 **LLM Use Cases**:
+
 - Generate business logic abuse scenarios
 - Explain complex vulnerabilities in natural language
 - Suggest code fixes
 - Generate attack chains that require understanding of domain knowledge
 
 #### 3.1.5 Reporting Engine
+
 **Responsibilities**:
+
 - Format findings in multiple formats
 - Generate executive summaries
 - Calculate risk scores
 - Track findings over time
 
 **Technologies**:
+
 - Template engines (Jinja2, Handlebars)
 - Markdown generators
 - SARIF library
 
 #### 3.1.6 Configuration Management
+
 **Responsibilities**:
+
 - Load configuration files
 - Validate configuration
 - Merge multiple configuration sources
 - Handle environment-specific overrides
 
 **Technologies**:
+
 - YAML/JSON parsing
 - Configuration validation schemas (JSON Schema, Pydantic)
 
@@ -630,6 +666,7 @@ adversarial-code-reviewer/
 **Core Language**: Python 3.8+
 
 **Dependencies**:
+
 - tree-sitter (parsing)
 - tree-sitter-languages (language grammars)
 - astor (Python AST code generation/modification)
@@ -649,6 +686,7 @@ adversarial-code-reviewer/
 - keyring (secure credential storage)
 
 **Optional Dependencies**:
+
 - hypothesis (property-based testing, Phase 2)
 - pytest-quickcheck (alternative PBT)
 - radish (BDD testing)
@@ -664,6 +702,7 @@ adversarial-code-reviewer/
 **Note**: Original estimate was 8 weeks, but comprehensive review indicates this is insufficient for the scope. Consider reducing MVP scope to 8 weeks or extending to 12-14 weeks for full Phase 1 scope.
 
 **Scope**:
+
 - Python language support only
 - Flask framework support
 - Basic attack patterns (OWASP Top 10)
@@ -676,6 +715,7 @@ adversarial-code-reviewer/
 - Pre-commit hook support for local developer workflow
 
 **Deliverables**:
+
 1. CLI with `acr scan` command
 2. Python analyzer with basic AST parsing
 3. 20 core attack patterns
@@ -686,6 +726,7 @@ adversarial-code-reviewer/
 8. Documentation (README, getting started guide)
 
 **Success Criteria**:
+
 - Can scan a Flask application and identify SQL injection vulnerabilities
 - Can generate attack vectors for 80% of known vulnerabilities in test code
 - Can produce readable vulnerability reports
@@ -698,6 +739,7 @@ adversarial-code-reviewer/
 **Note**: Original estimate was 6 weeks, but property-based test generation, JS/TS support, and advanced patterns require more time.
 
 **Scope**:
+
 - JavaScript/TypeScript support
 - Express and NestJS framework support
 - Property-based test generation
@@ -710,6 +752,7 @@ adversarial-code-reviewer/
 - Performance optimization (caching, parallel processing basics)
 
 **Deliverables**:
+
 1. JavaScript/TypeScript analyzer
 2. Property-based test generator (Hypothesis for Python, jsverify for JS)
 3. SARIF report generator
@@ -719,6 +762,7 @@ adversarial-code-reviewer/
 7. Multi-step attack scenario generation
 
 **Success Criteria**:
+
 - Can generate property-based tests that catch vulnerabilities
 - Can analyze JavaScript/TypeScript code with 70% accuracy
 - SARIF output is compatible with GitHub Security tab
@@ -731,6 +775,7 @@ adversarial-code-reviewer/
 **Note**: Extended timeline for IDE extension development and comprehensive CI/CD integration.
 
 **Scope**:
+
 - VS Code extension (major undertaking)
 - JetBrains IDE extensions (PyCharm, IntelliJ)
 - Issue tracker integrations (GitHub Issues, Jira, Linear)
@@ -741,6 +786,7 @@ adversarial-code-reviewer/
 - Diff-based analysis for PR workflows
 
 **Deliverables**:
+
 1. VS Code extension with inline highlighting (2-3 weeks)
 2. JetBrains IDE extensions (2-3 weeks)
 3. GitHub Issue integration
@@ -756,116 +802,44 @@ adversarial-code-reviewer/
 13. Diff-based analysis engine
 
 **Success Criteria**:
+
 - Can run ACR in GitHub Actions and fail on critical findings
 - VS Code extension can highlight vulnerabilities inline
 - Can create GitHub Issues from findings
 - Can send Slack notifications on findings
 
-### 4.4 Phase 4: Advanced Features
+### 4.4 Phase 4: Advanced Features - DESCOPED
 
-**Timeline**: 10-12 weeks
+> Phase 4 (additional languages, GraphQL, symbolic execution, ML) is out of scope for this project. Focus is Python-only MVP.
 
-**Note**: Each new language requires 2-3 weeks minimum. Consider adding only 2-3 new languages total by end of Phase 4.
+### 4.5 Phase 5: Scale and Polish - DESCOPED
 
-**Scope**:
-- **Option A**: Java/Kotlin support OR Go support OR Rust support (pick 2)
-- GraphQL support
-- Advanced stateful analysis
-- Symbolic execution for critical paths (optional, high complexity)
-- LLM-optimized prompts for complex scenarios
-- Machine learning for false positive reduction
-- Advanced business logic patterns
-
-**Deliverables**:
-1. Java/Kotlin analyzer (if selected) OR Go analyzer (if selected)
-2. Rust analyzer (if selected)
-3. GraphQL analyzer
-4. Symbolic execution engine (optional, experimental)
-5. 50 additional attack patterns
-6. Business logic abuse library with domain-specific patterns
-7. ML model for false positive reduction
-8. Trend analysis and reporting dashboard
-
-**Success Criteria**:
-- Can analyze Java/Kotlin code with 65% accuracy
-- Can analyze Go code with 65% accuracy
-- Can analyze Rust code with 65% accuracy
-- Can detect GraphQL-specific vulnerabilities
-- Symbolic execution finds at least 1 additional vulnerability in test code
-
-### 4.5 Phase 5: Scale and Polish
-
-**Timeline**: 8-10 weeks
-
-**Note**: Performance optimization at scale and plugin system development require significant effort.
-
-**Scope**:
-- Advanced performance optimization (large codebases, 100k+ LOC)
-- Full parallel processing pipeline
-- Advanced caching strategies (distributed caching, invalidation)
-- Advanced reporting (trends, analytics dashboards)
-- Plugin system for custom patterns, languages, reporters
-- Local LLM support (Ollama, LM Studio)
-- Comprehensive documentation and tutorials
-- Video tutorials and training materials
-
-**Deliverables**:
-1. Fully parallelized analysis pipeline
-2. Advanced multi-level caching (file-level, function-level, pattern-level)
-3. Distributed caching support (Redis, etc.)
-4. Trend analysis reports with visualizations
-5. Analytics dashboard (web-based)
-6. Plugin system with full documentation and examples
-7. Plugin marketplace infrastructure
-8. Local LLM integration (Ollama, LM Studio)
-9. Comprehensive performance benchmarks
-10. Complete documentation suite (user, developer, API)
-11. Video tutorials and getting started guides
-12. Performance optimization for 100k LOC in < 10 minutes
-
-## 4.6 Realistic Timeline Summary
-
-**Total Timeline**: 38-52 weeks (9-12 months) for all 5 phases
-
-**Alternative: Reduced MVP**
-- Phase 1 (Reduced): 8 weeks
-  - Remove: Property-based testing, advanced patterns, comprehensive error handling
-  - Keep: Basic Python analyzer, 10 core patterns, simple CLI, basic reports
-- Total: 30-40 weeks (7-9 months) for all phases
-
-**Recommendation**: Start with reduced MVP (8 weeks) to validate core value proposition, then expand to full Phase 1 (12-14 weeks) based on user feedback.
-
-**Team Size Considerations**:
-- 1 developer: Multiply all timelines by 1.5-2x
-- 2-3 developers: Timelines as stated
-- 4+ developers: Consider parallelizing phases
-
-**Success Criteria**:
-- Can analyze a 100k LOC codebase in under 10 minutes
-- Plugin system allows users to add custom patterns
-- Can use local LLMs
-- Documentation is comprehensive and beginner-friendly
+> Phase 5 (plugin system, local LLM, web dashboard, advanced performance) is out of scope for this project.
 
 ## 5. Quality Metrics
 
 ### 5.1 Performance Metrics
+
 - **Analysis Speed**: 1000 LOC per minute (single-threaded)
 - **Parallel Speedup**: 4x with 4 cores
 - **Memory Usage**: < 500MB for 10k LOC
 - **LLM Response Time**: < 30 seconds per attack generation
 
 ### 5.2 Accuracy Metrics
+
 - **False Positive Rate**: < 15%
 - **False Negative Rate**: < 20%
 - **Pattern Coverage**: 90% of known vulnerabilities in test suite
 - **Language Coverage**: 80% of language-specific vulnerabilities
 
 ### 5.3 Usability Metrics
+
 - **Setup Time**: < 5 minutes for basic installation
 - **First Scan Time**: < 2 minutes for initial scan
 - **Report Readability**: User comprehension score > 8/10
 
 ### 5.4 Reliability Metrics
+
 - **Uptime**: 99.9% for CLI tool
 - **Crash Rate**: < 0.1% of scans
 - **Error Recovery**: Graceful handling of parse errors
@@ -873,18 +847,21 @@ adversarial-code-reviewer/
 ## 6. Security Considerations
 
 ### 6.1 Data Privacy
+
 - No code is sent to third-party services without explicit consent
 - LLM API calls use enterprise-grade security
 - Local analysis is always available without external services
 - Sensitive data in code is redacted from LLM prompts (API keys, passwords, secrets, tokens, certificates)
 
 ### 6.2 Attack Code Safety
+
 - Generated attack code is not executed by ACR
 - Attack code is clearly marked as proof-of-concept only
 - Users are warned before using generated attacks
 - Test code is sandboxed when executed (using Docker container isolation or restricted Python environment)
 
 ### 6.3 ACR's Own Security
+
 - API keys stored securely using keyring or environment variables (never in .acrrc.yaml)
 - .acrrc.yaml should never contain sensitive data
 - Pattern contributions must be reviewed and validated
@@ -892,13 +869,16 @@ adversarial-code-reviewer/
 - ACR itself should be designed to not be a vector for supply chain attacks
 
 ### 6.3.1 Supply Chain Security
+
 - All dependencies are vetted for security vulnerabilities
 - Signed releases with GPG keys
 - Reproducible builds
 - SBOM (Software Bill of Materials) for each release
 
 ### 6.3.2 LLM Security
+
 **Prompt Injection Protection**:
+
 - Sanitize code snippets before sending to LLM
 - Filter out suspicious patterns (prompts embedded in code)
 - Use system prompts to prevent jailbreaking
@@ -907,6 +887,7 @@ adversarial-code-reviewer/
 - Implement input validation for LLM prompts
 
 **Model Abuse Prevention**:
+
 - Limit number of LLM calls per scan
 - Implement LLM call caching aggressively
 - Use cheaper models where appropriate
@@ -916,6 +897,7 @@ adversarial-code-reviewer/
 - Detect and prevent recursive LLM calls
 
 **Sensitive Data Leakage Prevention**:
+
 - Verify sensitive data is fully redacted before LLM calls
 - Use multiple regex patterns for detection
 - Add entropy-based detection for keys/tokens
@@ -925,6 +907,7 @@ adversarial-code-reviewer/
 - Fallback to static analysis if redaction fails
 
 ### 6.4 Access Control
+
 - No authentication required for CLI tool
 - Web-based integrations require proper authentication
 - API keys are stored securely (environment variables, keyring)
@@ -932,24 +915,28 @@ adversarial-code-reviewer/
 ## 6.5 Error Handling and Resilience
 
 ### 6.5.1 Parse Error Handling
+
 - Gracefully handle code with syntax errors
 - Continue scanning other files if one file fails to parse
 - Provide clear error messages with line numbers
 - Offer suggestions for common syntax issues
 
 ### 6.5.2 Dependency Resolution
+
 - Handle missing imports gracefully
 - Track but don't fail on external dependencies
 - Provide warnings for missing third-party libraries
 - Allow users to specify dependency stubs
 
 ### 6.5.3 Circular Dependency Handling
+
 - Detect circular imports and references
 - Implement configurable recursion depth limits
 - Provide warnings for deep recursion
 - Allow users to exclude problematic files
 
 ### 6.5.4 Graceful Degradation
+
 - If advanced analysis fails, fall back to basic analysis
 - If LLM is unavailable, provide static analysis only
 - If pattern matching fails for some patterns, continue with others
@@ -958,24 +945,28 @@ adversarial-code-reviewer/
 ## 6.6 Large Codebase Handling
 
 ### 6.6.1 File Size Limits
+
 - Set configurable file size limits (default: 10k lines)
 - Provide warnings for large files
 - Allow users to increase limits with explicit consent
 - Recommend splitting large files
 
 ### 6.6.2 Incremental Analysis
+
 - Cache analysis results by file hash
 - Only re-analyze changed files
 - Track dependencies for incremental invalidation
 - Support cache TTL configuration
 
 ### 6.6.3 Memory Management
+
 - Implement streaming for large files
 - Release AST/CFG/DFG objects after use
 - Limit concurrent analysis operations
 - Provide memory usage metrics
 
 ### 6.6.4 Diff-Based Analysis (Phase 2+)
+
 - Analyze only changed code in PR workflows
 - Compare findings against baseline
 - Generate focused reports on new vulnerabilities
@@ -984,24 +975,28 @@ adversarial-code-reviewer/
 ## 6.7 False Positive Management
 
 ### 6.7.1 Confidence Scoring
+
 - Assign confidence scores to each finding (low, medium, high)
 - Base confidence on pattern match specificity
 - Consider code context and sanitization
 - Allow users to filter by confidence
 
 ### 6.7.2 Allowlist/Denylist
+
 - Implement allowlist for false positives (file:line)
 - Implement denylist for specific patterns or files
 - Support regex patterns for flexible matching
 - Persist allowlists in .acr-ignore file
 
 ### 6.7.3 False Positive Feedback
+
 - Allow users to mark findings as false positives
 - Store false positive annotations locally
 - Use feedback to tune future pattern matching
 - Share anonymized data to improve community patterns (opt-in)
 
 ### 6.7.4 Machine Learning (Phase 3+)
+
 - Train models to reduce false positive rate
 - Learn from user feedback across all users
 - Continuously improve pattern matching accuracy
@@ -1010,23 +1005,27 @@ adversarial-code-reviewer/
 ## 6.8 Vulnerability Tracking
 
 ### 6.8.1 Vulnerability Identification
+
 - Assign unique IDs to findings (ACR-2024-0001 format)
 - Include file, line, function, and pattern in ID hash
 - Stable IDs that persist across scans
 
 ### 6.8.2 Lifecycle Management
+
 - Track vulnerability states: open, in-progress, fixed, won't-fix, false-positive
 - Mark findings as remediated when code changes
 - Persist state in .acr-state file
 - Support state synchronization across team
 
 ### 6.8.3 Trend Analysis (Phase 3+)
+
 - Compare vulnerability counts over time
 - Track new vulnerabilities introduced
 - Track vulnerabilities fixed
 - Generate trend reports and graphs
 
 ### 6.8.4 Exit Code Logic
+
 - Exit code based on highest severity finding:
   - 0: No vulnerabilities found
   - 1: Only low severity vulnerabilities
@@ -1039,18 +1038,21 @@ adversarial-code-reviewer/
 ## 6.9 Business Logic Understanding
 
 ### 6.9.1 Context Mechanism
+
 - Support .acr-context.yaml for business logic rules
 - Allow users to define invariants and constraints
 - Provide examples for common business rules
 - Document how to structure context files
 
 ### 6.9.2 LLM Context Enhancement
+
 - Include user-provided context in LLM prompts
 - Ask LLM to analyze against specific business rules
 - Generate abuse scenarios based on business logic
 - Provide domain-specific attack recommendations
 
 ### 6.9.3 Framework-Specific Knowledge
+
 - Build knowledge base for common frameworks (Flask, Django, etc.)
 - Understand framework security best practices
 - Detect framework-specific anti-patterns
@@ -1061,6 +1063,7 @@ adversarial-code-reviewer/
 ### 7.1 User Documentation
 
 #### Getting Started
+
 - Getting Started Guide (5 minute setup)
 - Installation guide for Linux, macOS, Windows
 - Installation troubleshooting
@@ -1068,6 +1071,7 @@ adversarial-code-reviewer/
 - First scan walkthrough
 
 #### Core Documentation
+
 - CLI Reference (all commands and options)
 - Configuration Guide (all configuration options)
 - Pattern Reference (all attack patterns)
@@ -1076,6 +1080,7 @@ adversarial-code-reviewer/
 - Glossary of terms
 
 #### Persona-Specific Guides
+
 - **For Developers**: Quick reference, common patterns, interpretation guide
 - **For Security Engineers**: Advanced patterns, LLM usage, custom patterns
 - **For DevOps Engineers**: CI/CD integration, automation, monitoring
@@ -1083,6 +1088,7 @@ adversarial-code-reviewer/
 - **For Enterprise Security Teams**: Compliance, audit logging, RBAC, reporting
 
 #### Integration Documentation
+
 - Integration Guide (CI/CD, IDE, third-party)
 - CI/CD Best Practices Guide
 - Pre-commit Hook Setup Guide
@@ -1091,6 +1097,7 @@ adversarial-code-reviewer/
 - CI/CD Troubleshooting Guide
 
 #### Migration and Comparison
+
 - Migration Guide from Snyk
 - Migration Guide from Dependabot
 - Migration Guide from SonarQube
@@ -1098,6 +1105,7 @@ adversarial-code-reviewer/
 - Complementary Tool Usage Guide
 
 #### Troubleshooting
+
 - Comprehensive Troubleshooting Guide
 - Common Error Messages and Solutions
 - Debug Mode Documentation
@@ -1105,6 +1113,7 @@ adversarial-code-reviewer/
 - Performance Tuning Guide
 
 #### Enterprise Documentation
+
 - Enterprise Deployment Guide
 - SSO Configuration Guide
 - RBAC Setup Guide
@@ -1113,6 +1122,7 @@ adversarial-code-reviewer/
 - On-Premises Deployment Guide (Docker, Kubernetes)
 
 ### 7.2 Developer Documentation
+
 - Architecture Overview
 - Adding New Languages
 - Creating Custom Attack Patterns
@@ -1122,6 +1132,7 @@ adversarial-code-reviewer/
 - Release Process
 
 ### 7.3 API Documentation
+
 - Public API (if applicable)
 - Plugin API (for extensions)
 - LLM API usage
@@ -1129,29 +1140,34 @@ adversarial-code-reviewer/
 ## 8. Testing Strategy
 
 ### 8.1 Unit Tests
+
 - Test each component in isolation
 - Mock external dependencies (LLM, filesystem)
 - Test edge cases and error conditions
 - Target: 80% code coverage
 
 ### 8.2 Integration Tests
+
 - Test component interactions
 - Test with real code samples
 - Test configuration management
 - Test report generation
 
 ### 8.3 End-to-End Tests
+
 - Test full scan workflow
 - Test with vulnerable applications (OWASP Juice Shop, etc.)
 - Test CLI with all options
 - Test CI/CD integrations
 
 ### 8.4 Benchmark Tests
+
 - Performance benchmarks
 - Memory usage benchmarks
 - Accuracy benchmarks on known vulnerability datasets
 
 ### 8.5 Regression Tests
+
 - Test suite of known vulnerabilities
 - Ensure ACR continues to find them
 - Catch regressions in new releases
@@ -1159,37 +1175,44 @@ adversarial-code-reviewer/
 ## 9. Non-Functional Requirements
 
 ### 9.1 Performance
+
 - See Quality Metrics (Section 5)
 
 ### 9.2 Scalability
+
 - Support for codebases up to 1M LOC
 - Support for 100+ languages eventually
 - Support for thousands of attack patterns
 
 ### 9.3 Maintainability
+
 - Modular architecture
 - Clear separation of concerns
 - Extensive code comments
 - Comprehensive documentation
 
 ### 9.4 Extensibility
+
 - Plugin system for custom patterns
 - Plugin system for new languages
 - Plugin system for custom reporters
 - Plugin system for custom integrations
 
 ### 9.5 Usability
+
 - Intuitive CLI
 - Clear error messages
 - Helpful suggestions
 - Interactive mode for exploration
 
 ### 9.6 Compatibility
+
 - Python 3.8+
 - Linux, macOS, Windows
 - Node.js 16+ for JavaScript/TypeScript analysis
 
 ### 9.7 Reliability
+
 - Graceful error handling
 - Meaningful error messages
 - Recovery from transient failures
@@ -1198,6 +1221,7 @@ adversarial-code-reviewer/
 ## 10. Success Criteria
 
 ### 10.1 Technical Success
+
 - Can identify 80% of known vulnerabilities in test suite
 - False positive rate < 15%
 - Can generate actionable property-based tests
@@ -1205,12 +1229,14 @@ adversarial-code-reviewer/
 - Supports 5+ languages by Phase 4
 
 ### 10.2 User Success
+
 - Setup time < 5 minutes
 - Users can run first scan in < 2 minutes
 - Reports are actionable and clear
 - Users find value in the adversarial approach
 
 ### 10.3 Market Success
+
 - 100+ GitHub stars within 3 months
 - 50+ active users within 6 months
 - 10+ contributors within 1 year
@@ -1219,6 +1245,7 @@ adversarial-code-reviewer/
 ## 11. Risks and Mitigations
 
 ### 11.1 Technical Risks
+
 **Risk**: LLM API costs may be high for large codebases
 **Mitigation**: Implement caching, batch requests, offer local LLM option
 
@@ -1229,6 +1256,7 @@ adversarial-code-reviewer/
 **Mitigation**: Incremental analysis, focus on entry points, configurable depth
 
 ### 11.2 Business Risks
+
 **Risk**: Competition from established security vendors
 **Mitigation**: Differentiate with adversarial approach, focus on developer experience
 
@@ -1239,6 +1267,7 @@ adversarial-code-reviewer/
 **Mitigation**: Position as complement, not replacement; emphasize human review
 
 ### 11.3 Security Risks
+
 **Risk**: Generated attack code may be misused
 **Mitigation**: Mark as proof-of-concept, add warnings, terms of service
 
@@ -1296,6 +1325,7 @@ adversarial-code-reviewer/
 ## 12. Future Roadmap (Post-Phase 5)
 
 ### 12.1 Advanced Features
+
 - Machine learning for vulnerability prediction
 - Real-time code review in IDEs
 - Automated fix generation
@@ -1303,12 +1333,14 @@ adversarial-code-reviewer/
 - Threat modeling integration
 
 ### 12.2 Platform Expansion
+
 - Web-based dashboard
 - Team collaboration features
 - Vulnerability tracking and remediation workflow
 - Compliance reporting (SOC 2, HIPAA, PCI DSS)
 
 ### 12.3 Enterprise Features
+
 - Single sign-on (SSO)
 - Role-based access control
 - Audit logging
@@ -1316,6 +1348,7 @@ adversarial-code-reviewer/
 - On-premises deployment
 
 ### 12.4 Ecosystem
+
 - Marketplace for attack patterns
 - Community-contributed patterns
 - Integration with other security tools
@@ -1343,6 +1376,7 @@ adversarial-code-reviewer/
 **License Choice**: MIT License (recommended)
 
 **Rationale**:
+
 - Permissive license encourages adoption
 - Compatible with most open-source and commercial use
 - Minimal attribution requirements
@@ -1350,11 +1384,13 @@ adversarial-code-reviewer/
 - Allows inclusion in commercial products
 
 **Alternative**: Apache 2.0 License
+
 - Includes patent protection
 - More comprehensive terms
 - Slightly more complex
 
 **Requirements**:
+
 - Include LICENSE file in root directory
 - Add license headers to all source files
 - Document third-party library license compatibility
@@ -1364,6 +1400,7 @@ adversarial-code-reviewer/
 ### 14.2 Data Privacy and GDPR Compliance
 
 **Data Privacy Policy**:
+
 - ACR does NOT send user code to third-party services without explicit consent
 - LLM API calls (OpenAI, Anthropic) are opt-in with clear warnings
 - Users control whether code is analyzed locally or with external APIs
@@ -1371,6 +1408,7 @@ adversarial-code-reviewer/
 - Scan results and state files are stored locally on user's machine
 
 **GDPR Considerations**:
+
 - If code contains PII (personally identifiable information), it is processed locally
 - ACR does not store or transmit PII to external services
 - Users have full control over their data
@@ -1378,11 +1416,13 @@ adversarial-code-reviewer/
 - Clear documentation on data handling provided
 
 **CCPA Considerations**:
+
 - No sale of user data
 - Transparent data collection practices
 - User control over data deletion
 
 **Data Residency**:
+
 - By default, all analysis runs locally
 - LLM API calls use data centers in user's region (configurable)
 - Enterprise deployments support on-premises-only mode
@@ -1390,6 +1430,7 @@ adversarial-code-reviewer/
 ### 14.3 Terms of Service and Acceptable Use
 
 **Acceptable Use Policy**:
+
 - ACR is designed for defensive security purposes only
 - Users must not use ACR to:
   - Attack systems without authorization
@@ -1399,6 +1440,7 @@ adversarial-code-reviewer/
 - Users are responsible for how they use generated attack scenarios
 
 **Liability Disclaimers**:
+
 - ACR is provided "as is" without warranties
 - ACR may not find all vulnerabilities
 - ACR may generate false positives
@@ -1406,6 +1448,7 @@ adversarial-code-reviewer/
 - ACR is not a substitute for professional security audits
 
 **Support and Warranty**:
+
 - No commercial support provided (unless purchased separately)
 - No warranty for fitness of purpose
 - Best-effort community support via GitHub issues
@@ -1414,6 +1457,7 @@ adversarial-code-reviewer/
 ### 14.4 Export Control
 
 **Export Control Considerations**:
+
 - Review cryptographic patterns for export control regulations
 - Certain countries may have restrictions on security tools
 - Comply with EAR (Export Administration Regulations) if applicable
@@ -1421,6 +1465,7 @@ adversarial-code-reviewer/
 - Document any country-specific usage restrictions
 
 **Actions**:
+
 - Review cryptographic patterns with legal counsel
 - Add country usage restrictions if needed
 - Document compliance with export regulations
@@ -1429,6 +1474,7 @@ adversarial-code-reviewer/
 ### 14.5 Vulnerability Disclosure Policy
 
 **Responsible Disclosure**:
+
 - If ACR discovers 0-day vulnerabilities in user code:
   - Report to user privately
   - Provide actionable remediation guidance
@@ -1442,144 +1488,40 @@ adversarial-code-reviewer/
   - Coordinate CVE assignment if applicable
 
 - If users discover vulnerabilities in ACR itself:
-  - Report to security@adversarial-code-reviewer.com
+  - Report to <security@adversarial-code-reviewer.com>
   - Provide detailed reproduction steps
   - Allow reasonable time for remediation
   - Credit in release notes if desired
 
 **Security Contact**:
-- Email: security@adversarial-code-reviewer.com
+
+- Email: <security@adversarial-code-reviewer.com>
 - PGP Key: [to be generated]
 - Expected response time: 48 hours
 
 **Bug Bounty Program** (Phase 5+):
+
 - Consider implementing bug bounty program
 - Reward critical vulnerabilities in ACR
 - Encourage responsible disclosure
 - Document program rules and rewards
 
-## 15. Enterprise Features
+## 15. Enterprise Features - DESCOPED
 
-### 15.1 Role-Based Access Control (RBAC)
-
-**Roles**:
-- **Admin**: Full access to all configuration, findings, and settings
-- **Security Engineer**: Can run scans, manage findings, assign remediation
-- **Developer**: Can view findings assigned to them, mark as fixed
-- **Viewer**: Read-only access to findings and reports
-
-**Permissions**:
-- Define granular permissions for each role
-- Support custom roles
-- Implement permission inheritance
-- Audit all permission changes
-
-**Implementation**: Phase 5+
-
-### 15.2 Single Sign-On (SSO)
-
-**Supported Protocols**:
-- OAuth 2.0 / OpenID Connect (OIDC)
-- SAML 2.0
-
-**Supported Providers**:
-- Okta
-- Auth0
-- Azure Active Directory / Entra ID
-- Google Identity
-- OneLogin
-- Custom providers
-
-**Features**:
-- Automatic user provisioning
-- Just-in-time provisioning
-- User profile synchronization
-- Session management
-- Multi-factor authentication support
-
-**Implementation**: Phase 5+
-
-### 15.3 Audit Logging
-
-**Audit Events**:
-- All scan operations (who, when, what)
-- Finding modifications (creation, update, deletion)
-- Configuration changes
-- Permission changes
-- Authentication events
-- API access events
-
-**Log Requirements**:
-- Immutable audit trail (append-only)
-- Cryptographic signing of logs
-- Long-term retention (configurable, default 7 years)
-- Secure log storage and access
-- Log export capabilities
-- Compliance-ready format
-
-**Compliance Standards**:
-- SOC 2 Type II audit logging
-- HIPAA audit trail requirements
-- PCI DSS audit logging
-- ISO 27001 logging requirements
-
-**Implementation**: Phase 3+
-
-### 15.4 Compliance Reporting
-
-**SOC 2 Compliance**:
-- Generate SOC 2 Type II readiness reports
-- Track vulnerability remediation for compliance
-- Document control environment
-- Evidence collection and export
-- Management attestation reports
-
-**HIPAA Compliance** (for healthcare customers):
-- Identify HIPAA-relevant findings
-- Track PHI handling vulnerabilities
-- Generate HIPAA compliance reports
-- Business associate agreement (BAA) templates
-
-**PCI DSS Compliance** (for payment customers):
-- Identify PCI-relevant findings
-- Track payment processing vulnerabilities
-- Generate PCI DSS compliance reports
-- Support quarterly scans for PCI requirements
-
-**ISO 27001**:
-- Information security management tracking
-- Risk assessment reports
-- Control effectiveness monitoring
-
-**Implementation**: Phase 5+
-
-### 15.5 Multi-Tenancy (Optional, SaaS Deployment)
-
-**Tenant Isolation**:
-- Logical separation of tenant data
-- Per-tenant configuration
-- Per-tenant attack pattern libraries
-- Per-tenant vulnerability state
-- Data encryption at rest and in transit per tenant
-
-**Tenant Management**:
-- Tenant provisioning and deprovisioning
-- Tenant administration
-- Resource quotas per tenant
-- Billing per tenant
-
-**Implementation**: Phase 5+ (SaaS deployment only)
+> Enterprise features (RBAC, SSO, audit logging, compliance reporting, multi-tenancy) are out of scope for this project. This is a CLI tool for developers, not an enterprise platform.
 
 ## 16. Operations and Deployment
 
 ### 16.1 Operational Monitoring
 
 **Health Checks**:
+
 - `/health` endpoint: Basic health status
 - `/ready` endpoint: Readiness for traffic
 - `/metrics` endpoint: Prometheus-compatible metrics
 
 **Metrics to Collect**:
+
 - Analysis time (p50, p95, p99)
 - Memory usage
 - CPU usage
@@ -1589,6 +1531,7 @@ adversarial-code-reviewer/
 - Concurrent scan counts
 
 **Alerting**:
+
 - High error rate alerts
 - Memory usage alerts (> 80%)
 - LLM API failure alerts
@@ -1600,17 +1543,20 @@ adversarial-code-reviewer/
 ### 16.2 Backup and Recovery
 
 **Backup Strategy**:
+
 - Backup .acr-state files regularly
 - Backup configuration files (.acrrc.yaml)
 - Backup custom attack patterns
 - Backup allowlist/denylist files
 
 **Backup Frequency**:
+
 - Automatic daily backups (configurable)
 - Manual backup command: `acr backup`
 - Automated retention policy (default 90 days)
 
 **Disaster Recovery**:
+
 - Restore command: `acr restore <backup-file>`
 - Document recovery procedures
 - Test recovery procedures regularly
@@ -1621,23 +1567,27 @@ adversarial-code-reviewer/
 ### 16.3 Update and Rollback
 
 **Update Procedures**:
+
 - Document pip upgrade process: `pip install --upgrade adversarial-code-reviewer`
 - Document Docker image update process
 - Document VS Code extension update process
 - Document JetBrains plugin update process
 
 **Rollback Procedures**:
+
 - Document rollback to previous version
 - `acr install <version>` command for specific version
 - Document data migration requirements between versions
 - Test rollback procedures for each release
 
 **Version Information**:
+
 - `acr version` command to show version
 - `acr check-update` command to check for updates
 - `acr self-update` command (optional, Phase 3+)
 
 **Breaking Changes**:
+
 - Document breaking changes in CHANGELOG
 - Use semantic versioning (MAJOR.MINOR.PATCH)
 - Provide migration guides for major version changes
@@ -1645,6 +1595,7 @@ adversarial-code-reviewer/
 ### 16.4 CI/CD Best Practices
 
 **Performance Optimization for CI/CD**:
+
 - Use aggressive caching in CI/CD
 - Run ACR on pull requests only (incremental analysis)
 - Use `--diff` flag to analyze only changed code
@@ -1652,12 +1603,14 @@ adversarial-code-reviewer/
 - Use SARIF output for GitHub Security tab integration
 
 **Failure Handling**:
+
 - Don't fail CI on low-severity findings
 - Configure exit code thresholds per environment
 - Allow passing with findings below threshold
 - Document failure thresholds for different environments
 
 **Common CI/CD Patterns**:
+
 - Pre-commit: Run on staged files, fail on medium+
 - Pull request: Run on diff, fail on high+
 - Main branch: Run full scan, fail on critical
@@ -1668,6 +1621,7 @@ adversarial-code-reviewer/
 ### 16.5 Installation Troubleshooting
 
 **Common Issues**:
+
 - Python version incompatibility (requires 3.8+)
 - Dependency conflicts with other packages
 - Missing system dependencies (tree-sitter)
@@ -1675,6 +1629,7 @@ adversarial-code-reviewer/
 - Permission issues
 
 **Diagnostics Command**:
+
 - `acr doctor` command to diagnose issues
 - Check Python version
 - Check dependency versions
@@ -1683,6 +1638,7 @@ adversarial-code-reviewer/
 - Check for common issues
 
 **Troubleshooting Guide**:
+
 - Document common error messages
 - Provide solutions for each error
 - Add log file location

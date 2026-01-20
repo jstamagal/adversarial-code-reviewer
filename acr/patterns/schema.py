@@ -14,7 +14,8 @@
 
 """Pattern schema using Pydantic models."""
 
-from typing import List, Optional, Dict, Any, Literal, Union
+from typing import Dict, List, Literal, Optional, Union
+
 from pydantic import BaseModel, Field
 
 

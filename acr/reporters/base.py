@@ -15,8 +15,8 @@
 """Base reporter interface."""
 
 from abc import ABC, abstractmethod
-from typing import List
 from pathlib import Path
+from typing import List
 
 from acr.models.finding import Finding
 

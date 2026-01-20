@@ -14,7 +14,7 @@
 
 """Allowlist system for managing exclusions."""
 
-from acr.allowlist.parser import AllowlistParser
 from acr.allowlist.manager import AllowlistManager
+from acr.allowlist.parser import AllowlistParser
 
 __all__ = ["AllowlistParser", "AllowlistManager"]

@@ -14,8 +14,8 @@
 
 """User-friendly error message formatting."""
 
-from typing import Optional, Dict, Any, List
 from dataclasses import dataclass
+from typing import Any, Dict, List, Optional
 
 
 @dataclass

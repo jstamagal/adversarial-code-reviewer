@@ -14,7 +14,6 @@
 
 """Tests for error_formatter."""
 
-import pytest
 
 from acr.utils.error_formatter import (
     ErrorContext,
@@ -22,11 +21,10 @@ from acr.utils.error_formatter import (
     ErrorSuggestion,
 )
 from acr.utils.errors import (
-    ConfigurationError,
-    ParseError,
     AnalysisError,
+    ConfigurationError,
     LLMError,
-    PatternError,
+    ParseError,
 )
 
 

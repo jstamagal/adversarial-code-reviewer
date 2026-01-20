@@ -539,8 +539,8 @@ def test_validate_exclusion_patterns_invalid_file_empty():
 
 def test_validate_language_config_valid():
     """Test validating valid language configuration."""
-    from acr.config.validator import validate_language_config
     from acr.config.schema import ACRConfig
+    from acr.config.validator import validate_language_config
 
     config_data = {
         "languages": {
@@ -554,8 +554,8 @@ def test_validate_language_config_valid():
 
 def test_validate_language_config_unsupported_language():
     """Test validating unsupported language."""
-    from acr.config.validator import validate_language_config
     from acr.config.schema import ACRConfig
+    from acr.config.validator import validate_language_config
 
     config_data = {"languages": {"cobol": {"enabled": True}}}
     config = ACRConfig(**config_data)
@@ -565,8 +565,8 @@ def test_validate_language_config_unsupported_language():
 
 def test_validate_reporting_formats_valid():
     """Test validating valid reporting formats."""
-    from acr.config.validator import validate_reporting_formats
     from acr.config.schema import ACRConfig
+    from acr.config.validator import validate_reporting_formats
 
     config_data = {"reporting": {"formats": ["markdown", "json", "sarif"]}}
     config = ACRConfig(**config_data)
@@ -575,8 +575,8 @@ def test_validate_reporting_formats_valid():
 
 def test_validate_reporting_formats_invalid():
     """Test validating invalid reporting format."""
-    from acr.config.validator import validate_reporting_formats
     from acr.config.schema import ACRConfig
+    from acr.config.validator import validate_reporting_formats
 
     config_data = {"reporting": {"formats": ["pdf", "markdown"]}}
     config = ACRConfig(**config_data)
@@ -781,9 +781,10 @@ def test_get_fix_suggestions_invalid_yaml():
 
 def test_try_auto_fix_duplicate_patterns():
     """Test auto-fix for duplicate patterns."""
+    from pathlib import Path
+
     from acr.config.validator import try_auto_fix
     from acr.utils.errors import ConfigurationError
-    from pathlib import Path
 
     error = ConfigurationError("Duplicate patterns in patterns.enabled")
     config_data = {"patterns": {"enabled": ["sql-injection", "sql-injection", "xss", "xss"]}}
@@ -795,9 +796,10 @@ def test_try_auto_fix_duplicate_patterns():
 
 def test_try_auto_fix_no_fix_available():
     """Test auto-fix when no fix is available."""
+    from pathlib import Path
+
     from acr.config.validator import try_auto_fix
     from acr.utils.errors import ConfigurationError
-    from pathlib import Path
 
     error = ConfigurationError("Invalid severity threshold")
     config_data = {"patterns": {"severity_threshold": "invalid"}}

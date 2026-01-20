@@ -14,8 +14,10 @@
 
 """Test configuration for pytest."""
 
-import pytest
 from pathlib import Path
+
+import pytest
+
 from acr.config.schema import ACRConfig
 
 

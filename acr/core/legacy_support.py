@@ -14,10 +14,10 @@
 
 """Legacy code support for Python versions < 3.8."""
 
-import sys
-from typing import Optional, List
-from pathlib import Path
 import re
+import sys
+from pathlib import Path
+from typing import List, Optional
 
 from acr.utils.logger import get_logger
 

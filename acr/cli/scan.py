@@ -24,8 +24,6 @@ from rich.table import Table
 
 from acr.config.loader import load_config
 from acr.core.analyzer import Analyzer
-from acr.models.finding import Finding
-
 
 console = Console()
 
@@ -364,7 +362,7 @@ def _display_dry_run_info(findings: list, config, path: str, verbose: bool) -> N
         info_table.add_row(f"Estimated LLM Cost ({currency})", cost_str)
 
     estimated_time, time_unit = _estimate_analysis_time(findings, path, config)
-    info_table.add_row(f"Estimated Analysis Time", f"{estimated_time:.2f} {time_unit}")
+    info_table.add_row("Estimated Analysis Time", f"{estimated_time:.2f} {time_unit}")
 
     console.print(info_table)
 
@@ -372,8 +370,8 @@ def _display_dry_run_info(findings: list, config, path: str, verbose: bool) -> N
         estimated_cost, _ = _estimate_llm_cost(findings, config)
         if estimated_cost > 1.00:
             console.print(
-                f"\n[yellow]⚠ Warning: Estimated LLM cost exceeds $1.00. "
-                f"Consider using --severity or --category filters to reduce scope.[/yellow]"
+                "\n[yellow]⚠ Warning: Estimated LLM cost exceeds $1.00. "
+                "Consider using --severity or --category filters to reduce scope.[/yellow]"
             )
     elif len(findings) == 0:
         console.print(

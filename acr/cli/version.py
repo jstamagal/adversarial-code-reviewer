@@ -14,8 +14,8 @@
 
 """Version command implementation."""
 
-import sys
 import importlib.metadata as metadata
+import sys
 from typing import Dict, Optional
 
 import click
@@ -52,7 +52,7 @@ def check_for_updates() -> Optional[str]:
     """Check if a newer version is available on PyPI."""
     try:
         with httpx.Client(timeout=5.0) as client:
-            response = client.get(f"https://pypi.org/pypi/adversarial-code-reviewer/json")
+            response = client.get("https://pypi.org/pypi/adversarial-code-reviewer/json")
             response.raise_for_status()
             data = response.json()
             latest_version = data["info"]["version"]

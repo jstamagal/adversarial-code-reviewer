@@ -14,11 +14,11 @@
 
 """Finding aggregation utilities."""
 
-from typing import List, Dict, Tuple
-from collections import Counter, defaultdict
 import hashlib
+from collections import Counter, defaultdict
+from typing import Dict, List
 
-from acr.models.finding import Finding, FindingLocation, FindingImpact, FindingRemediation
+from acr.models.finding import Finding
 
 
 class FindingAggregator:
@@ -54,7 +54,8 @@ class FindingAggregator:
     def _generate_finding_key(self, finding: Finding) -> str:
         """Generate unique key for deduplication based on file:line:pattern hash."""
         location_hash = hashlib.md5(
-            f"{finding.location.file}:{finding.location.line}:{finding.category}".encode()
+            f"{finding.location.file}:{finding.location.line}:{finding.category}".encode(),
+            usedforsecurity=False,
         ).hexdigest()
 
         return location_hash

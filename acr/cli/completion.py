@@ -119,9 +119,9 @@ def _detect_shell() -> Optional[str]:
 def _print_completion(cli_group: click.Group, shell: str) -> None:
     """Print completion script for specified shell."""
     if shell == "bash":
-        click.echo(f'eval "$(_ACR_COMPLETE=bash_source acr)"')
+        click.echo('eval "$(_ACR_COMPLETE=bash_source acr)"')
     elif shell == "zsh":
-        click.echo(f'eval "$(_ACR_COMPLETE=zsh_source acr)"')
+        click.echo('eval "$(_ACR_COMPLETE=zsh_source acr)"')
     elif shell == "fish":
         click.echo("_ACR_COMPLETE=fish_source acr | source")
     elif shell == "powershell":
@@ -138,11 +138,11 @@ def _install_completion(cli_group: click.Group, shell: str, path: Optional[str])
 
     if shell == "bash":
         target_file = path or "~/.local/share/bash-completion/completions/acr"
-        source_line = f'eval "$(_ACR_COMPLETE=bash_source acr)"'
+        source_line = 'eval "$(_ACR_COMPLETE=bash_source acr)"'
         rc_file = "~/.bashrc"
     elif shell == "zsh":
         target_file = path or "~/.zsh/completion/_acr"
-        source_line = f'eval "$(_ACR_COMPLETE=zsh_source acr)"'
+        source_line = 'eval "$(_ACR_COMPLETE=zsh_source acr)"'
         rc_file = "~/.zshrc"
     elif shell == "fish":
         target_file = path or "~/.config/fish/completions/acr.fish"

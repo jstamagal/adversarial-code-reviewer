@@ -14,13 +14,11 @@
 
 """Main CLI entry point for Adversarial Code Reviewer."""
 
-import sys
 from typing import Optional
 
 import click
-from click.testing import CliRunner
 
-from acr.cli import scan, attack, report, init, config, patterns, version, doctor, completion
+from acr.cli import attack, completion, config, doctor, init, patterns, report, scan, version
 
 
 def cli() -> None:

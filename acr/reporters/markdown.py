@@ -14,14 +14,13 @@
 
 """Markdown report generator."""
 
-from typing import List, Dict
-from collections import Counter
-from pathlib import Path
 from datetime import datetime
+from pathlib import Path
+from typing import List
 
-from acr.reporters.base import BaseReporter
-from acr.models.finding import Finding
 from acr.models.aggregator import FindingAggregator
+from acr.models.finding import Finding
+from acr.reporters.base import BaseReporter
 
 
 class MarkdownReporter(BaseReporter):

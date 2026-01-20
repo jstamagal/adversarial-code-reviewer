@@ -14,12 +14,13 @@
 
 """Finding annotation manager."""
 
-from pathlib import Path
-from typing import Optional, List, Dict
 from datetime import datetime
-import yaml
+from pathlib import Path
+from typing import Dict, List, Optional
 
+import yaml
 from pydantic import BaseModel, Field
+
 from acr.models.finding import Finding
 from acr.utils.logger import get_logger
 
@@ -85,7 +86,7 @@ class AnnotationManager:
     def _load_from_path(self, path: Path) -> None:
         """Load annotations from specific path."""
         try:
-            with open(path, "r") as f:
+            with open(path) as f:
                 data = yaml.safe_load(f)
 
             if data and "annotations" in data:

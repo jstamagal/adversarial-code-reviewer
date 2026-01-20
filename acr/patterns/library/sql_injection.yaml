@@ -10,22 +10,22 @@ author: ACR Security Team
 last_modified: 2025-01-19T00:00:00Z
 
 tags:
-  - injection
-  - database
-  - authentication-bypass
-  - data-exfiltration
+- injection
+- database
+- authentication-bypass
+- data-exfiltration
 
 dependencies:
-  - database-connectivity
-  - user-input
+- database-connectivity
+- user-input
 
 relationships:
   enables:
-    - broken-access-control
-    - sensitive-data-exposure
+  - broken-access-control
+  - sensitive-data-exposure
   related:
-    - command-injection
-    - orm-injection
+  - command-injection
+  - orm-injection
 
 impact:
   confidentiality: high
@@ -37,43 +37,43 @@ description: |
   sanitization or parameterization, allowing attackers to execute arbitrary SQL commands.
 
 references:
-  - https://owasp.org/www-community/attacks/SQL_Injection
-  - https://cwe.mitre.org/data/definitions/89.html
+- https://owasp.org/www-community/attacks/SQL_Injection
+- https://cwe.mitre.org/data/definitions/89.html
 
 affected_languages:
-  - python
+- python
 
 affected_frameworks:
-  - flask
-  - django
-  - sqlalchemy
-  - sqlite3
-  - psycopg2
-  - mysql-connector
+- flask
+- django
+- sqlalchemy
+- sqlite3
+- psycopg2
+- mysql-connector
 
 detection:
   static:
-    - pattern: "cursor\\.execute\\(.*\\+.*\\)"
-      description: String concatenation in SQL query
-      confidence: high
+  - pattern: cursor\.execute\(.*\+.*\)
+    description: String concatenation in SQL query
+    confidence: high
 
-    - pattern: "cursor\\.execute\\(.*%.*\\)"
-      description: String formatting in SQL query (without proper parameterization)
-      confidence: medium
+  - pattern: cursor\.execute\(.*%.*\)
+    description: String formatting in SQL query (without proper parameterization)
+    confidence: medium
 
-    - pattern: "f\".*SELECT.*\\{.*\\}.*\""
-      description: f-string with user input in SQL query
-      confidence: high
+  - pattern: f".*SELECT.*\{.*\}.*"
+    description: f-string with user input in SQL query
+    confidence: high
 
-    - pattern: "\".*\".*\\+.*request\\..*"
-      description: Direct string concatenation with user input
-      confidence: high
+  - pattern: '".*".*\+.*request\..*'
+    description: Direct string concatenation with user input
+    confidence: high
 
   data_flow:
-    - source: "request.(json|form|args|values|headers|cookies)"
-      sink: "(cursor|connection|engine|session)\\.(execute|executemany)"
-      sanitizers:
-        - "(escape_string|quote|parameterized|prepared)"
+  - source: request.(json|form|args|values|headers|cookies)
+    sink: (cursor|connection|engine|session)\.(execute|executemany)
+    sanitizers:
+    - (escape_string|quote|parameterized|prepared)
 
 remediation:
   description: Use parameterized queries or prepared statements
@@ -94,47 +94,47 @@ remediation:
 
 examples:
   vulnerable:
-    - |
-      @app.route('/user/<username>')
-      def get_user(username):
-          query = f"SELECT * FROM users WHERE username='{username}'"
-          cursor.execute(query)
+  - |
+    @app.route('/user/<username>')
+    def get_user(username):
+        query = f"SELECT * FROM users WHERE username='{username}'"
+        cursor.execute(query)
 
-    - |
-      @app.route('/search')
-      def search():
-          term = request.args.get('term')
-          cursor.execute("SELECT * FROM products WHERE name LIKE '%" + term + "%'")
+  - |
+    @app.route('/search')
+    def search():
+        term = request.args.get('term')
+        cursor.execute("SELECT * FROM products WHERE name LIKE '%" + term + "%'")
 
   secure:
-    - |
-      @app.route('/user/<username>')
-      def get_user(username):
-          query = "SELECT * FROM users WHERE username=%s"
-          cursor.execute(query, (username,))
+  - |
+    @app.route('/user/<username>')
+    def get_user(username):
+        query = "SELECT * FROM users WHERE username=%s"
+        cursor.execute(query, (username,))
 
-    - |
-      @app.route('/search')
-      def search():
-          term = request.args.get('term')
-          cursor.execute("SELECT * FROM products WHERE name LIKE %s", (f"%{term}%",))
+  - |
+    @app.route('/search')
+    def search():
+        term = request.args.get('term')
+        cursor.execute("SELECT * FROM products WHERE name LIKE %s", (f"%{term}%",))
 
 attack_vectors:
-  - vector: "Authentication Bypass"
-    payload: "' OR '1'='1"
-    description: Bypass authentication by always-true condition
+- vector: Authentication Bypass
+  payload: "' OR '1'='1"
+  description: Bypass authentication by always-true condition
 
-  - vector: "UNION-Based Data Extraction"
-    payload: "' UNION SELECT username, password FROM users--"
-    description: Extract data from other tables
+- vector: UNION-Based Data Extraction
+  payload: "' UNION SELECT username, password FROM users--"
+  description: Extract data from other tables
 
-  - vector: "Blind SQL Injection"
-    payload: "' AND 1=1--"
-    description: Test for SQL injection vulnerability
+- vector: Blind SQL Injection
+  payload: "' AND 1=1--"
+  description: Test for SQL injection vulnerability
 
-  - vector: "Time-Based Blind"
-    payload: "' AND SLEEP(5)--"
-    description: Extract data through timing responses
+- vector: Time-Based Blind
+  payload: "' AND SLEEP(5)--"
+  description: Extract data through timing responses
 
 llm_prompts:
   analyze: |

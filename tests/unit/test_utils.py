@@ -15,9 +15,9 @@
 """Unit tests for utilities."""
 
 import logging
-import pytest
+
 from acr.utils.helpers import compute_content_hash, generate_finding_id, truncate_string
-from acr.utils.logger import setup_logger, get_logger, get_memory_usage, log_memory_usage
+from acr.utils.logger import get_logger, get_memory_usage, log_memory_usage, setup_logger
 
 
 def test_content_hash():

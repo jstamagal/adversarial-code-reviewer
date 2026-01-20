@@ -14,6 +14,6 @@
 
 """Configuration management for ACR."""
 
-from acr.config import loader, validator, schema
+from acr.config import loader, schema, validator
 
 __all__ = ["loader", "validator", "schema"]

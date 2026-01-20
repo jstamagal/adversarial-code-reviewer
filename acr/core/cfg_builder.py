@@ -14,8 +14,10 @@
 
 """Control Flow Graph builder implementation."""
 
-from typing import Any, Dict, List, Set, Optional
+from typing import Any, Dict, List, Optional
+
 import networkx as nx
+
 from ..utils.logger import get_logger
 
 logger = get_logger(__name__)

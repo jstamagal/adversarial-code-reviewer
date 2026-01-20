@@ -17,7 +17,7 @@
 import logging
 import os
 import sys
-from typing import Optional, Union
+from typing import Optional
 
 try:
     import psutil

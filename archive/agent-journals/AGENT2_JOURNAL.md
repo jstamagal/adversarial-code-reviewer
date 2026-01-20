@@ -1,6 +1,7 @@
 # Agent 2 Journal - Second Review Phase
 
 ## Agent Information
+
 - **Agent ID**: 2
 - **Phase**: 3
 - **Task**: Continue review, scrutinize, and refine PRD.md and TODO.md after Agent 1's revisions
@@ -19,6 +20,7 @@ Agent 2 was tasked with continuing the review of PRD.md and TODO.md after Agent 
 **Issue**: Duplicate and conflicting section numbering in Phase 4
 
 **Details**:
+
 - Line 1152: "### 4.2 Java/Kotlin Support (If Selected, Weeks 35-39)"
 - Line 1154: "### 4.1 Java/Kotlin Support (Weeks 19-20)" - Duplicate with wrong week reference
 - This creates confusion and potential implementation errors
@@ -32,6 +34,7 @@ Agent 2 was tasked with continuing the review of PRD.md and TODO.md after Agent 
 **Issue**: Conflicting/ambiguous Python dependencies
 
 **Details**:
+
 - PRD.md Section 3.4 mentions "astor or astroid (Python AST manipulation)"
 - No clear guidance on which to choose
 - astor is better for AST manipulation and code generation
@@ -48,12 +51,14 @@ Agent 2 was tasked with continuing the review of PRD.md and TODO.md after Agent 
 **Issue**: No support for monorepos
 
 **Details**:
+
 - Many modern projects use monorepos (Nx, Turborepo, Bazel)
 - Different subdirectories may use different languages/frameworks
 - Shared dependencies across packages
 - Need to analyze per-package or per-service, not just whole repo
 
 **Recommended Fix**: Add monorepo analysis strategy in Phase 2+:
+
 - Detect monorepo structure
 - Support per-package configuration
 - Support shared dependency analysis
@@ -66,12 +71,14 @@ Agent 2 was tasked with continuing the review of PRD.md and TODO.md after Agent 
 **Issue**: No strategy for analyzing codebases with multiple languages
 
 **Details**:
+
 - Full-stack projects often have frontend (JS/TS) + backend (Python/Go)
 - Microservices may use different languages
 - Need to correlate findings across language boundaries
 - Shared API contracts (OpenAPI, GraphQL schemas)
 
 **Recommended Fix**: Add multi-language analysis strategy:
+
 - Detect all languages in codebase
 - Analyze cross-language vulnerabilities (e.g., XSS from Python template to JS frontend)
 - Correlate API endpoint definitions
@@ -84,12 +91,14 @@ Agent 2 was tasked with continuing the review of PRD.md and TODO.md after Agent 
 **Issue**: No strategy for analyzing legacy code
 
 **Details**:
+
 - Python 2.7 is still in some enterprise environments
 - Old framework versions (Django 1.x, Flask 0.x)
 - Deprecated patterns and libraries
 - May need different parsing strategies
 
 **Recommended Fix**: Document legacy code support strategy:
+
 - Officially support Python 3.8+ only (explicit)
 - Provide warnings for Python < 3.8
 - Document known limitations with legacy code
@@ -102,6 +111,7 @@ Agent 2 was tasked with continuing the review of PRD.md and TODO.md after Agent 
 **Issue**: No strategy for analyzing generated code
 
 **Details**:
+
 - Protocol buffer generated code
 - OpenAPI client/server stubs
 - GraphQL query builders
@@ -109,6 +119,7 @@ Agent 2 was tasked with continuing the review of PRD.md and TODO.md after Agent 
 - Should these be scanned or excluded?
 
 **Recommended Fix**: Add generated code handling strategy:
+
 - Detect common generated code patterns
 - Default to excluding generated code
 - Allow opt-in for analyzing generated code
@@ -123,6 +134,7 @@ Agent 2 was tasked with continuing the review of PRD.md and TODO.md after Agent 
 **Issue**: No patterns for decorator-related vulnerabilities
 
 **Details**:
+
 - Decorators can modify function behavior
 - @lru_cache may cause memory exhaustion
 - @functools.wraps may bypass security checks
@@ -130,6 +142,7 @@ Agent 2 was tasked with continuing the review of PRD.md and TODO.md after Agent 
 - Decorator stacking order can cause issues
 
 **Recommended Fix**: Add decorator-specific patterns:
+
 - Analyze decorator implementations
 - Check for unsafe caching decorators
 - Check for authorization bypass via decorators
@@ -142,14 +155,16 @@ Agent 2 was tasked with continuing the review of PRD.md and TODO.md after Agent 
 **Issue**: No patterns for metaclass-related vulnerabilities
 
 **Details**:
+
 - Metaclasses can override critical behavior
-- __getattr__, __getattribute__ can bypass access controls
+- **getattr**, **getattribute** can bypass access controls
 - Can be used for privilege escalation
 - Complex to analyze dynamically
 
 **Recommended Fix**: Add metaclass-specific patterns:
+
 - Identify metaclass usage
-- Check for unsafe __getattr__ overrides
+- Check for unsafe **getattr** overrides
 - Check for unsafe attribute access
 - Warn on metaclass complexity
 
@@ -160,15 +175,17 @@ Agent 2 was tasked with continuing the review of PRD.md and TODO.md after Agent 
 **Issue**: Incomplete coverage of dynamic code execution
 
 **Details**:
+
 - eval() and exec() are covered
-- But not covered: __import__() with variable names
+- But not covered: **import**() with variable names
 - importlib.import_module() with user input
 - getattr() on builtins modules
 - compile() function
 - types.FunctionType() for dynamic function creation
 
 **Recommended Fix**: Extend dynamic execution patterns:
-- Detect __import__() with dynamic arguments
+
+- Detect **import**() with dynamic arguments
 - Detect importlib.import_module() with user input
 - Detect getattr()/hasattr() on sensitive objects
 - Detect compile() usage
@@ -182,6 +199,7 @@ Agent 2 was tasked with continuing the review of PRD.md and TODO.md after Agent 
 **Issue**: No patterns for async-specific vulnerabilities
 
 **Details**:
+
 - asyncio is now common in Python
 - Event loop blocking (CPU-bound tasks in async)
 - Cancellation handling (asyncio.CancelledError not caught)
@@ -189,6 +207,7 @@ Agent 2 was tasked with continuing the review of PRD.md and TODO.md after Agent 
 - Race conditions in async code are different from thread-based
 
 **Recommended Fix**: Add async-specific patterns:
+
 - Detect CPU-bound work in async functions
 - Detect missing error handling for asyncio.CancelledError
 - Detect improperly awaited async context managers
@@ -202,12 +221,14 @@ Agent 2 was tasked with continuing the review of PRD.md and TODO.md after Agent 
 **Issue**: No patterns for generator-specific issues
 
 **Details**:
+
 - StopIteration can leak information
 - Generator exhaustion can cause issues
 - yield from may bypass security checks
 - Context managers in generators can leak resources
 
 **Recommended Fix**: Add generator-specific patterns:
+
 - Detect StopIteration handling issues
 - Check for generator exhaustion errors
 - Verify yield from safety
@@ -220,6 +241,7 @@ Agent 2 was tasked with continuing the review of PRD.md and TODO.md after Agent 
 **Issue**: Limited ORM coverage
 
 **Details**:
+
 - SQL injection patterns mentioned
 - But ORM-specific patterns are missing:
   - Django ORM user-filter() vs. exclude() issues
@@ -229,6 +251,7 @@ Agent 2 was tasked with continuing the review of PRD.md and TODO.md after Agent 
   - ORM query chaining vulnerabilities
 
 **Recommended Fix**: Add ORM-specific patterns:
+
 - Django ORM: user.filter(user_input=...) vs. user.filter(user_input__icontains=user_input)
 - Django ORM: exclude() can bypass authorization
 - SQLAlchemy: text() with user input
@@ -246,6 +269,7 @@ Agent 2 was tasked with continuing the review of PRD.md and TODO.md after Agent 
 **Issue**: No patterns for cloud-specific vulnerabilities
 
 **Details**:
+
 - AWS SDK (boto3) misconfigurations
 - Azure SDK security issues
 - GCP client library vulnerabilities
@@ -255,6 +279,7 @@ Agent 2 was tasked with continuing the review of PRD.md and TODO.md after Agent 
 - Cloud logging exposure
 
 **Recommended Fix**: Add cloud-specific patterns (Phase 4+):
+
 - Detect hardcoded AWS credentials
 - Detect S3 bucket ACL issues in code
 - Detect IAM policy overly permissive statements
@@ -269,6 +294,7 @@ Agent 2 was tasked with continuing the review of PRD.md and TODO.md after Agent 
 **Issue**: No container security analysis
 
 **Details**:
+
 - Dockerfile analysis
 - Kubernetes manifests (YAML)
 - Container privilege escalation
@@ -276,6 +302,7 @@ Agent 2 was tasked with continuing the review of PRD.md and TODO.md after Agent 
 - Secret injection issues
 
 **Recommended Fix**: Add container security patterns (Phase 4+):
+
 - Analyze Dockerfile for security issues
 - Analyze Kubernetes manifests for RBAC issues
 - Detect container escape attempts in code
@@ -289,12 +316,14 @@ Agent 2 was tasked with continuing the review of PRD.md and TODO.md after Agent 
 **Issue**: No IaC analysis
 
 **Details**:
+
 - Terraform configurations
 - CloudFormation templates
 - Azure Resource Manager templates
 - Pulumi code
 
 **Recommended Fix**: Add IaC analysis (Phase 4+):
+
 - Analyze Terraform for security misconfigurations
 - Check CloudFormation for exposed resources
 - Validate IaC security best practices
@@ -307,6 +336,7 @@ Agent 2 was tasked with continuing the review of PRD.md and TODO.md after Agent 
 **Issue**: Limited API security coverage
 
 **Details**:
+
 - GraphQL is covered (Phase 4)
 - But REST API security is not specifically covered:
   - API key validation
@@ -318,6 +348,7 @@ Agent 2 was tasked with continuing the review of PRD.md and TODO.md after Agent 
   - API parameter pollution
 
 **Recommended Fix**: Add REST API security patterns:
+
 - Detect missing API authentication
 - Detect insufficient rate limiting
 - Detect CORS misconfigurations
@@ -335,12 +366,14 @@ Agent 2 was tasked with continuing the review of PRD.md and TODO.md after Agent 
 **Issue**: No consideration of WASM for performance
 
 **Details**:
+
 - WebAssembly could be used for pattern matching
 - Faster than Python for some operations
 - Sandboxed by default
 - Could compile patterns to WASM
 
 **Recommended Fix**: Consider WASM optimization (Phase 5+):
+
 - Evaluate compiling pattern matching to WASM
 - Benchmark Python vs. WASM performance
 - Consider for large-scale scanning
@@ -353,12 +386,14 @@ Agent 2 was tasked with continuing the review of PRD.md and TODO.md after Agent 
 **Issue**: No consideration of fine-tuning smaller LLMs
 
 **Details**:
+
 - Could fine-tune smaller models (Llama 7B, Mistral 7B) for vulnerability detection
 - Cheaper than API calls to GPT-4/Claude
 - Can be deployed locally
 - Better for domain-specific patterns
 
 **Recommended Fix**: Consider fine-tuning approach (Phase 5+):
+
 - Evaluate fine-tuning smaller LLMs
 - Create training dataset from vulnerability reports
 - Compare fine-tuned model performance vs. prompt-based
@@ -371,6 +406,7 @@ Agent 2 was tasked with continuing the review of PRD.md and TODO.md after Agent 
 **Issue**: No consideration of graph database for complex analysis
 
 **Details**:
+
 - networkx is good for in-memory graphs
 - But for persistent storage and complex queries:
   - Neo4j for finding-related analysis
@@ -378,6 +414,7 @@ Agent 2 was tasked with continuing the review of PRD.md and TODO.md after Agent 
   - Persistent cross-scan graph storage
 
 **Recommended Fix**: Consider graph database (Phase 5+):
+
 - Evaluate Neo4j for findings storage
 - Enable complex relationship queries
 - Support historical graph queries
@@ -390,6 +427,7 @@ Agent 2 was tasked with continuing the review of PRD.md and TODO.md after Agent 
 **Issue**: No consideration of database for persistent findings
 
 **Details**:
+
 - Current design uses flat files (.acr-state)
 - For large teams and CI/CD:
   - SQLite for single-machine persistence
@@ -398,6 +436,7 @@ Agent 2 was tasked with continuing the review of PRD.md and TODO.md after Agent 
   - Better for trend analysis
 
 **Recommended Fix**: Consider database storage (Phase 5+):
+
 - Evaluate SQLite for local storage
 - Evaluate PostgreSQL for team deployments
 - Support both flat files and database
@@ -411,6 +450,7 @@ Agent 2 was tasked with continuing the review of PRD.md and TODO.md after Agent 
 #### 8.1 Phase Organization Review
 
 **Current Phases**:
+
 - Phase 1: MVP (12-14 weeks) - Python + Flask only
 - Phase 2: Core Features (8-10 weeks) - JS/TS + Property-based testing
 - Phase 3: Integration (6-8 weeks) - IDE + CI/CD
@@ -420,6 +460,7 @@ Agent 2 was tasked with continuing the review of PRD.md and TODO.md after Agent 
 **Optimization Opportunities**:
 
 **Option 1: Value-Driven Phasing** (Better for early adoption)
+
 - Phase 1: Core Analysis Only (8 weeks)
   - Python analyzer
   - Core attack patterns (10 patterns)
@@ -444,11 +485,13 @@ Agent 2 was tasked with continuing the review of PRD.md and TODO.md after Agent 
   - Enterprise features
 
 **Benefits**:
+
 - Delivers working tool faster (8 weeks)
 - Early user feedback on core analysis
 - LLM integration is separate, can be evaluated independently
 
 **Option 2: Language-Driven Phasing** (Better for market expansion)
+
 - Phase 1: Python Complete (12 weeks)
   - Full Python support
   - All Python-specific patterns
@@ -471,6 +514,7 @@ Agent 2 was tasked with continuing the review of PRD.md and TODO.md after Agent 
   - IaC analysis
 
 **Benefits**:
+
 - Complete language support before moving on
 - Clear messaging for different user segments
 - Easier to market to specific communities
@@ -484,11 +528,13 @@ Agent 2 was tasked with continuing the review of PRD.md and TODO.md after Agent 
 **Issue**: Some tasks have implicit dependencies not clearly stated
 
 **Examples**:
+
 - LLM integration (Phase 1) depends on configuration and error handling being complete
 - Property-based test generation (Phase 2) depends on input domain understanding
 - IDE extensions (Phase 3) depend on stable CLI API
 
 **Recommended Fix**: Add dependency annotations to critical tasks in TODO.md
+
 - Mark prerequisites explicitly
 - Add blocking dependencies
 - Consider using task dependency format: "- [ ] Task A (depends on: B, C)"
@@ -502,12 +548,14 @@ Agent 2 was tasked with continuing the review of PRD.md and TODO.md after Agent 
 **Issue**: No protection against LLM prompt injection
 
 **Details**:
+
 - Vulnerable code could attempt to inject prompts
 - Code comments or strings could contain prompt injection attempts
 - Could cause LLM to generate malicious content
 - Could exfiltrate sensitive information via LLM
 
 **Recommended Fix**: Add LLM prompt injection protection (Phase 1+):
+
 - Sanitize code snippets before sending to LLM
 - Filter out suspicious patterns (prompts embedded in code)
 - Use system prompts to prevent jailbreaking
@@ -521,11 +569,13 @@ Agent 2 was tasked with continuing the review of PRD.md and TODO.md after Agent 
 **Issue**: No strategy for preventing LLM abuse
 
 **Details**:
+
 - Users could craft inputs to cause expensive LLM calls
 - Recursive vulnerability reports could trigger exponential LLM calls
 - Large codebases could be expensive to scan
 
 **Recommended Fix**: Add LLM abuse prevention (Phase 1+):
+
 - Limit number of LLM calls per scan
 - Implement LLM call caching aggressively
 - Use cheaper models where appropriate
@@ -540,12 +590,14 @@ Agent 2 was tasked with continuing the review of PRD.md and TODO.md after Agent 
 **Issue**: No verification that sensitive data is fully redacted
 
 **Details**:
+
 - Section 6.1 mentions redaction
 - But no verification mechanism
 - Patterns might miss some sensitive data
 - Could leak credentials, tokens, etc.
 
 **Recommended Fix**: Add redaction verification (Phase 1+):
+
 - Add tests for sensitive data detection
 - Add tests for redaction logic
 - Use multiple regex patterns for detection
@@ -560,6 +612,7 @@ Agent 2 was tasked with continuing the review of PRD.md and TODO.md after Agent 
 **Issue**: Supply chain analysis is mentioned but not detailed
 
 **Details**:
+
 - Section 6.3 mentions "supply chain security"
 - No specific tasks for supply chain vulnerability detection
 - No dependency confusion patterns
@@ -567,6 +620,7 @@ Agent 2 was tasked with continuing the review of PRD.md and TODO.md after Agent 
 - No malicious package detection
 
 **Recommended Fix**: Add comprehensive supply chain tasks (Phase 2+):
+
 - Integrate with OSV (Open Source Vulnerabilities) database
 - Integrate with Snyk, Dependabot APIs
 - Detect dependency confusion vulnerabilities
@@ -583,12 +637,14 @@ Agent 2 was tasked with continuing the review of PRD.md and TODO.md after Agent 
 **Issue**: No comprehensive baseline codebase creation tasks
 
 **Details**:
+
 - "Benchmark against industry benchmarks" mentioned
 - But no task to create baseline test codebases
 - No standardized vulnerability test suites
 - No clear measurement methodology
 
 **Recommended Fix**: Add baseline codebase tasks (Phase 1+):
+
 - Create baseline vulnerable Python codebases:
   - Simple (100 LOC)
   - Medium (1k LOC)
@@ -612,6 +668,7 @@ Agent 2 was tasked with continuing the review of PRD.md and TODO.md after Agent 
 **Issue**: Some patterns are listed in PRD but have no TODO items
 
 **Details**:
+
 - SSRF (Server-Side Request Forgery) - listed but no implementation tasks
 - ReDoS (Regular Expression Denial of Service) - listed but no implementation tasks
 - Integer Overflow/Underflow - listed but no implementation tasks
@@ -621,6 +678,7 @@ Agent 2 was tasked with continuing the review of PRD.md and TODO.md after Agent 
 - Log Injection - listed but no implementation tasks
 
 **Recommended Fix**: Add implementation tasks for all listed patterns:
+
 - Create SSRF pattern (Phase 1+)
 - Create ReDoS pattern (Phase 2+ - needs regex analysis)
 - Create Integer Overflow pattern (Phase 2+)
@@ -636,6 +694,7 @@ Agent 2 was tasked with continuing the review of PRD.md and TODO.md after Agent 
 **Issue**: Limited API security pattern coverage
 
 **Details**:
+
 - GraphQL is covered (Phase 4)
 - REST API security not comprehensively covered:
   - API key validation
@@ -648,6 +707,7 @@ Agent 2 was tasked with continuing the review of PRD.md and TODO.md after Agent 
   - Mass assignment
 
 **Recommended Fix**: Add API security patterns (Phase 2+ for web frameworks):
+
 - API key validation pattern
 - JWT manipulation pattern
 - OAuth2 implementation pattern
@@ -663,6 +723,7 @@ Agent 2 was tasked with continuing the review of PRD.md and TODO.md after Agent 
 **Issue**: Missing web security patterns
 
 **Details**:
+
 - XSS, CSRF covered
 - But missing:
   - Clickjacking
@@ -674,6 +735,7 @@ Agent 2 was tasked with continuing the review of PRD.md and TODO.md after Agent 
   - Stored XSS via file upload
 
 **Recommended Fix**: Add web security patterns (Phase 1+ for Python frameworks):
+
 - Clickjacking pattern (X-Frame-Options, CSP)
 - Mixed Content pattern (HTTP vs HTTPS)
 - MIME type confusion pattern
@@ -690,6 +752,7 @@ Agent 2 was tasked with continuing the review of PRD.md and TODO.md after Agent 
 **Issue**: Missing edge case testing tasks
 
 **Details**:
+
 - Mentioned in Agent 1's review but not fully implemented
 - Need specific tests for:
   - Code with circular imports
@@ -698,9 +761,10 @@ Agent 2 was tasked with continuing the review of PRD.md and TODO.md after Agent 
   - Generator functions
   - Reflection and dynamic imports
   - Obfuscated/minified code
-  - Code using __getattr__/__getattribute__
+  - Code using **getattr**/**getattribute**
 
 **Recommended Fix**: Add comprehensive edge case test tasks (Phase 1+):
+
 - Create test suite for code with circular imports
 - Create test suite for decorator-heavy code
 - Create test suite for metaclass usage
@@ -708,7 +772,7 @@ Agent 2 was tasked with continuing the review of PRD.md and TODO.md after Agent 
 - Create test suite for generator functions
 - Create test suite for reflection-heavy code
 - Create test suite for obfuscated code
-- Create test suite for __getattr__/__getattribute__ abuse
+- Create test suite for **getattr**/**getattribute** abuse
 
 ---
 
@@ -717,11 +781,13 @@ Agent 2 was tasked with continuing the review of PRD.md and TODO.md after Agent 
 **Issue**: No tests for what ACR should NOT detect
 
 **Details**:
+
 - Need to verify ACR doesn't report false positives
 - Need to test with secure code
 - Need to verify no false alarms
 
 **Recommended Fix**: Add negative testing tasks:
+
 - Create secure code samples (no vulnerabilities)
 - Verify no false positives on secure code
 - Create secure Flask applications
@@ -737,6 +803,7 @@ Agent 2 was tasked with continuing the review of PRD.md and TODO.md after Agent 
 **Issue**: No detailed packaging and distribution strategy
 
 **Details**:
+
 - "Publish to PyPI" mentioned
 - But no detailed tasks for:
   - Package structure
@@ -745,6 +812,7 @@ Agent 2 was tasked with continuing the review of PRD.md and TODO.md after Agent 
   - Binary distributions (for faster installation)
 
 **Recommended Fix**: Add packaging tasks (Phase 1+):
+
 - Define package structure
 - Create installation scripts
 - Create Docker image for ACR
@@ -759,12 +827,14 @@ Agent 2 was tasked with continuing the review of PRD.md and TODO.md after Agent 
 **Issue**: No strategy for updating ACR and patterns
 
 **Details**:
+
 - Attack patterns will need updates
 - New vulnerabilities discovered
 - Frameworks evolve
 - Need mechanism to update patterns independently of ACR version
 
 **Recommended Fix**: Add update mechanism tasks (Phase 2+):
+
 - Implement pattern update command (acr patterns update)
 - Fetch patterns from remote repository
 - Validate updated patterns
@@ -783,6 +853,7 @@ Agent 2 was tasked with continuing the review of PRD.md and TODO.md after Agent 
 The PRD and TODO are now very comprehensive. Agent 1 addressed the major gaps from Agent 0's initial draft. I've found additional refinements but nothing that fundamentally changes the architecture or scope.
 
 **Key Strengths**:
+
 - Comprehensive feature coverage
 - Well-structured phased approach
 - Good technology choices (Python, tree-sitter, networkx)
@@ -790,6 +861,7 @@ The PRD and TODO are now very comprehensive. Agent 1 addressed the major gaps fr
 - Extensible architecture
 
 **Remaining Areas for Refinement**:
+
 1. Edge cases (decorators, metaclasses, async, generators) - add patterns and tests
 2. Real-world scenarios (monorepos, multi-language, legacy code) - add strategies
 3. Cloud/IaC security - add patterns for cloud-native code
@@ -803,7 +875,8 @@ These are all enhancements rather than fundamental flaws. The project is ready f
 
 ## Changes Made
 
-### PRD.md Edits:
+### PRD.md Edits
+
 1. Fixed numbering conflict in Phase 4 language selection
 2. Clarified dependency choices (astor vs. astroid)
 3. Added monorepo support strategy
@@ -835,7 +908,8 @@ These are all enhancements rather than fundamental flaws. The project is ready f
 29. Added baseline codebase creation tasks
 30. Added all listed attack pattern implementations
 
-### TODO.md Edits:
+### TODO.md Edits
+
 1. Fixed duplicate section numbering in Phase 4
 2. Added monorepo analysis tasks (Phase 2+)
 3. Added multi-language analysis tasks (Phase 2+)
@@ -870,6 +944,7 @@ These are all enhancements rather than fundamental flaws. The project is ready f
 ## Next Steps for Agent 3
 
 Agent 3 should:
+
 1. Review the refinements I've made
 2. Look for any remaining gaps or inconsistencies
 3. Consider if there are alternative approaches not explored

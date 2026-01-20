@@ -14,14 +14,13 @@
 
 """Tests for AnnotationManager."""
 
-import pytest
 import os
-from pathlib import Path
-from datetime import datetime
+
+import pytest
 import yaml
 
 from acr.annotations.manager import AnnotationManager, FindingAnnotation
-from acr.models.finding import Finding, FindingLocation, FindingImpact, FindingRemediation
+from acr.models.finding import Finding, FindingImpact, FindingLocation, FindingRemediation
 
 
 class TestFindingAnnotation:
@@ -315,7 +314,7 @@ class TestAnnotationManagerSaveLoad:
 
         assert state_file.exists()
 
-        with open(state_file, "r") as f:
+        with open(state_file) as f:
             data = yaml.safe_load(f)
 
         assert data["version"] == "1.0"

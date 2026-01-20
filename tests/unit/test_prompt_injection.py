@@ -14,13 +14,12 @@
 
 """Tests for prompt injection protection."""
 
-import pytest
 
 from acr.llm.prompt_injection import (
+    JAILBREAK_PREVENTION_SYSTEM_PROMPT,
+    OutputMonitor,
     PromptInjectorDetector,
     PromptSanitizer,
-    OutputMonitor,
-    JAILBREAK_PREVENTION_SYSTEM_PROMPT,
 )
 
 

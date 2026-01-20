@@ -12,93 +12,93 @@ description: |
   privilege escalation, and exposed administrative interfaces.
 
 references:
-  - https://owasp.org/www-project-top-ten/2017/A5_2017-Broken_Access_Control
-  - https://cwe.mitre.org/data/definitions/284.html
-  - https://cheatsheetseries.owasp.org/cheatsheets/Access_Control_Cheat_Sheet.html
+- https://owasp.org/www-project-top-ten/2017/A5_2017-Broken_Access_Control
+- https://cwe.mitre.org/data/definitions/284.html
+- https://cheatsheetseries.owasp.org/cheatsheets/Access_Control_Cheat_Sheet.html
 
 affected_languages:
-  - python
-  - javascript
-  - typescript
+- python
+- javascript
+- typescript
 
 affected_frameworks:
-  - flask
-  - django
-  - fastapi
-  - express
-  - nestjs
+- flask
+- django
+- fastapi
+- express
+- nestjs
 
 vulnerability_types:
-  - idor: "Insecure Direct Object Reference - accessing resources by guessing IDs"
-  - missing_auth: "Missing authentication on sensitive endpoints"
-  - privilege_escalation: "Privilege escalation by modifying roles/permissions"
-  - admin_exposure: "Exposed administrative interfaces without proper protection"
-  - cors_misconfig: "CORS misconfiguration allowing unauthorized cross-origin access"
-  - force_browsing: "Force browsing to access hidden/protected endpoints"
-  - parameter_tampering: "Parameter tampering to bypass authorization checks"
+- idor: Insecure Direct Object Reference - accessing resources by guessing IDs
+- missing_auth: Missing authentication on sensitive endpoints
+- privilege_escalation: Privilege escalation by modifying roles/permissions
+- admin_exposure: Exposed administrative interfaces without proper protection
+- cors_misconfig: CORS misconfiguration allowing unauthorized cross-origin access
+- force_browsing: Force browsing to access hidden/protected endpoints
+- parameter_tampering: Parameter tampering to bypass authorization checks
 
 detection:
   static:
-    - pattern: "@app\\.route\\(.*<int:id>.*\\)"
-      description: URL parameter without authorization check
-      confidence: low
+  - pattern: '@app\.route\(.*<int:id>.*\)'
+    description: URL parameter without authorization check
+    confidence: low
 
-    - pattern: "def (get|update|delete|edit)\\(.*user_id\\)"
-      description: Function operating on user_id without authorization check
-      confidence: medium
+  - pattern: def (get|update|delete|edit)\(.*user_id\)
+    description: Function operating on user_id without authorization check
+    confidence: medium
 
-    - pattern: "(User|Account|Profile|Order|Invoice)\\.objects\\.get\\(id=.*request\\."
-      description: Direct object access from user input without authorization (Django)
-      confidence: high
+  - pattern: (User|Account|Profile|Order|Invoice)\.objects\.get\(id=.*request\.
+    description: Direct object access from user input without authorization (Django)
+    confidence: high
 
-    - pattern: "db\\.query\\(.*WHERE id =.*request\\."
-      description: Direct object lookup from user input (SQLAlchemy)
-      confidence: high
+  - pattern: db\.query\(.*WHERE id =.*request\.
+    description: Direct object lookup from user input (SQLAlchemy)
+    confidence: high
 
-    - pattern: "@(login_required|authenticated)\\s*\\n\\s*def (admin|dashboard|settings|config|users_delete)"
-      description: Admin endpoint only checking auth, not admin role
-      confidence: high
+  - pattern: '@(login_required|authenticated)\s*\n\s*def (admin|dashboard|settings|config|users_delete)'
+    description: Admin endpoint only checking auth, not admin role
+    confidence: high
 
-    - pattern: "app\\.get\\(\\['/api/users/.*'\\],\\s*\\(req, res\\)\\s*=>"
-      description: Express endpoint without middleware/authorization check
-      confidence: medium
+  - pattern: app\.get\(\['/api/users/.*'\],\s*\(req, res\)\s*=>
+    description: Express endpoint without middleware/authorization check
+    confidence: medium
 
-    - pattern: "res\\.send\\(User\\.findById\\(req\\.params\\.id\\)\\)"
-      description: Direct object access in Express without authorization
-      confidence: high
+  - pattern: res\.send\(User\.findById\(req\.params\.id\)\)
+    description: Direct object access in Express without authorization
+    confidence: high
 
-    - pattern: "GET|POST|PUT|DELETE.*admin|users|settings"
-      description: Administrative endpoint route definition
-      confidence: low
+  - pattern: GET|POST|PUT|DELETE.*admin|users|settings
+    description: Administrative endpoint route definition
+    confidence: low
 
-    - pattern: "cors\\(\\{\\s*origin:\\s*['\"]\\*['\"].*\\}\\)"
-      description: CORS allowing all origins (security risk)
-      confidence: medium
+  - pattern: cors\(\{\s*origin:\s*['"]\*['"].*\}\)
+    description: CORS allowing all origins (security risk)
+    confidence: medium
 
-    - pattern: "@(jwt_required|auth_required)\\s*\\n.*@admin_required"
-      description: Missing admin decorator on function returning sensitive data
-      confidence: high
+  - pattern: '@(jwt_required|auth_required)\s*\n.*@admin_required'
+    description: Missing admin decorator on function returning sensitive data
+    confidence: high
 
-    - pattern: "session\\['role'\\]\\s*=\\s*(request\\.\\w+|\\w+)"
-      description: Modifying session role based on user input (privilege escalation)
-      confidence: high
+  - pattern: session\['role'\]\s*=\s*(request\.\w+|\w+)
+    description: Modifying session role based on user input (privilege escalation)
+    confidence: high
 
-    - pattern: "(allow|can|has_permission|check_access)\\(.*request\\.(user|session|args|form|json|params)\\)"
-      description: Authorization check using untrusted input
-      confidence: high
+  - pattern: (allow|can|has_permission|check_access)\(.*request\.(user|session|args|form|json|params)\)
+    description: Authorization check using untrusted input
+    confidence: high
 
-    - pattern: "if\\s+\\(user\\.role\\s*==\\s*['\"]admin['\"]\\)"
-      description: Hardcoded role check that could be bypassed
-      confidence: medium
+  - pattern: if\s+\(user\.role\s*==\s*['"]admin['"]\)
+    description: Hardcoded role check that could be bypassed
+    confidence: medium
 
   data_flow:
-    - source: "(request\\.(args|form|json|params|view_args|headers|cookies)|req\\.(params|query|body|headers))"
-      sink: "(User|Account|Profile|Order|Invoice|Document)\\.(objects\\.get|findById|findOne|query|find)"
-      sanitizers: "(check_owner|verify_access|has_permission|can_access|is_owner)"
+  - source: (request\.(args|form|json|params|view_args|headers|cookies)|req\.(params|query|body|headers))
+    sink: (User|Account|Profile|Order|Invoice|Document)\.(objects\.get|findById|findOne|query|find)
+    sanitizers: (check_owner|verify_access|has_permission|can_access|is_owner)
 
-    - source: "(request\\.(args|form|json|params|view_args|headers|cookies)|req\\.(params|query|body|headers))"
-      sink: "(delete|update|edit|destroy|remove)\\("
-      sanitizers: "(check_owner|verify_access|has_permission|can_access|is_owner|is_admin)"
+  - source: (request\.(args|form|json|params|view_args|headers|cookies)|req\.(params|query|body|headers))
+    sink: (delete|update|edit|destroy|remove)\(
+    sanitizers: (check_owner|verify_access|has_permission|can_access|is_owner|is_admin)
 
 remediation:
   description: Implement proper authorization checks at every endpoint that accesses or modifies resources. Always verify the requesting user has permission to perform the action on the specific resource.
@@ -222,170 +222,170 @@ remediation:
 
 examples:
   vulnerable:
-    - |
-      # IDOR - accessing other users' data
-      @app.route('/profile/<int:user_id>')
-      @login_required
-      def view_profile(user_id):
-          profile = Profile.objects.get(id=user_id)
-          return render_template('profile.html', profile=profile)
+  - |
+    # IDOR - accessing other users' data
+    @app.route('/profile/<int:user_id>')
+    @login_required
+    def view_profile(user_id):
+        profile = Profile.objects.get(id=user_id)
+        return render_template('profile.html', profile=profile)
 
-    - |
-      # Privilege escalation via session manipulation
-      @app.route('/set_role', methods=['POST'])
-      def set_role():
-          new_role = request.form.get('role')
-          session['role'] = new_role  # VULNERABLE: Setting role from user input
-          return jsonify({'status': 'role updated'})
+  - |
+    # Privilege escalation via session manipulation
+    @app.route('/set_role', methods=['POST'])
+    def set_role():
+        new_role = request.form.get('role')
+        session['role'] = new_role  # VULNERABLE: Setting role from user input
+        return jsonify({'status': 'role updated'})
 
-    - |
-      # Missing authorization on delete endpoint
-      @app.route('/api/documents/<int:doc_id>', methods=['DELETE'])
-      def delete_document(doc_id):
-          doc = Document.objects.get(id=doc_id)
-          doc.delete()
-          return jsonify({'status': 'deleted'})
+  - |
+    # Missing authorization on delete endpoint
+    @app.route('/api/documents/<int:doc_id>', methods=['DELETE'])
+    def delete_document(doc_id):
+        doc = Document.objects.get(id=doc_id)
+        doc.delete()
+        return jsonify({'status': 'deleted'})
 
-    - |
-      # Express - IDOR vulnerability
-      app.get('/api/account/:accountId', async (req, res) => {
-        const account = await Account.findById(req.params.accountId);
-        res.json(account);  // Anyone can view any account
-      });
+  - |
+    # Express - IDOR vulnerability
+    app.get('/api/account/:accountId', async (req, res) => {
+      const account = await Account.findById(req.params.accountId);
+      res.json(account);  // Anyone can view any account
+    });
 
-    - |
-      // Exposed admin endpoint without protection
-      app.delete('/admin/users/:userId', async (req, res) => {
-        await User.findByIdAndDelete(req.params.userId);
-        res.json({ success: true });
-      });
+  - |
+    // Exposed admin endpoint without protection
+    app.delete('/admin/users/:userId', async (req, res) => {
+      await User.findByIdAndDelete(req.params.userId);
+      res.json({ success: true });
+    });
 
-    - |
-      # Django - Missing ownership check
-      def update_order(request, order_id):
-          order = Order.objects.get(id=order_id)
-          order.status = request.POST.get('status')
-          order.save()
-          return JsonResponse(order.to_dict())
+  - |
+    # Django - Missing ownership check
+    def update_order(request, order_id):
+        order = Order.objects.get(id=order_id)
+        order.status = request.POST.get('status')
+        order.save()
+        return JsonResponse(order.to_dict())
 
-    - |
-      # CORS misconfiguration
-      from flask_cors import CORS
-      CORS(app, origins='*')  # Allows any origin to make requests
+  - |
+    # CORS misconfiguration
+    from flask_cors import CORS
+    CORS(app, origins='*')  # Allows any origin to make requests
 
   secure:
-    - |
-      # SECURE: Verify resource ownership
-      @app.route('/profile/<int:user_id>')
-      @login_required
-      def view_profile(user_id):
-          if current_user.id != user_id and not current_user.is_admin:
-              abort(403)
+  - |
+    # SECURE: Verify resource ownership
+    @app.route('/profile/<int:user_id>')
+    @login_required
+    def view_profile(user_id):
+        if current_user.id != user_id and not current_user.is_admin:
+            abort(403)
 
-          profile = Profile.objects.get(id=user_id)
-          return render_template('profile.html', profile=profile)
+        profile = Profile.objects.get(id=user_id)
+        return render_template('profile.html', profile=profile)
 
-    - |
-      # SECURE: Role validation
-      @app.route('/set_role', methods=['POST'])
-      @admin_required
-      def set_role():
-          target_user_id = request.form.get('user_id')
-          if not is_valid_role_transition(current_user, target_user_id, new_role):
-              return jsonify({'error': 'Invalid role change'}), 403
+  - |
+    # SECURE: Role validation
+    @app.route('/set_role', methods=['POST'])
+    @admin_required
+    def set_role():
+        target_user_id = request.form.get('user_id')
+        if not is_valid_role_transition(current_user, target_user_id, new_role):
+            return jsonify({'error': 'Invalid role change'}), 403
 
-          user = User.objects.get(id=target_user_id)
-          user.role = new_role
-          user.save()
-          return jsonify({'status': 'role updated'})
+        user = User.objects.get(id=target_user_id)
+        user.role = new_role
+        user.save()
+        return jsonify({'status': 'role updated'})
 
-    - |
-      # SECURE: Authorization required
-      @app.route('/api/documents/<int:doc_id>', methods=['DELETE'])
-      @login_required
-      def delete_document(doc_id):
-          doc = Document.objects.get(id=doc_id)
+  - |
+    # SECURE: Authorization required
+    @app.route('/api/documents/<int:doc_id>', methods=['DELETE'])
+    @login_required
+    def delete_document(doc_id):
+        doc = Document.objects.get(id=doc_id)
 
-          if doc.owner_id != current_user.id and not current_user.is_admin:
-              return jsonify({'error': 'Forbidden'}), 403
+        if doc.owner_id != current_user.id and not current_user.is_admin:
+            return jsonify({'error': 'Forbidden'}), 403
 
-          doc.delete()
-          return jsonify({'status': 'deleted'})
+        doc.delete()
+        return jsonify({'status': 'deleted'})
 
-    - |
-      // SECURE: Express with ownership check
-      app.get('/api/account/:accountId', authenticate, async (req, res) => {
-        const account = await Account.findById(req.params.accountId);
+  - |
+    // SECURE: Express with ownership check
+    app.get('/api/account/:accountId', authenticate, async (req, res) => {
+      const account = await Account.findById(req.params.accountId);
 
-        if (account.userId !== req.user.id && !req.user.isAdmin) {
-          return res.status(403).json({ error: 'Forbidden' });
-        }
+      if (account.userId !== req.user.id && !req.user.isAdmin) {
+        return res.status(403).json({ error: 'Forbidden' });
+      }
 
-        res.json(account);
-      });
+      res.json(account);
+    });
 
-    - |
-      // SECURE: Admin-only endpoint
-      app.delete('/admin/users/:userId',
-        authenticate,
-        requireAdmin,
-        async (req, res) => {
-          await User.findByIdAndDelete(req.params.userId);
-          res.json({ success: true });
-        }
-      );
+  - |
+    // SECURE: Admin-only endpoint
+    app.delete('/admin/users/:userId',
+      authenticate,
+      requireAdmin,
+      async (req, res) => {
+        await User.findByIdAndDelete(req.params.userId);
+        res.json({ success: true });
+      }
+    );
 
-    - |
-      # SECURE: Django with ownership check
-      @api_view(['PUT'])
-      @permission_classes([IsAuthenticated])
-      def update_order(request, order_id):
-          order = get_object_or_404(Order, id=order_id)
+  - |
+    # SECURE: Django with ownership check
+    @api_view(['PUT'])
+    @permission_classes([IsAuthenticated])
+    def update_order(request, order_id):
+        order = get_object_or_404(Order, id=order_id)
 
-          if order.user_id != request.user.id and not request.user.is_staff:
-              return Response({'error': 'Forbidden'}, status=403)
+        if order.user_id != request.user.id and not request.user.is_staff:
+            return Response({'error': 'Forbidden'}, status=403)
 
-          order.status = request.data.get('status', order.status)
-          order.save()
-          return JsonResponse(OrderSerializer(order).data)
+        order.status = request.data.get('status', order.status)
+        order.save()
+        return JsonResponse(OrderSerializer(order).data)
 
-    - |
-      # SECURE: Restricted CORS
-      from flask_cors import CORS
-      CORS(app, origins=['https://yourdomain.com'], supports_credentials=True)
+  - |
+    # SECURE: Restricted CORS
+    from flask_cors import CORS
+    CORS(app, origins=['https://yourdomain.com'], supports_credentials=True)
 
 attack_vectors:
-  - vector: "IDOR - Insecure Direct Object Reference"
-    payload: "GET /api/orders/123 (changing 123 to 456 to access another user's order)"
-    description: "Access or modify resources by guessing or enumerating IDs (order_id, user_id, document_id) without authorization checks"
+- vector: IDOR - Insecure Direct Object Reference
+  payload: GET /api/orders/123 (changing 123 to 456 to access another user's order)
+  description: Access or modify resources by guessing or enumerating IDs (order_id, user_id, document_id) without authorization checks
 
-  - vector: "Privilege Escalation via Parameter Tampering"
-    payload: "POST /update_profile { 'role': 'admin' }"
-    description: "Modify request parameters to escalate privileges by setting role, is_admin, or permission fields"
+- vector: Privilege Escalation via Parameter Tampering
+  payload: "POST /update_profile { 'role': 'admin' }"
+  description: Modify request parameters to escalate privileges by setting role, is_admin, or permission fields
 
-  - vector: "Force Browsing to Admin Interfaces"
-    payload: "GET /admin, GET /api/admin/users, GET /dashboard/admin"
-    description: "Access administrative interfaces by guessing or enumerating URLs"
+- vector: Force Browsing to Admin Interfaces
+  payload: GET /admin, GET /api/admin/users, GET /dashboard/admin
+  description: Access administrative interfaces by guessing or enumerating URLs
 
-  - vector: "Session Manipulation"
-    payload: "Modifying session['role'] or session['user_id'] cookie values"
-    description: "Tamper with session data to gain unauthorized access or elevate privileges"
+- vector: Session Manipulation
+  payload: Modifying session['role'] or session['user_id'] cookie values
+  description: Tamper with session data to gain unauthorized access or elevate privileges
 
-  - vector: "CORS-Based Attack"
-    payload: "Cross-origin request from malicious.com to API with origin='*'"
-    description: "Exploit permissive CORS configuration to make unauthorized requests on behalf of authenticated users"
+- vector: CORS-Based Attack
+  payload: Cross-origin request from malicious.com to API with origin='*'
+  description: Exploit permissive CORS configuration to make unauthorized requests on behalf of authenticated users
 
-  - vector: "Mass Assignment/Parameter Pollution"
-    payload: "POST /users/update { 'id': 1, 'is_admin': true }"
-    description: "Submit unexpected parameters to modify object properties that should not be user-modifiable"
+- vector: Mass Assignment/Parameter Pollution
+  payload: "POST /users/update { 'id': 1, 'is_admin': true }"
+  description: Submit unexpected parameters to modify object properties that should not be user-modifiable
 
-  - vector: "Bypassing Missing Authorization"
-    payload: "Direct API call to DELETE /api/documents/123 without proper token/role"
-    description: "Exploit endpoints that only check authentication but not authorization (role/ownership)"
+- vector: Bypassing Missing Authorization
+  payload: Direct API call to DELETE /api/documents/123 without proper token/role
+  description: Exploit endpoints that only check authentication but not authorization (role/ownership)
 
-  - vector: "Horizontal Privilege Escalation"
-    payload: "GET /api/users/456/orders (accessing another user's data when you're user 123)"
-    description: "Access data or perform actions for other users at the same privilege level"
+- vector: Horizontal Privilege Escalation
+  payload: GET /api/users/456/orders (accessing another user's data when you're user 123)
+  description: Access data or perform actions for other users at the same privilege level
 
 llm_prompts:
   analyze: |

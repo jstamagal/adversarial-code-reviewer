@@ -1,4 +1,5 @@
 ## Increment iteration
+
 {iteration} = 5
 {phase} = 6
 
@@ -17,6 +18,7 @@
 - Read USER_NOTES.md
 
 ## Special instructions for Agent ({iteration}+1)
+
 - Inform next agent if they are planning, reviewing, brainstorming, refining, scaffolding, implementing
 - Agent 6 your task is to CONTINUE IMPLEMENTATION
 - PRD.md and TODO.md are ready for implementation with 99% confidence
@@ -27,6 +29,7 @@
 - Read USER_NOTES.md
 
 ## What to do if things go wrong
+
 - Review the agent journals (AGENT*_JOURNAL.md) to understand the project history
 - If significant changes are needed, document in your journal
 - Maintain the comprehensive nature of PRD.md and TODO.md

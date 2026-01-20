@@ -11,99 +11,99 @@ description: |
   sensitive data through template syntax.
 
 references:
-  - https://owasp.org/www-community/attacks/Server-Side_Template_Injection
-  - https://cwe.mitre.org/data/definitions/94.html
-  - https://portswigger.net/research/server-side-template-injection
+- https://owasp.org/www-community/attacks/Server-Side_Template_Injection
+- https://cwe.mitre.org/data/definitions/94.html
+- https://portswigger.net/research/server-side-template-injection
 
 affected_languages:
-  - python
-  - javascript
-  - typescript
-  - php
-  - ruby
-  - go
+- python
+- javascript
+- typescript
+- php
+- ruby
+- go
 
 affected_frameworks:
-  - flask
-  - django
-  - fastapi
-  - express
-  - nestjs
-  - rails
-  - gin
-  - echo
+- flask
+- django
+- fastapi
+- express
+- nestjs
+- rails
+- gin
+- echo
 
 vulnerability_types:
-  - Jinja2 template injection
-  - Django template injection
-  - Mako template injection
-  - Tornado template injection
-  - Handlebars/Mustache injection
-  - ERB/Ruby template injection
-  - Go template injection
+- Jinja2 template injection
+- Django template injection
+- Mako template injection
+- Tornado template injection
+- Handlebars/Mustache injection
+- ERB/Ruby template injection
+- Go template injection
 
 detection:
   static:
-    - pattern: "render_template_string\\(.*request\\..*\\)"
-      description: Flask render_template_string() with user input
-      confidence: critical
-      requires_language: [python]
+  - pattern: render_template_string\(.*request\..*\)
+    description: Flask render_template_string() with user input
+    confidence: critical
+    requires_language: [python]
 
-    - pattern: "Template\\(.*request\\..*\\).render\\(\\)"
-      description: Django Template object with user input
-      confidence: critical
-      requires_language: [python]
+  - pattern: Template\(.*request\..*\).render\(\)
+    description: Django Template object with user input
+    confidence: critical
+    requires_language: [python]
 
-    - pattern: "mako\\.template\\.Template\\(.*request\\..*\\).render\\(\\)"
-      description: Mako template rendering with user input
-      confidence: critical
-      requires_language: [python]
+  - pattern: mako\.template\.Template\(.*request\..*\).render\(\)
+    description: Mako template rendering with user input
+    confidence: critical
+    requires_language: [python]
 
-    - pattern: "tornado\\.template\\.Template\\(.*request\\..*\\).generate\\(\\)"
-      description: Tornado template with user input
-      confidence: critical
-      requires_language: [python]
+  - pattern: tornado\.template\.Template\(.*request\..*\).generate\(\)
+    description: Tornado template with user input
+    confidence: critical
+    requires_language: [python]
 
-    - pattern: "jinja2\\.Template\\(.*request\\..*\\).render\\(\\)"
-      description: Direct Jinja2 Template with user input
-      confidence: critical
-      requires_language: [python]
+  - pattern: jinja2\.Template\(.*request\..*\).render\(\)
+    description: Direct Jinja2 Template with user input
+    confidence: critical
+    requires_language: [python]
 
-    - pattern: "\\{\\{.*request\\..*\\}\\}"
-      description: Jinja2/Django template syntax with user input in string
-      confidence: high
-      requires_language: [python]
+  - pattern: \{\{.*request\..*\}\}
+    description: Jinja2/Django template syntax with user input in string
+    confidence: high
+    requires_language: [python]
 
-    - pattern: "\\$\\{.*req\\..*\\}"
-      description: JavaScript template literal with user input
-      confidence: high
-      requires_language: [javascript, typescript]
+  - pattern: \$\{.*req\..*\}
+    description: JavaScript template literal with user input
+    confidence: high
+    requires_language: [javascript, typescript]
 
-    - pattern: "Handlebars\\.compile\\(.*req\\..*\\)"
-      description: Handlebars template compilation with user input
-      confidence: critical
-      requires_language: [javascript, typescript]
+  - pattern: Handlebars\.compile\(.*req\..*\)
+    description: Handlebars template compilation with user input
+    confidence: critical
+    requires_language: [javascript, typescript]
 
-    - pattern: "\\{\\{\\{.*req\\..*\\}\\}\\}"
-      description: Mustache/Handlebars unescaped rendering with user input
-      confidence: high
-      requires_language: [javascript, typescript]
+  - pattern: \{\{\{.*req\..*\}\}\}
+    description: Mustache/Handlebars unescaped rendering with user input
+    confidence: high
+    requires_language: [javascript, typescript]
 
-    - pattern: "ERB\\.new\\(.*params\\..*\\)"
-      description: Ruby ERB template with user input
-      confidence: critical
-      requires_language: [ruby]
+  - pattern: ERB\.new\(.*params\..*\)
+    description: Ruby ERB template with user input
+    confidence: critical
+    requires_language: [ruby]
 
-    - pattern: "template\\.New\\(.*request\\..*\\)"
-      description: Go template with user input
-      confidence: critical
-      requires_language: [go]
+  - pattern: template\.New\(.*request\..*\)
+    description: Go template with user input
+    confidence: critical
+    requires_language: [go]
 
   data_flow:
-    - source: "request.(json|form|args|values|body|params|query|headers)"
-      sink: "(render_template_string|Template|jinja2.Template|mako.template.Template|tornado.template.Template|Handlebars.compile|ERB.new|template.New)"
-      sanitizers:
-        - "(escape|safe|validate|sanitize|filter|allowed|restricted)"
+  - source: request.(json|form|args|values|body|params|query|headers)
+    sink: (render_template_string|Template|jinja2.Template|mako.template.Template|tornado.template.Template|Handlebars.compile|ERB.new|template.New)
+    sanitizers:
+    - (escape|safe|validate|sanitize|filter|allowed|restricted)
 
 remediation:
   description: Never use untrusted input directly in template rendering engines. Use framework-provided templating functions that automatically escape user input.
@@ -136,170 +136,167 @@ remediation:
 
 examples:
   vulnerable:
-    - |
-      from flask import Flask, request, render_template_string
-      app = Flask(__name__)
+  - |
+    from flask import Flask, request, render_template_string
+    app = Flask(__name__)
 
-      @app.route('/template')
-      def template():
-          tpl = request.args.get('tpl')
-          return render_template_string(tpl)
+    @app.route('/template')
+    def template():
+        tpl = request.args.get('tpl')
+        return render_template_string(tpl)
 
-    - |
-      from django.template import Template
-      from django.http import HttpRequest
+  - |
+    from django.template import Template
+    from django.http import HttpRequest
 
-      def render_view(request: HttpRequest):
-          user_input = request.GET.get('input')
-          tpl = Template(user_input)
-          return tpl.render()
+    def render_view(request: HttpRequest):
+        user_input = request.GET.get('input')
+        tpl = Template(user_input)
+        return tpl.render()
 
-    - |
-      from mako.template import Template
+  - |
+    from mako.template import Template
 
-      def render_mako(request):
-          template_content = request.form.get('template')
-          tpl = Template(template_content)
-          return tpl.render()
+    def render_mako(request):
+        template_content = request.form.get('template')
+        tpl = Template(template_content)
+        return tpl.render()
 
-    - |
-      import jinja2
+  - |
+    import jinja2
 
-      def render_jinja(request):
-          user_template = request.args.get('template')
-          tpl = jinja2.Template(user_template)
-          return tpl.render()
+    def render_jinja(request):
+        user_template = request.args.get('template')
+        tpl = jinja2.Template(user_template)
+        return tpl.render()
 
-    - |
-      from tornado.template import Template
+  - |
+    from tornado.template import Template
 
-      async def render_tornado(request):
-          tpl_str = request.get_argument('template')
-          tpl = Template(tpl_str)
-          return tpl.generate()
+    async def render_tornado(request):
+        tpl_str = request.get_argument('template')
+        tpl = Template(tpl_str)
+        return tpl.generate()
 
-    - |
-      @app.route('/dynamic-include')
-      def dynamic_include():
-          fragment = request.args.get('fragment')
-          # Danger: Including user-controlled template
-          return render_template_string(f"{{% include '{fragment}' %}}")
+  - |
+    @app.route('/dynamic-include')
+    def dynamic_include():
+        fragment = request.args.get('fragment')
+        # Danger: Including user-controlled template
+        return render_template_string(f"{{% include '{fragment}' %}}")
 
-    - |
-      import pystache
+  - |
+    import pystache
 
-      def render_mustache(request):
-          tpl = request.json.get('template')
-          renderer = pystache.Renderer()
-          return renderer.render(tpl)
+    def render_mustache(request):
+        tpl = request.json.get('template')
+        renderer = pystache.Renderer()
+        return renderer.render(tpl)
 
   secure:
-    - |
-      from flask import Flask, request, render_template
-      app = Flask(__name__)
+  - |
+    from flask import Flask, request, render_template
+    app = Flask(__name__)
 
-      @app.route('/template')
-      def template():
-          name = request.args.get('name', 'World')
-          # Use predefined template files, not user input
-          return render_template('greeting.html', name=name)
+    @app.route('/template')
+    def template():
+        name = request.args.get('name', 'World')
+        # Use predefined template files, not user input
+        return render_template('greeting.html', name=name)
 
-    - |
-      from django.template.loader import render_to_string
+  - |
+    from django.template.loader import render_to_string
 
-      def render_view(request):
-          user_input = request.GET.get('input', '')
-          # Use template by name with context
-          return render_to_string('template.html', {'user_input': user_input})
+    def render_view(request):
+        user_input = request.GET.get('input', '')
+        # Use template by name with context
+        return render_to_string('template.html', {'user_input': user_input})
 
-    - |
-      from jinja2 import Environment, select_autoescape
+  - |
+    from jinja2 import Environment, select_autoescape
 
-      # Configure autoescape for safety
-      env = Environment(
-          loader=jinja2.FileSystemLoader('templates'),
-          autoescape=select_autoescape(['html', 'xml'])
-      )
+    # Configure autoescape for safety
+    env = Environment(
+        loader=jinja2.FileSystemLoader('templates'),
+        autoescape=select_autoescape(['html', 'xml'])
+    )
 
-      def render_safe(request):
-          user_input = request.args.get('input', '')
-          tpl = env.get_template('safe_template.html')
-          return tpl.render(content=user_input)
+    def render_safe(request):
+        user_input = request.args.get('input', '')
+        tpl = env.get_template('safe_template.html')
+        return tpl.render(content=user_input)
 
-    - |
-      from mako.lookup import TemplateLookup
+  - |
+    from mako.lookup import TemplateLookup
 
-      # Use template lookup with directory
-      lookup = TemplateLookup(directories=['templates'])
+    # Use template lookup with directory
+    lookup = TemplateLookup(directories=['templates'])
 
-      def render_safe(request):
-          user_input = request.args.get('input', '')
-          tpl = lookup.get_template('safe_template.mako')
-          return tpl.render(content=user_input)
+    def render_safe(request):
+        user_input = request.args.get('input', '')
+        tpl = lookup.get_template('safe_template.mako')
+        return tpl.render(content=user_input)
 
-    - |
-      import pystache
+  - |
+    import pystache
 
-      def render_mustache(request):
-          # Precompile templates from trusted sources
-          tpl = pystache.parse('{{greeting}}, {{name}}!')
-          renderer = pystache.Renderer()
-          return renderer.render(tpl, {
-              'greeting': request.args.get('greeting', 'Hello'),
-              'name': request.args.get('name', 'World')
-          })
+    def render_mustache(request):
+        # Precompile templates from trusted sources
+        tpl = pystache.parse('{{greeting}}, {{name}}!')
+        renderer = pystache.Renderer()
+        return renderer.render(tpl, {
+            'greeting': request.args.get('greeting', 'Hello'),
+            'name': request.args.get('name', 'World')
+        })
 
 attack_vectors:
-  - vector: "Jinja2 Code Execution"
-    payload: "{{config.__class__.__init__.__globals__['os'].popen('id').read()}}"
-    description: Execute shell commands through Jinja2 template injection
+- vector: Jinja2 Code Execution
+  payload: "{{config.__class__.__init__.__globals__['os'].popen('id').read()}}"
+  description: Execute shell commands through Jinja2 template injection
 
-  - vector: "Django Remote Code Execution"
-    payload: "{{''.__class__.__mro__[1].__subclasses__()[104].__init__.__globals__['os'].popen('id').read()}}"
-    description: Execute commands through Django template engine
+- vector: Django Remote Code Execution
+  payload: "{{''.__class__.__mro__[1].__subclasses__()[104].__init__.__globals__['os'].popen('id').read()}}"
+  description: Execute commands through Django template engine
 
-  - vector: "Information Disclosure"
-    payload: "{{config.items()}}"
-    description: Leak configuration data and secrets
+- vector: Information Disclosure
+  payload: '{{config.items()}}'
+  description: Leak configuration data and secrets
 
-  - vector: "File Read"
-    payload: "{{''.__class__.__mro__[1].__subclasses__()[40]('/etc/passwd').read()}}"
-    description: Read sensitive files from the filesystem
+- vector: File Read
+  payload: "{{''.__class__.__mro__[1].__subclasses__()[40]('/etc/passwd').read()}}"
+  description: Read sensitive files from the filesystem
 
-  - vector: "Mako Template Injection"
-    payload: "<%
-      import os
-      os.system('id')
-      %>"
-    description: Execute Python code through Mako template engine
+- vector: Mako Template Injection
+  payload: <% import os os.system('id') %>
+  description: Execute Python code through Mako template engine
 
-  - vector: "Tornado SSTI"
-    payload: "{% import os %}{{os.popen('id').read()}}"
-    description: Execute commands through Tornado template engine
+- vector: Tornado SSTI
+  payload: "{% import os %}{{os.popen('id').read()}}"
+  description: Execute commands through Tornado template engine
 
-  - vector: "ERB Ruby Injection"
-    payload: "<%= system('ls -la') %>"
-    description: Execute shell commands through Ruby ERB templates
+- vector: ERB Ruby Injection
+  payload: <%= system('ls -la') %>
+  description: Execute shell commands through Ruby ERB templates
 
-  - vector: Handlebars RCE
-    payload: "{{#with 's' as |s|}}{{#with 'e' as |e|}}{{#with 'c' as |c|}}{{#with 'r' as |r|}}{{#with 'e' as |r|}}{{#with 't' as |e|}}{{#with ' ' as |r|}}{{#with 'e' as |s|}}{{#with 'x' as |e|}}{{#with 'e' as |c|}}{{#with 'c' as |o|}}{{#with 'u' as |t|}}{{#with 't' as |e|}}{{#with 'e' as |c|}}secret{{/with}}{{/with}}{{/with}}{{/with}}{{/with}}{{/with}}{{/with}}{{/with}}{{/with}}{{/with}}{{/with}}{{/with}}{{/with}}"
-    description: Access secret variables in Handlebars context
+- vector: Handlebars RCE
+  payload: "{{#with 's' as |s|}}{{#with 'e' as |e|}}{{#with 'c' as |c|}}{{#with 'r' as |r|}}{{#with 'e' as |r|}}{{#with 't' as |e|}}{{#with ' ' as |r|}}{{#with 'e' as |s|}}{{#with 'x' as |e|}}{{#with 'e' as |c|}}{{#with 'c' as |o|}}{{#with 'u' as |t|}}{{#with 't' as |e|}}{{#with 'e' as |c|}}secret{{/with}}{{/with}}{{/with}}{{/with}}{{/with}}{{/with}}{{/with}}{{/with}}{{/with}}{{/with}}{{/with}}{{/with}}{{/with}}"
+  description: Access secret variables in Handlebars context
 
-  - vector: "Sandbox Escape"
-    payload: "{{ ''.__class__.__mro__[2].__subclasses__()[40].__init__.__globals__['sys'].modules['os'].popen('whoami').read() }}"
-    description: Break out of Jinja2 sandbox restrictions
+- vector: Sandbox Escape
+  payload: "{{ ''.__class__.__mro__[2].__subclasses__()[40].__init__.__globals__['sys'].modules['os'].popen('whoami').read() }}"
+  description: Break out of Jinja2 sandbox restrictions
 
 security_recommendations:
-  - Never render user-controlled template strings directly
-  - Use framework-provided templating functions with autoescape
-  - Precompile and load templates from trusted directories
-  - Validate and sanitize all user input before use
-  - Disable debugging mode in production
-  - Use sandboxed template environments (Jinja2 sandbox)
-  - Implement Content Security Policy headers
-  - Keep template engines updated to latest versions
-  - Avoid passing complex objects to template contexts
-  - Use whitelist-based input validation for template names
+- Never render user-controlled template strings directly
+- Use framework-provided templating functions with autoescape
+- Precompile and load templates from trusted directories
+- Validate and sanitize all user input before use
+- Disable debugging mode in production
+- Use sandboxed template environments (Jinja2 sandbox)
+- Implement Content Security Policy headers
+- Keep template engines updated to latest versions
+- Avoid passing complex objects to template contexts
+- Use whitelist-based input validation for template names
 
 llm_prompts:
   analyze: |

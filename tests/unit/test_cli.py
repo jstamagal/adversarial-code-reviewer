@@ -67,8 +67,9 @@ def test_cli_version_shows_dependencies():
 
 def test_cli_version_check_updates_newer_available():
     """Test version check with newer version available."""
-    from acr.cli import version
     from unittest.mock import patch
+
+    from acr.cli import version
 
     runner = CliRunner()
     with patch("acr.cli.version.check_for_updates", return_value="0.2.0"):
@@ -81,8 +82,9 @@ def test_cli_version_check_updates_newer_available():
 
 def test_cli_version_check_updates_latest():
     """Test version check when already on latest version."""
-    from acr.cli import version
     from unittest.mock import patch
+
+    from acr.cli import version
 
     runner = CliRunner()
     with patch("acr.cli.version.check_for_updates", return_value="0.1.0"):
@@ -94,8 +96,9 @@ def test_cli_version_check_updates_latest():
 
 def test_cli_version_check_updates_offline():
     """Test version check when offline (error handling)."""
-    from acr.cli import version
     from unittest.mock import patch
+
+    from acr.cli import version
 
     runner = CliRunner()
     with patch("acr.cli.version.check_for_updates", return_value=None):
@@ -1123,10 +1126,10 @@ def test_cli_completion_invalid_shell():
 
 def test_cli_completion_install_bash():
     """Test completion installation for bash (dry run test)."""
-    from acr.cli import completion
-    from unittest.mock import patch
-    from pathlib import Path
     import tempfile
+    from pathlib import Path
+
+    from acr.cli import completion
 
     runner = CliRunner()
 
@@ -1144,9 +1147,10 @@ def test_cli_completion_install_bash():
 
 def test_cli_completion_install_zsh():
     """Test completion installation for zsh (dry run test)."""
-    from acr.cli import completion
-    from pathlib import Path
     import tempfile
+    from pathlib import Path
+
+    from acr.cli import completion
 
     runner = CliRunner()
 
@@ -1164,9 +1168,10 @@ def test_cli_completion_install_zsh():
 
 def test_cli_completion_install_fish():
     """Test completion installation for fish (dry run test)."""
-    from acr.cli import completion
-    from pathlib import Path
     import tempfile
+    from pathlib import Path
+
+    from acr.cli import completion
 
     runner = CliRunner()
 

@@ -14,8 +14,8 @@
 
 """Entry point identification for security analysis."""
 
-from typing import List, Optional, Dict, Any
 from dataclasses import dataclass
+from typing import Any, List, Optional
 
 from acr.core.ast_parser import ASTParser
 

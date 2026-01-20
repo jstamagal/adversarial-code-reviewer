@@ -14,10 +14,9 @@
 
 """Tests for Data Flow Graph builder."""
 
-import pytest
 
-from acr.core.dfg_builder import DFGBuilder
 from acr.core.ast_parser import ASTParser
+from acr.core.dfg_builder import DFGBuilder
 
 
 class TestDFGBuilderBasics:

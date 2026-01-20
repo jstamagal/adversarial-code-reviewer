@@ -16,8 +16,8 @@
 
 import pytest
 
-from acr.llm.redaction import DataRedactor, RedactionEvent
 from acr.config.schema import RedactionConfig, RedactionPatternConfig
+from acr.llm.redaction import DataRedactor
 
 
 def test_api_key_redaction():

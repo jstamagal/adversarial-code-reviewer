@@ -14,7 +14,6 @@
 
 """Unit tests for confidence scorer."""
 
-import pytest
 
 from acr.models.confidence_scorer import ConfidenceScorer
 
@@ -315,7 +314,7 @@ class TestCalculateForExistingFinding:
 
     def test_high_confidence_kept(self):
         """Test that high confidence is kept if new confidence is lower."""
-        from acr.models.finding import Finding, FindingLocation, FindingImpact, FindingRemediation
+        from acr.models.finding import Finding, FindingImpact, FindingLocation, FindingRemediation
 
         scorer = ConfidenceScorer()
 
@@ -342,7 +341,7 @@ class TestCalculateForExistingFinding:
 
     def test_low_confidence_updated(self):
         """Test that low confidence is updated if new confidence is higher."""
-        from acr.models.finding import Finding, FindingLocation, FindingImpact, FindingRemediation
+        from acr.models.finding import Finding, FindingImpact, FindingLocation, FindingRemediation
 
         scorer = ConfidenceScorer()
 
@@ -369,7 +368,7 @@ class TestCalculateForExistingFinding:
 
     def test_equal_confidence_unchanged(self):
         """Test that equal confidence remains unchanged."""
-        from acr.models.finding import Finding, FindingLocation, FindingImpact, FindingRemediation
+        from acr.models.finding import Finding, FindingImpact, FindingLocation, FindingRemediation
 
         scorer = ConfidenceScorer()
 

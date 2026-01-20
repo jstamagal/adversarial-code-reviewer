@@ -13,174 +13,174 @@ description: |
   access, steal sensitive data, or disrupt services.
 
 references:
-  - https://owasp.org/www-project-top-ten/2017/A6_2017-Security_Misconfiguration
-  - https://cwe.mitre.org/data/definitions/2.html
-  - https://cheatsheetseries.owasp.org/cheatsheets/Security_Misconfiguration_Cheat_Sheet.html
+- https://owasp.org/www-project-top-ten/2017/A6_2017-Security_Misconfiguration
+- https://cwe.mitre.org/data/definitions/2.html
+- https://cheatsheetseries.owasp.org/cheatsheets/Security_Misconfiguration_Cheat_Sheet.html
 
 affected_languages:
-  - python
-  - javascript
-  - typescript
+- python
+- javascript
+- typescript
 
 affected_frameworks:
-  - flask
-  - django
-  - fastapi
-  - express
-  - nestjs
+- flask
+- django
+- fastapi
+- express
+- nestjs
 
 vulnerability_types:
-  - debug_mode: "Debug mode or verbose errors enabled in production"
-  - default_credentials: "Default accounts or credentials not changed"
-  - missing_security_headers: "Missing HTTP security headers (CSP, HSTS, X-Frame-Options)"
-  - insecure_cookies: "Cookies without Secure, HttpOnly, or SameSite attributes"
-  - exposed_admin: "Administrative interfaces without proper protection"
-  - directory_listing: "Directory listing enabled, exposing files"
-  - verbose_errors: "Error messages exposing stack traces or sensitive information"
-  - insecure_session: "Insecure session configuration (timeout, cookie settings)"
-  - exposed_config: "Configuration files containing secrets exposed"
-  - missing_rate_limiting: "No rate limiting on API endpoints"
-  - insecure_tls: "Weak TLS configuration (allowing SSLv3, weak ciphers)"
-  - unnecessary_features: "Unnecessary features/services enabled"
+- debug_mode: Debug mode or verbose errors enabled in production
+- default_credentials: Default accounts or credentials not changed
+- missing_security_headers: Missing HTTP security headers (CSP, HSTS, X-Frame-Options)
+- insecure_cookies: Cookies without Secure, HttpOnly, or SameSite attributes
+- exposed_admin: Administrative interfaces without proper protection
+- directory_listing: Directory listing enabled, exposing files
+- verbose_errors: Error messages exposing stack traces or sensitive information
+- insecure_session: Insecure session configuration (timeout, cookie settings)
+- exposed_config: Configuration files containing secrets exposed
+- missing_rate_limiting: No rate limiting on API endpoints
+- insecure_tls: Weak TLS configuration (allowing SSLv3, weak ciphers)
+- unnecessary_features: Unnecessary features/services enabled
 
 detection:
   static:
-    - pattern: "app\\.run\\(\\s*debug\\s*=\\s*True\\s*\\)"
-      description: Flask debug mode enabled (security risk in production)
-      confidence: high
+  - pattern: app\.run\(\s*debug\s*=\s*True\s*\)
+    description: Flask debug mode enabled (security risk in production)
+    confidence: high
 
-    - pattern: "DEBUG\\s*=\\s*True"
-      description: Django DEBUG=True in settings (security risk in production)
-      confidence: high
+  - pattern: DEBUG\s*=\s*True
+    description: Django DEBUG=True in settings (security risk in production)
+    confidence: high
 
-    - pattern: "app\\.(use|middleware)\\(\\s*express\\.static\\(.*__dirname\\)\\s*\\)"
-      description: Express serving static files from root (potential file exposure)
-      confidence: medium
+  - pattern: app\.(use|middleware)\(\s*express\.static\(.*__dirname\)\s*\)
+    description: Express serving static files from root (potential file exposure)
+    confidence: medium
 
-    - pattern: "app\\.use\\(\\s*express\\.static\\(\\)\\s*\\)"
-      description: Express static file middleware configured (check for directory listing)
-      confidence: low
+  - pattern: app\.use\(\s*express\.static\(\)\s*\)
+    description: Express static file middleware configured (check for directory listing)
+    confidence: low
 
-    - pattern: "res\\.sendFile\\(\\s*(path|__dirname)\\s*\\+\\s*req\\.params\\.\\w+\\s*\\)"
-      description: Path traversal via sendFile from user input
-      confidence: high
+  - pattern: res\.sendFile\(\s*(path|__dirname)\s*\+\s*req\.params\.\w+\s*\)
+    description: Path traversal via sendFile from user input
+    confidence: high
 
-    - pattern: "(res\\.send|res\\.json|res\\.end)\\(\\s*error\\s*\\)"
-      description: Sending raw error to response (may leak sensitive info)
-      confidence: medium
+  - pattern: (res\.send|res\.json|res\.end)\(\s*error\s*\)
+    description: Sending raw error to response (may leak sensitive info)
+    confidence: medium
 
-    - pattern: "console\\.(log|error|debug|warn)\\(\\s*error\\s*\\)"
-      description: Logging errors to console (may leak sensitive info in production)
-      confidence: low
+  - pattern: console\.(log|error|debug|warn)\(\s*error\s*\)
+    description: Logging errors to console (may leak sensitive info in production)
+    confidence: low
 
-    - pattern: "session\\.config\\[\\s*['\"]secret_key['\"]\\s*\\]\\s*=\\s*['\"]\\w{5,}['\"]"
-      description: Weak or hardcoded session secret
-      confidence: high
+  - pattern: session\.config\[\s*['"]secret_key['"]\s*\]\s*=\s*['"]\w{5,}['"]
+    description: Weak or hardcoded session secret
+    confidence: high
 
-    - pattern: "app\\.secret_key\\s*=\\s*['\"']\\w{5,}['\"']"
-      description: Weak or hardcoded Flask secret key
-      confidence: high
+  - pattern: app\.secret_key\s*=\s*['"']\w{5,}['"']
+    description: Weak or hardcoded Flask secret key
+    confidence: high
 
-    - pattern: "SECRET_KEY\\s*=\\s*['\"']\\w{5,}['\"']"
-      description: Weak or hardcoded Django secret key
-      confidence: high
+  - pattern: SECRET_KEY\s*=\s*['"']\w{5,}['"']
+    description: Weak or hardcoded Django secret key
+    confidence: high
 
-    - pattern: "res\\.cookie\\(\\s*['\"']\\w+['\"']\\s*,\\s*\\w+\\s*,\\s*\\{\\s*\\}"
-      description: Cookie set without secure options (Secure, HttpOnly, SameSite)
-      confidence: high
+  - pattern: res\.cookie\(\s*['"']\w+['"']\s*,\s*\w+\s*,\s*\{\s*\}
+    description: Cookie set without secure options (Secure, HttpOnly, SameSite)
+    confidence: high
 
-    - pattern: "response\\.set_cookie\\(\\s*['\"]\\w+['\"]\\s*,\\s*value\\s*=\\s*\\w+\\s*\\)"
-      description: Django cookie set without security flags
-      confidence: medium
+  - pattern: response\.set_cookie\(\s*['"]\w+['"]\s*,\s*value\s*=\s*\w+\s*\)
+    description: Django cookie set without security flags
+    confidence: medium
 
-    - pattern: "@app\\.route\\(\\s*['\"']admin['\"]"
-      description: Admin route defined (ensure proper authentication/authorization)
-      confidence: low
+  - pattern: "@app\\.route\\(\\s*['\"']admin['\"]"
+    description: Admin route defined (ensure proper authentication/authorization)
+    confidence: low
 
-    - pattern: "router\\.(get|post|put|delete)\\(\\s*['\"]admin"
-      description: Admin route in Express/NestJS (ensure protection)
-      confidence: low
+  - pattern: router\.(get|post|put|delete)\(\s*['"]admin
+    description: Admin route in Express/NestJS (ensure protection)
+    confidence: low
 
-    - pattern: "os\\.(environ|getenv)\\(\\s*['\"]\\w+_PASSWORD['\"]"
-      description: Reading password from environment (check if default/weak)
-      confidence: medium
+  - pattern: os\.(environ|getenv)\(\s*['"]\w+_PASSWORD['"]
+    description: Reading password from environment (check if default/weak)
+    confidence: medium
 
-    - pattern: "connect\\(\\s*host\\s*=\\s*['\"]localhost['\"]\\s*,\\s*port\\s*=\\s*3306"
-      description: Database connecting to localhost with default port (check exposure)
-      confidence: medium
+  - pattern: connect\(\s*host\s*=\s*['"]localhost['"]\s*,\s*port\s*=\s*3306
+    description: Database connecting to localhost with default port (check exposure)
+    confidence: medium
 
-    - pattern: "open\\(\\s*['\"]\\./config\\.yml['\"]\\s*\\)"
-      description: Opening config file (check if exposed via web)
-      confidence: medium
+  - pattern: open\(\s*['"]\./config\.yml['"]\s*\)
+    description: Opening config file (check if exposed via web)
+    confidence: medium
 
-    - pattern: "return\\s+jsonify\\(\\s*\\{\\s*['\"]error['\"]\\s*:\\s+str\\(\\w+\\)\\s*\\}"
-      description: Error details exposed in JSON response
-      confidence: high
+  - pattern: return\s+jsonify\(\s*\{\s*['"]error['"]\s*:\s+str\(\w+\)\s*\}
+    description: Error details exposed in JSON response
+    confidence: high
 
-    - pattern: "except\\s+\\w+\\s+as\\s+\\w+:\\s+return\\s+str\\(\\w+\\)"
-      description: Exception details leaked in response
-      confidence: high
+  - pattern: except\s+\w+\s+as\s+\w+:\s+return\s+str\(\w+\)
+    description: Exception details leaked in response
+    confidence: high
 
-    - pattern: "ALLOWED_HOSTS\\s*=\\s*\\[\\s*['\"]\\*['\"]\\s*\\]"
-      description: Django ALLOWED_HOSTS = ['*'] (allows any host)
-      confidence: high
+  - pattern: ALLOWED_HOSTS\s*=\s*\[\s*['"]\*['"]\s*\]
+    description: Django ALLOWED_HOSTS = ['*'] (allows any host)
+    confidence: high
 
-    - pattern: "CORS\\(\\s*\\*\\s*\\)"
-      description: CORS allowing all origins
-      confidence: high
+  - pattern: CORS\(\s*\*\s*\)
+    description: CORS allowing all origins
+    confidence: high
 
-    - pattern: "ssl_context\\s*=\\s*'adhoc'"
-      description: Flask using adhoc SSL (self-signed cert, not production-ready)
-      confidence: medium
+  - pattern: ssl_context\s*=\s*'adhoc'
+    description: Flask using adhoc SSL (self-signed cert, not production-ready)
+    confidence: medium
 
-    - pattern: "ssl\\.create_default_context\\(\\)"
-      description: Using default SSL context (may allow weak protocols)
-      confidence: low
+  - pattern: ssl\.create_default_context\(\)
+    description: Using default SSL context (may allow weak protocols)
+    confidence: low
 
-    - pattern: "SESSION_COOKIE_HTTPONLY\\s*=\\s*False"
-      description: Django session cookie not HttpOnly (XSS vulnerable)
-      confidence: high
+  - pattern: SESSION_COOKIE_HTTPONLY\s*=\s*False
+    description: Django session cookie not HttpOnly (XSS vulnerable)
+    confidence: high
 
-    - pattern: "SESSION_COOKIE_SECURE\\s*=\\s*False"
-      description: Django session cookie not Secure (MITM vulnerable)
-      confidence: high
+  - pattern: SESSION_COOKIE_SECURE\s*=\s*False
+    description: Django session cookie not Secure (MITM vulnerable)
+    confidence: high
 
-    - pattern: "CSRF_COOKIE_SECURE\\s*=\\s*False"
-      description: Django CSRF cookie not Secure (MITM vulnerable)
-      confidence: high
+  - pattern: CSRF_COOKIE_SECURE\s*=\s*False
+    description: Django CSRF cookie not Secure (MITM vulnerable)
+    confidence: high
 
-    - pattern: "SECURE_SSL_REDIRECT\\s*=\\s*False"
-      description: Django not forcing HTTPS (MITM vulnerable)
-      confidence: high
+  - pattern: SECURE_SSL_REDIRECT\s*=\s*False
+    description: Django not forcing HTTPS (MITM vulnerable)
+    confidence: high
 
-    - pattern: "SECURE_HSTS_SECONDS\\s*=\\s*0"
-      description: Django HSTS disabled or misconfigured
-      confidence: medium
+  - pattern: SECURE_HSTS_SECONDS\s*=\s*0
+    description: Django HSTS disabled or misconfigured
+    confidence: medium
 
-    - pattern: "app\\.use\\(\\s*helmet\\(\\s*\\{\\s*\\}\\s*\\)\\s*\\)"
-      description: Helmet configured with default settings (review security headers)
-      confidence: low
+  - pattern: app\.use\(\s*helmet\(\s*\{\s*\}\s*\)\s*\)
+    description: Helmet configured with default settings (review security headers)
+    confidence: low
 
-    - pattern: "import\\s+(flask\\.ext\\.debugtoolbar|django\\.debug)"
-      description: Debug toolbar imported (disable in production)
-      confidence: high
+  - pattern: import\s+(flask\.ext\.debugtoolbar|django\.debug)
+    description: Debug toolbar imported (disable in production)
+    confidence: high
 
-    - pattern: "DEBUG_TOOLBAR_CONFIG\\s*=\\s*\\{"
-      description: Django debug toolbar configured (disable in production)
-      confidence: high
+  - pattern: DEBUG_TOOLBAR_CONFIG\s*=\s*\{
+    description: Django debug toolbar configured (disable in production)
+    confidence: high
 
-    - pattern: "print\\(\\s*request\\."
-      description: Printing request data (may leak sensitive info to logs)
-      confidence: low
+  - pattern: print\(\s*request\.
+    description: Printing request data (may leak sensitive info to logs)
+    confidence: low
 
   data_flow:
-    - source: "(request\\.(args|form|json|params|view_args)|req\\.(params|query|body))"
-      sink: "(open|read|sendFile)\\("
-      sanitizers: "(sanitize_path|validate_path|join|abspath)"
+  - source: (request\.(args|form|json|params|view_args)|req\.(params|query|body))
+    sink: (open|read|sendFile)\(
+    sanitizers: (sanitize_path|validate_path|join|abspath)
 
-    - source: "(Exception|Error|\\w+Error)"
-      sink: "(response\\.(json|send)|res\\.(json|send)|return)"
-      sanitizers: "(str|format|logging\\.error)"
+  - source: (Exception|Error|\w+Error)
+    sink: (response\.(json|send)|res\.(json|send)|return)
+    sanitizers: (str|format|logging\.error)
 
 remediation:
   description: Review and secure all configuration settings before deployment. Use environment-specific configs, disable debug features, implement security headers, secure cookies, and ensure proper authentication/authorization on admin interfaces.
@@ -356,238 +356,238 @@ remediation:
 
 examples:
   vulnerable:
-    - |
-      # Flask debug mode in production
-      from flask import Flask
-      app = Flask(__name__)
-      app.run(debug=True, host='0.0.0.0')
+  - |
+    # Flask debug mode in production
+    from flask import Flask
+    app = Flask(__name__)
+    app.run(debug=True, host='0.0.0.0')
 
-    - |
-      # Django debug mode and insecure settings
-      DEBUG = True
-      SECRET_KEY = 'supersecret123'
-      ALLOWED_HOSTS = ['*']
-      SECURE_SSL_REDIRECT = False
+  - |
+    # Django debug mode and insecure settings
+    DEBUG = True
+    SECRET_KEY = 'supersecret123'
+    ALLOWED_HOSTS = ['*']
+    SECURE_SSL_REDIRECT = False
 
-    - |
-      # Weak secret key
-      app.secret_key = 'password'
-      # or
-      SECRET_KEY = 'my-secret-key'
+  - |
+    # Weak secret key
+    app.secret_key = 'password'
+    # or
+    SECRET_KEY = 'my-secret-key'
 
-    - |
-      # Error details exposed
-      @app.errorhandler(500)
-      def internal_error(error):
-        return str(error), 500  # Leaks stack trace
+  - |
+    # Error details exposed
+    @app.errorhandler(500)
+    def internal_error(error):
+      return str(error), 500  # Leaks stack trace
 
-    - |
-      # Express - No security headers
-      const app = express();
-      app.use(express.json());
+  - |
+    # Express - No security headers
+    const app = express();
+    app.use(express.json());
 
-    - |
-      // Express - Insecure cookie
-      res.cookie('token', token, { maxAge: 900000 });
+  - |
+    // Express - Insecure cookie
+    res.cookie('token', token, { maxAge: 900000 });
 
-    - |
-      // Express - Error details leaked
-      app.use((err, req, res, next) => {
-        res.status(500).json({ error: err.message, stack: err.stack });
-      });
+  - |
+    // Express - Error details leaked
+    app.use((err, req, res, next) => {
+      res.status(500).json({ error: err.message, stack: err.stack });
+    });
 
-    - |
-      # Path traversal via sendFile
-      @app.route('/files/<path:filename>')
-      def serve_file(filename):
-        return send_file(filename)  # VULNERABLE: No path validation
+  - |
+    # Path traversal via sendFile
+    @app.route('/files/<path:filename>')
+    def serve_file(filename):
+      return send_file(filename)  # VULNERABLE: No path validation
 
-    - |
-      # Insecure session configuration
-      app.config['SESSION_COOKIE_HTTPONLY'] = False
-      app.config['SESSION_COOKIE_SECURE'] = False
+  - |
+    # Insecure session configuration
+    app.config['SESSION_COOKIE_HTTPONLY'] = False
+    app.config['SESSION_COOKIE_SECURE'] = False
 
-    - |
-      # Verbose logging in production
-      logging.basicConfig(level=logging.DEBUG)
-      logger.debug(f"User data: {user_data}")
+  - |
+    # Verbose logging in production
+    logging.basicConfig(level=logging.DEBUG)
+    logger.debug(f"User data: {user_data}")
 
-    - |
-      # Admin endpoint without protection
-      @app.route('/admin')
-      def admin_panel():
-        return render_template('admin.html')
+  - |
+    # Admin endpoint without protection
+    @app.route('/admin')
+    def admin_panel():
+      return render_template('admin.html')
 
-    - |
-      # Database with default credentials
-      DATABASES = {
-          'default': {
-              'ENGINE': 'django.db.backends.postgresql',
-              'NAME': 'mydb',
-              'USER': 'postgres',  # Default username
-              'PASSWORD': 'password',  # Default password
-              'HOST': 'localhost',
-              'PORT': '5432',
-          }
-      }
+  - |
+    # Database with default credentials
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.postgresql',
+            'NAME': 'mydb',
+            'USER': 'postgres',  # Default username
+            'PASSWORD': 'password',  # Default password
+            'HOST': 'localhost',
+            'PORT': '5432',
+        }
+    }
 
-    - |
-      # CORS allowing all origins
-      from flask_cors import CORS
-      CORS(app, origins='*')
+  - |
+    # CORS allowing all origins
+    from flask_cors import CORS
+    CORS(app, origins='*')
 
   secure:
-    - |
-      # SECURE: Flask production config
-      import os
-      from flask import Flask
+  - |
+    # SECURE: Flask production config
+    import os
+    from flask import Flask
 
-      app = Flask(__name__)
-      app.config['DEBUG'] = os.environ.get('DEBUG') == 'False'
-      app.secret_key = os.environ['SECRET_KEY']
-      app.config['SESSION_COOKIE_HTTPONLY'] = True
-      app.config['SESSION_COOKIE_SECURE'] = True
+    app = Flask(__name__)
+    app.config['DEBUG'] = os.environ.get('DEBUG') == 'False'
+    app.secret_key = os.environ['SECRET_KEY']
+    app.config['SESSION_COOKIE_HTTPONLY'] = True
+    app.config['SESSION_COOKIE_SECURE'] = True
 
-    - |
-      # SECURE: Django production settings
-      import os
+  - |
+    # SECURE: Django production settings
+    import os
 
-      DEBUG = os.environ.get('DJANGO_DEBUG') == 'False'
-      SECRET_KEY = os.environ['SECRET_KEY']
-      ALLOWED_HOSTS = ['example.com']
+    DEBUG = os.environ.get('DJANGO_DEBUG') == 'False'
+    SECRET_KEY = os.environ['SECRET_KEY']
+    ALLOWED_HOSTS = ['example.com']
 
-      # Secure cookies and HTTPS
-      SESSION_COOKIE_HTTPONLY = True
-      SESSION_COOKIE_SECURE = True
-      CSRF_COOKIE_SECURE = True
-      SECURE_SSL_REDIRECT = True
-      SECURE_HSTS_SECONDS = 31536000
-      SECURE_HSTS_INCLUDE_SUBDOMAINS = True
+    # Secure cookies and HTTPS
+    SESSION_COOKIE_HTTPONLY = True
+    SESSION_COOKIE_SECURE = True
+    CSRF_COOKIE_SECURE = True
+    SECURE_SSL_REDIRECT = True
+    SECURE_HSTS_SECONDS = 31536000
+    SECURE_HSTS_INCLUDE_SUBDOMAINS = True
 
-      # Security headers
-      SECURE_BROWSER_XSS_FILTER = True
-      SECURE_CONTENT_TYPE_NOSNIFF = True
-      X_FRAME_OPTIONS = 'DENY'
+    # Security headers
+    SECURE_BROWSER_XSS_FILTER = True
+    SECURE_CONTENT_TYPE_NOSNIFF = True
+    X_FRAME_OPTIONS = 'DENY'
 
-    - |
-      # SECURE: Secure error handling
-      @app.errorhandler(500)
-      def internal_error(error):
-        app.logger.error(f"Internal error: {error}")
-        return jsonify({'error': 'Internal server error'}), 500
+  - |
+    # SECURE: Secure error handling
+    @app.errorhandler(500)
+    def internal_error(error):
+      app.logger.error(f"Internal error: {error}")
+      return jsonify({'error': 'Internal server error'}), 500
 
-    - |
-      # SECURE: Express with security headers
-      const express = require('express');
-      const helmet = require('helmet');
-      const app = express();
+  - |
+    # SECURE: Express with security headers
+    const express = require('express');
+    const helmet = require('helmet');
+    const app = express();
 
-      app.use(helmet());
-      app.use(express.json());
+    app.use(helmet());
+    app.use(express.json());
 
-    - |
-      // SECURE: Secure cookie in Express
-      res.cookie('token', token, {
-        httpOnly: true,
-        secure: true,
-        sameSite: 'strict',
-        maxAge: 900000,
-        path: '/'
-      });
+  - |
+    // SECURE: Secure cookie in Express
+    res.cookie('token', token, {
+      httpOnly: true,
+      secure: true,
+      sameSite: 'strict',
+      maxAge: 900000,
+      path: '/'
+    });
 
-    - |
-      // SECURE: Generic error handler
-      app.use((err, req, res, next) => {
-        console.error(err.stack);
-        res.status(500).json({ error: 'Internal server error' });
-      });
+  - |
+    // SECURE: Generic error handler
+    app.use((err, req, res, next) => {
+      console.error(err.stack);
+      res.status(500).json({ error: 'Internal server error' });
+    });
 
-    - |
-      # SECURE: Path validation
-      import os
-      from flask import send_file
+  - |
+    # SECURE: Path validation
+    import os
+    from flask import send_file
 
-      @app.route('/files/<path:filename>')
-      def serve_file(filename):
-        safe_path = os.path.join('/var/www/files', filename)
-        if not os.path.abspath(safe_path).startswith('/var/www/files'):
-          return jsonify({'error': 'Invalid path'}), 400
-        return send_file(safe_path)
+    @app.route('/files/<path:filename>')
+    def serve_file(filename):
+      safe_path = os.path.join('/var/www/files', filename)
+      if not os.path.abspath(safe_path).startswith('/var/www/files'):
+        return jsonify({'error': 'Invalid path'}), 400
+      return send_file(safe_path)
 
-    - |
-      # SECURE: Admin endpoint with protection
-      @app.route('/admin')
-      @login_required
-      @admin_required
-      def admin_panel():
-        return render_template('admin.html')
+  - |
+    # SECURE: Admin endpoint with protection
+    @app.route('/admin')
+    @login_required
+    @admin_required
+    def admin_panel():
+      return render_template('admin.html')
 
-    - |
-      # SECURE: Environment-based config
-      DATABASES = {
-          'default': {
-              'ENGINE': 'django.db.backends.postgresql',
-              'NAME': os.environ.get('DB_NAME'),
-              'USER': os.environ.get('DB_USER'),
-              'PASSWORD': os.environ.get('DB_PASSWORD'),
-              'HOST': os.environ.get('DB_HOST'),
-              'PORT': os.environ.get('DB_PORT', '5432'),
-          }
-      }
+  - |
+    # SECURE: Environment-based config
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.postgresql',
+            'NAME': os.environ.get('DB_NAME'),
+            'USER': os.environ.get('DB_USER'),
+            'PASSWORD': os.environ.get('DB_PASSWORD'),
+            'HOST': os.environ.get('DB_HOST'),
+            'PORT': os.environ.get('DB_PORT', '5432'),
+        }
+    }
 
-    - |
-      # SECURE: CORS restrictions
-      from flask_cors import CORS
+  - |
+    # SECURE: CORS restrictions
+    from flask_cors import CORS
 
-      CORS(app, origins=[
-          'https://example.com',
-          'https://www.example.com'
-      ], supports_credentials=True)
+    CORS(app, origins=[
+        'https://example.com',
+        'https://www.example.com'
+    ], supports_credentials=True)
 
 attack_vectors:
-  - vector: "Debug Mode Information Disclosure"
-    payload: "Trigger error in production to see stack traces, database queries, and configuration details"
-    description: "When debug mode is enabled in production, errors expose sensitive information including stack traces, environment variables, database queries, and file paths. Attackers can use this information to craft more targeted attacks."
+- vector: Debug Mode Information Disclosure
+  payload: Trigger error in production to see stack traces, database queries, and configuration details
+  description: When debug mode is enabled in production, errors expose sensitive information including stack traces, environment variables, database queries, and file paths. Attackers can use this information to craft more targeted attacks.
 
-  - vector: "Insecure Cookie Theft"
-    payload: "Steal cookies via XSS when HttpOnly/Secure flags are missing"
-    description: "Cookies without Secure flag can be intercepted over HTTP. Cookies without HttpOnly flag can be stolen via XSS. Combined, this allows session hijacking and account takeover."
+- vector: Insecure Cookie Theft
+  payload: Steal cookies via XSS when HttpOnly/Secure flags are missing
+  description: Cookies without Secure flag can be intercepted over HTTP. Cookies without HttpOnly flag can be stolen via XSS. Combined, this allows session hijacking and account takeover.
 
-  - vector: "Missing Security Headers"
-    payload: "Clickjacking, MIME type sniffing, cross-site scripting via missing headers"
-    description: "Missing security headers (CSP, HSTS, X-Frame-Options, X-Content-Type-Options) allow clickjacking, MIME type confusion, XSS attacks, and other browser-based vulnerabilities."
+- vector: Missing Security Headers
+  payload: Clickjacking, MIME type sniffing, cross-site scripting via missing headers
+  description: Missing security headers (CSP, HSTS, X-Frame-Options, X-Content-Type-Options) allow clickjacking, MIME type confusion, XSS attacks, and other browser-based vulnerabilities.
 
-  - vector: "Default Credential Authentication"
-    payload: "Login with default credentials (admin/admin, admin/password, root/toor)"
-    description: "Default accounts with unchanged credentials are common. Attackers can enumerate default usernames/passwords from documentation or standard defaults to gain unauthorized access."
+- vector: Default Credential Authentication
+  payload: Login with default credentials (admin/admin, admin/password, root/toor)
+  description: Default accounts with unchanged credentials are common. Attackers can enumerate default usernames/passwords from documentation or standard defaults to gain unauthorized access.
 
-  - vector: "Directory Traversal via sendFile"
-    payload: "GET /files/../../../etc/passwd or GET /files/../../../config/secrets.json"
-    description: "Path traversal vulnerabilities in file serving endpoints allow attackers to read arbitrary files from the server's filesystem, exposing configuration files, secrets, and source code."
+- vector: Directory Traversal via sendFile
+  payload: GET /files/../../../etc/passwd or GET /files/../../../config/secrets.json
+  description: Path traversal vulnerabilities in file serving endpoints allow attackers to read arbitrary files from the server's filesystem, exposing configuration files, secrets, and source code.
 
-  - vector: "Verbose Error Message Information Leakage"
-    payload: "Trigger various error types to extract database schema, file paths, API keys"
-    description: "Detailed error messages expose implementation details including database queries, stack traces, file paths, and potentially API keys or secrets. This information helps attackers understand system internals."
+- vector: Verbose Error Message Information Leakage
+  payload: Trigger various error types to extract database schema, file paths, API keys
+  description: Detailed error messages expose implementation details including database queries, stack traces, file paths, and potentially API keys or secrets. This information helps attackers understand system internals.
 
-  - vector: "Weak Session Secret"
-    payload: "Forge session cookies or JWT tokens using weak or predictable secret"
-    description: "Weak or hardcoded session secrets allow attackers to forge session cookies, JWT tokens, or other authentication tokens, leading to complete account takeover."
+- vector: Weak Session Secret
+  payload: Forge session cookies or JWT tokens using weak or predictable secret
+  description: Weak or hardcoded session secrets allow attackers to forge session cookies, JWT tokens, or other authentication tokens, leading to complete account takeover.
 
-  - vector: "CORS Misconfiguration Exploitation"
-    payload: "Cross-origin request from malicious.com to steal user data or perform actions"
-    description: "Permissive CORS (origin='*') allows malicious websites to make authenticated requests on behalf of users, leading to CSRF attacks, data exfiltration, or unauthorized actions."
+- vector: CORS Misconfiguration Exploitation
+  payload: Cross-origin request from malicious.com to steal user data or perform actions
+  description: Permissive CORS (origin='*') allows malicious websites to make authenticated requests on behalf of users, leading to CSRF attacks, data exfiltration, or unauthorized actions.
 
-  - vector: "Admin Interface Exposure"
-    payload: "Access /admin, /dashboard, /api/admin without authentication"
-    description: "Unprotected admin interfaces allow attackers to access sensitive functionality, modify system settings, or compromise user accounts without authentication."
+- vector: Admin Interface Exposure
+  payload: Access /admin, /dashboard, /api/admin without authentication
+  description: Unprotected admin interfaces allow attackers to access sensitive functionality, modify system settings, or compromise user accounts without authentication.
 
-  - vector: "Database with Default Credentials"
-    payload: "Connect to database with default postgres/root credentials"
-    description: "Databases configured with default usernames and passwords are easily compromised, allowing direct database access, data exfiltration, or privilege escalation."
+- vector: Database with Default Credentials
+  payload: Connect to database with default postgres/root credentials
+  description: Databases configured with default usernames and passwords are easily compromised, allowing direct database access, data exfiltration, or privilege escalation.
 
-  - vector: "Insecure SSL/TLS Configuration"
-    payload: "Downgrade connection to SSLv3 or use weak ciphers"
-    description: "Weak TLS configuration allows protocol downgrade attacks (POODLE, BEAST), man-in-the-middle attacks, and interception of encrypted traffic."
+- vector: Insecure SSL/TLS Configuration
+  payload: Downgrade connection to SSLv3 or use weak ciphers
+  description: Weak TLS configuration allows protocol downgrade attacks (POODLE, BEAST), man-in-the-middle attacks, and interception of encrypted traffic.
 
 llm_prompts:
   analyze: |

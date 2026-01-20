@@ -14,9 +14,8 @@
 
 """Tests for error recovery integration across codebase."""
 
-import pytest
-from acr.utils.degradation import get_tracker, DegradationReason, DegradationLevel
 from acr.patterns.matcher import PatternMatcher
+from acr.utils.degradation import DegradationLevel, DegradationReason, get_tracker
 
 
 class TestErrorRecoveryIntegration:
@@ -30,7 +29,7 @@ class TestErrorRecoveryIntegration:
 
     def test_pattern_matcher_safe_iterate_continues_on_error(self):
         """Test that pattern matcher continues on individual pattern failures."""
-        from acr.patterns.schema import Pattern, StaticPatternTemplate, PatternRemediation
+        from acr.patterns.schema import Pattern, PatternRemediation, StaticPatternTemplate
 
         tracker = get_tracker()
         tracker.events.clear()

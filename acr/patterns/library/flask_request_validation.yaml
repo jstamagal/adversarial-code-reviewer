@@ -11,58 +11,58 @@ description: |
   and type-checked before processing.
 
 references:
-  - https://owasp.org/www-community/attacks/Input_Validation
-  - https://cwe.mitre.org/data/definitions/20.html
-  - https://flask.palletsprojects.com/en/2.3.x/security/
+- https://owasp.org/www-community/attacks/Input_Validation
+- https://cwe.mitre.org/data/definitions/20.html
+- https://flask.palletsprojects.com/en/2.3.x/security/
 
 affected_languages:
-  - python
+- python
 
 affected_frameworks:
-  - flask
+- flask
 
 vulnerability_types:
-  - Missing request data validation
-  - Incomplete input sanitization
-  - Type confusion attacks
-  - Mass assignment vulnerabilities
+- Missing request data validation
+- Incomplete input sanitization
+- Type confusion attacks
+- Mass assignment vulnerabilities
 
 detection:
   static:
-    - pattern: "request\\.(json|form|args|values|data|files)\\[.*?\\][^\\s]*[^\\s]*[^\\s]*[^\\s]*(?=;|$|\\n)"
-      description: Accessing request data without validation
-      confidence: medium
-      requires_language: [python]
-      requires_framework: [flask]
+  - pattern: request\.(json|form|args|values|data|files)\[.*?\][^\s]*[^\s]*[^\s]*[^\s]*(?=;|$|\n)
+    description: Accessing request data without validation
+    confidence: medium
+    requires_language: [python]
+    requires_framework: [flask]
 
-    - pattern: "request\\.(json|form|args|values|data)\\.get\\(['\"].*?['\"\\)].*?(?!,\\s*validate|validate\\s*\\(|sanitize|clean|check)"
-      description: Using request data without validation checks
-      confidence: medium
-      requires_language: [python]
-      requires_framework: [flask]
+  - pattern: request\.(json|form|args|values|data)\.get\(['"].*?['"\)].*?(?!,\s*validate|validate\s*\(|sanitize|clean|check)
+    description: Using request data without validation checks
+    confidence: medium
+    requires_language: [python]
+    requires_framework: [flask]
 
-    - pattern: "def\\s+\\w+\\([^)]*request[^)]*\\)[\\s\\S]*?(?!.*validate|.*check|.*sanitize|.*isinstance)"
-      description: Function accepting request data without type checking
-      confidence: low
-      requires_language: [python]
-      requires_framework: [flask]
+  - pattern: def\s+\w+\([^)]*request[^)]*\)[\s\S]*?(?!.*validate|.*check|.*sanitize|.*isinstance)
+    description: Function accepting request data without type checking
+    confidence: low
+    requires_language: [python]
+    requires_framework: [flask]
 
-    - pattern: "json\\.loads\\(request\\.data\\)"
-      description: Parsing JSON from request without validation
-      confidence: high
-      requires_language: [python]
-      requires_framework: [flask]
+  - pattern: json\.loads\(request\.data\)
+    description: Parsing JSON from request without validation
+    confidence: high
+    requires_language: [python]
+    requires_framework: [flask]
 
-    - pattern: "request\\.args\\.get\\(\\).*?(?=\\))"
-      description: Getting query parameters without type checking
-      confidence: low
-      requires_language: [python]
-      requires_framework: [flask]
+  - pattern: request\.args\.get\(\).*?(?=\))
+    description: Getting query parameters without type checking
+    confidence: low
+    requires_language: [python]
+    requires_framework: [flask]
 
   data_flow:
-    - source: "request\\.(json|form|args|values|data|files)"
-      sink: "(execute|query|eval|render|write|save|pickle|load|open)"
-      sanitizers: "(validate|sanitize|check|clean|filter|type|isinstance|schema|parse)"
+  - source: request\.(json|form|args|values|data|files)
+    sink: (execute|query|eval|render|write|save|pickle|load|open)
+    sanitizers: (validate|sanitize|check|clean|filter|type|isinstance|schema|parse)
 
 remediation:
   description: Validate all request data before processing
@@ -158,134 +158,134 @@ remediation:
 
 examples:
   vulnerable:
-    - |
-      @app.route('/api/user')
-      def get_user():
-          user_id = request.args.get('id')  # No validation
-          user = db.query(f"SELECT * FROM users WHERE id = {user_id}")
-          return jsonify(user)
+  - |
+    @app.route('/api/user')
+    def get_user():
+        user_id = request.args.get('id')  # No validation
+        user = db.query(f"SELECT * FROM users WHERE id = {user_id}")
+        return jsonify(user)
 
-    - |
-      @app.route('/api/upload')
-      def upload_file():
-          filename = request.form['filename']  # No validation
-          content = request.files['file']
-          content.save(f'/uploads/{filename}')
-          return 'File uploaded'
+  - |
+    @app.route('/api/upload')
+    def upload_file():
+        filename = request.form['filename']  # No validation
+        content = request.files['file']
+        content.save(f'/uploads/{filename}')
+        return 'File uploaded'
 
-    - |
-      @app.route('/api/config')
-      def update_config():
-          config = request.json  # No validation
-          for key, value in config.items():
-              app.config[key] = value
-          return 'Config updated'
+  - |
+    @app.route('/api/config')
+    def update_config():
+        config = request.json  # No validation
+        for key, value in config.items():
+            app.config[key] = value
+        return 'Config updated'
 
-    - |
-      @app.route('/api/search')
-      def search():
-          query = request.args.get('q')
-          if not query:
-              return 'No query'
-          return search_in_db(query)
+  - |
+    @app.route('/api/search')
+    def search():
+        query = request.args.get('q')
+        if not query:
+            return 'No query'
+        return search_in_db(query)
 
   secure:
-    - |
-      from pydantic import BaseModel, Field, validator
+  - |
+    from pydantic import BaseModel, Field, validator
 
-      class UserIdQuery(BaseModel):
-          id: int = Field(..., gt=0)
+    class UserIdQuery(BaseModel):
+        id: int = Field(..., gt=0)
 
-      @app.route('/api/user')
-      def get_user():
-          try:
-              params = UserIdQuery(**request.args.to_dict())
-          except ValueError as e:
-              return jsonify({'error': str(e)}), 400
+    @app.route('/api/user')
+    def get_user():
+        try:
+            params = UserIdQuery(**request.args.to_dict())
+        except ValueError as e:
+            return jsonify({'error': str(e)}), 400
 
-          user = db.execute("SELECT * FROM users WHERE id = %s", (params.id,))
-          return jsonify(user)
+        user = db.execute("SELECT * FROM users WHERE id = %s", (params.id,))
+        return jsonify(user)
 
-    - |
-      import os
-      import re
+  - |
+    import os
+    import re
 
-      @app.route('/api/upload')
-      def upload_file():
-          filename = request.form.get('filename', '').strip()
-          if not filename or '..' in filename or filename.startswith('/'):
-              return jsonify({'error': 'Invalid filename'}), 400
-          if not re.match(r'^[\w\-. ]+$', filename):
-              return jsonify({'error': 'Invalid characters'}), 400
+    @app.route('/api/upload')
+    def upload_file():
+        filename = request.form.get('filename', '').strip()
+        if not filename or '..' in filename or filename.startswith('/'):
+            return jsonify({'error': 'Invalid filename'}), 400
+        if not re.match(r'^[\w\-. ]+$', filename):
+            return jsonify({'error': 'Invalid characters'}), 400
 
-          content = request.files['file']
-          safe_filename = f"/uploads/{os.path.basename(filename)}"
-          content.save(safe_filename)
-          return 'File uploaded'
+        content = request.files['file']
+        safe_filename = f"/uploads/{os.path.basename(filename)}"
+        content.save(safe_filename)
+        return 'File uploaded'
 
-    - |
-      from pydantic import BaseModel
+  - |
+    from pydantic import BaseModel
 
-      ALLOWED_CONFIG_KEYS = {'debug', 'testing', 'secret_key'}
+    ALLOWED_CONFIG_KEYS = {'debug', 'testing', 'secret_key'}
 
-      class ConfigUpdate(BaseModel):
-          debug: bool = False
-          testing: bool = False
-          secret_key: str = None
+    class ConfigUpdate(BaseModel):
+        debug: bool = False
+        testing: bool = False
+        secret_key: str = None
 
-      @app.route('/api/config')
-      def update_config():
-          try:
-              config = ConfigUpdate(**request.json)
-          except ValueError as e:
-              return jsonify({'error': str(e)}), 400
+    @app.route('/api/config')
+    def update_config():
+        try:
+            config = ConfigUpdate(**request.json)
+        except ValueError as e:
+            return jsonify({'error': str(e)}), 400
 
-          for key, value in config.dict(exclude_unset=True).items():
-              if key not in ALLOWED_CONFIG_KEYS:
-                  continue
-              app.config[key] = value
-          return 'Config updated'
+        for key, value in config.dict(exclude_unset=True).items():
+            if key not in ALLOWED_CONFIG_KEYS:
+                continue
+            app.config[key] = value
+        return 'Config updated'
 
-    - |
-      @app.route('/api/search')
-      def search():
-          query = request.args.get('q', '').strip()
-          if not query or len(query) < 1 or len(query) > 100:
-              return jsonify({'error': 'Invalid query'}), 400
+  - |
+    @app.route('/api/search')
+    def search():
+        query = request.args.get('q', '').strip()
+        if not query or len(query) < 1 or len(query) > 100:
+            return jsonify({'error': 'Invalid query'}), 400
 
-          return search_in_db(query)
+        return search_in_db(query)
 
 attack_vectors:
-  - vector: "SQL Injection via Unvalidated Input"
-    description: Bypass validation to inject SQL via request parameters
-    impact: Can read/modify/delete database data, authentication bypass
+- vector: SQL Injection via Unvalidated Input
+  description: Bypass validation to inject SQL via request parameters
+  impact: Can read/modify/delete database data, authentication bypass
 
-  - vector: "Path Traversal via Unvalidated Filename"
-    description: Include path traversal characters in filename to access arbitrary files
-    impact: Can read/write arbitrary files on server
+- vector: Path Traversal via Unvalidated Filename
+  description: Include path traversal characters in filename to access arbitrary files
+  impact: Can read/write arbitrary files on server
 
-  - vector: "Mass Assignment via Unvalidated JSON"
-    description: Set unexpected fields by including them in request JSON
-    impact: Can escalate privileges, modify protected fields
+- vector: Mass Assignment via Unvalidated JSON
+  description: Set unexpected fields by including them in request JSON
+  impact: Can escalate privileges, modify protected fields
 
-  - vector: "XSS via Unvalidated Output"
-    description: Inject malicious scripts via unvalidated input
-    impact: Can steal cookies, session tokens, execute JavaScript
+- vector: XSS via Unvalidated Output
+  description: Inject malicious scripts via unvalidated input
+  impact: Can steal cookies, session tokens, execute JavaScript
 
-  - vector: "Type Confusion via Unvalidated Data"
-    description: Exploit type mismatches to trigger unexpected behavior
-    impact: Can bypass access controls, cause denial of service
+- vector: Type Confusion via Unvalidated Data
+  description: Exploit type mismatches to trigger unexpected behavior
+  impact: Can bypass access controls, cause denial of service
 
 security_recommendations:
-  - Validate all request data with schemas (Marshmallow, Pydantic)
-  - Use type hints and validate types match
-  - Sanitize string inputs (escape, remove dangerous characters)
-  - Validate numeric ranges (min/max values)
-  - Use allow-list for permitted fields/parameters
-  - Reject rather than sanitize dangerous inputs
-  - Use parameterized queries for database access
-  - Validate file uploads (type, size, name)
-  - Use CSRF protection for state-changing operations
+- Validate all request data with schemas (Marshmallow, Pydantic)
+- Use type hints and validate types match
+- Sanitize string inputs (escape, remove dangerous characters)
+- Validate numeric ranges (min/max values)
+- Use allow-list for permitted fields/parameters
+- Reject rather than sanitize dangerous inputs
+- Use parameterized queries for database access
+- Validate file uploads (type, size, name)
+- Use CSRF protection for state-changing operations
 
 llm_prompts:
   analyze: |

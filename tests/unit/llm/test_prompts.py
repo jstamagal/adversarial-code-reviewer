@@ -14,7 +14,6 @@
 
 """Tests for prompt templates."""
 
-import pytest
 
 from acr.llm.prompts import PromptTemplates
 

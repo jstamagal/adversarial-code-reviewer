@@ -10,50 +10,50 @@ description: |
   allowing attackers to access files outside the intended directory (e.g., /etc/passwd, configuration files).
 
 references:
-  - https://owasp.org/www-community/attacks/Path_Traversal
-  - https://cwe.mitre.org/data/definitions/22.html
+- https://owasp.org/www-community/attacks/Path_Traversal
+- https://cwe.mitre.org/data/definitions/22.html
 
 affected_languages:
-  - python
-  - javascript
-  - ruby
-  - php
-  - java
+- python
+- javascript
+- ruby
+- php
+- java
 
 affected_frameworks:
-  - flask
-  - django
-  - fastapi
-  - express
+- flask
+- django
+- fastapi
+- express
 
 detection:
   static:
-    - pattern: "open\\(.*request\\..*\\)"
-      description: open() function with user input
-      confidence: high
+  - pattern: open\(.*request\..*\)
+    description: open() function with user input
+    confidence: high
 
-    - pattern: "file\\(.*request\\..*\\)"
-      description: file() function with user input
-      confidence: high
+  - pattern: file\(.*request\..*\)
+    description: file() function with user input
+    confidence: high
 
-    - pattern: "send_file\\(.*request\\..*\\)"
-      description: send_file() with user input
-      confidence: high
+  - pattern: send_file\(.*request\..*\)
+    description: send_file() with user input
+    confidence: high
 
-    - pattern: "read\\(.*request\\..*\\)"
-      description: file read operations with user input
-      confidence: high
+  - pattern: read\(.*request\..*\)
+    description: file read operations with user input
+    confidence: high
 
-    - pattern: "fs\\.readFile\\(.*req\\..*\\)"
-      description: Node.js fs.readFile with user input
-      confidence: high
-      requires_language: [javascript, typescript]
+  - pattern: fs\.readFile\(.*req\..*\)
+    description: Node.js fs.readFile with user input
+    confidence: high
+    requires_language: [javascript, typescript]
 
   data_flow:
-    - source: "request.(json|form|args|values|headers|cookies|body|params|query)"
-      sink: "(open|file|send_file|read|readFile|writeFile|unlink|rmdir)"
-      sanitizers:
-        - "(os\\.path\\.basename|sanitize|validate|clean)"
+  - source: request.(json|form|args|values|headers|cookies|body|params|query)
+    sink: (open|file|send_file|read|readFile|writeFile|unlink|rmdir)
+    sanitizers:
+    - (os\.path\.basename|sanitize|validate|clean)
 
 remediation:
   description: Validate and sanitize file paths, use safe path joining
@@ -96,108 +96,108 @@ remediation:
 
 examples:
   vulnerable:
-    - |
-      @app.route('/download')
-      def download():
-          filename = request.args.get('file')
-          return send_file(filename)
+  - |
+    @app.route('/download')
+    def download():
+        filename = request.args.get('file')
+        return send_file(filename)
 
-    - |
-      @app.route('/logs')
-      def view_logs():
-          log_file = request.args.get('date')
-          return send_file(f'/var/log/app/{log_file}.log')
+  - |
+    @app.route('/logs')
+    def view_logs():
+        log_file = request.args.get('date')
+        return send_file(f'/var/log/app/{log_file}.log')
 
-    - |
-      @app.route('/avatar')
-      def get_avatar():
-          username = request.args.get('user')
-          with open(f'/avatars/{username}.png', 'rb') as f:
-              return f.read()
+  - |
+    @app.route('/avatar')
+    def get_avatar():
+        username = request.args.get('user')
+        with open(f'/avatars/{username}.png', 'rb') as f:
+            return f.read()
 
-    - |
-      @app.route('/config')
-      def get_config():
-          config_name = request.args.get('config')
-          return send_file(f'/etc/config/{config_name}')
+  - |
+    @app.route('/config')
+    def get_config():
+        config_name = request.args.get('config')
+        return send_file(f'/etc/config/{config_name}')
 
   secure:
-    - |
-      import os
+  - |
+    import os
 
-      @app.route('/download')
-      def download():
-          filename = request.args.get('file')
-          safe_filename = os.path.basename(filename)
-          safe_path = os.path.join('/files', safe_filename)
+    @app.route('/download')
+    def download():
+        filename = request.args.get('file')
+        safe_filename = os.path.basename(filename)
+        safe_path = os.path.join('/files', safe_filename)
 
-          if not os.path.abspath(safe_path).startswith('/files'):
-              return "Access denied", 403
+        if not os.path.abspath(safe_path).startswith('/files'):
+            return "Access denied", 403
 
-          return send_file(safe_path)
+        return send_file(safe_path)
 
-    - |
-      import re
-      from datetime import datetime
+  - |
+    import re
+    from datetime import datetime
 
-      @app.route('/logs')
-      def view_logs():
-          log_file = request.args.get('date')
-          # Validate date format YYYY-MM-DD
-          if not re.match(r'^\d{4}-\d{2}-\d{2}$', log_file):
-              return "Invalid date", 400
+    @app.route('/logs')
+    def view_logs():
+        log_file = request.args.get('date')
+        # Validate date format YYYY-MM-DD
+        if not re.match(r'^\d{4}-\d{2}-\d{2}$', log_file):
+            return "Invalid date", 400
 
-          safe_path = os.path.join('/var/log/app', f'{log_file}.log')
-          return send_file(safe_path)
+        safe_path = os.path.join('/var/log/app', f'{log_file}.log')
+        return send_file(safe_path)
 
-    - |
-      ALLOWED_USERS = ['alice', 'bob', 'charlie']
+  - |
+    ALLOWED_USERS = ['alice', 'bob', 'charlie']
 
-      @app.route('/avatar')
-      def get_avatar():
-          username = request.args.get('user')
-          if username not in ALLOWED_USERS:
-              return "User not found", 404
+    @app.route('/avatar')
+    def get_avatar():
+        username = request.args.get('user')
+        if username not in ALLOWED_USERS:
+            return "User not found", 404
 
-          with open(f'/avatars/{username}.png', 'rb') as f:
-              return f.read()
+        with open(f'/avatars/{username}.png', 'rb') as f:
+            return f.read()
 
 attack_vectors:
-  - vector: "Simple Path Traversal"
-    payload: "../../../etc/passwd"
-    description: Access parent directories using ../"
+- vector: Simple Path Traversal
+  payload: ../../../etc/passwd
+  description: Access parent directories using ../"
 
-  - vector: "Absolute Path Traversal"
-    payload: "/etc/passwd"
-    description: Use absolute path to bypass directory restrictions
+- vector: Absolute Path Traversal
+  payload: /etc/passwd
+  description: Use absolute path to bypass directory restrictions
 
-  - vector: "URL-Encoded Path Traversal"
-    payload: "%2e%2e%2fetc%2fpasswd"
-    description: Use URL encoding to bypass filters
+- vector: URL-Encoded Path Traversal
+  payload: '%2e%2e%2fetc%2fpasswd'
+  description: Use URL encoding to bypass filters
 
-  - vector: "Double Encoding"
-    payload: "%252e%252e%252fetc%252fpasswd"
-    description: Double URL encode to bypass some filters
+- vector: Double Encoding
+  payload: '%252e%252e%252fetc%252fpasswd'
+  description: Double URL encode to bypass some filters
 
-  - vector: "Null Byte Injection"
-    payload: "file.txt%00.txt"
-    description: Use null byte to bypass file extension checks (legacy)
+- vector: Null Byte Injection
+  payload: file.txt%00.txt
+  description: Use null byte to bypass file extension checks (legacy)
 
-  - vector: "Unicode/UTF-8 Encoding"
-    payload: "..%c0%af..%c0%afetc/passwd"
-    description: Use Unicode encoding to bypass filters
+- vector: Unicode/UTF-8 Encoding
+  payload: ..%c0%af..%c0%afetc/passwd
+  description: Use Unicode encoding to bypass filters
 
-  - vector: "Path Traversal with Wrappers"
-    payload: "php://filter/convert.base64-encode/resource=index.php"
-    description: Use PHP wrapper to read files (PHP-specific)
+- vector: Path Traversal with Wrappers
+  payload: php://filter/convert.base64-encode/resource=index.php
+  description: Use PHP wrapper to read files (PHP-specific)
 
-  - vector: "Windows Path Traversal"
-    payload: "..\\..\\..\\windows\\win.ini"
-    description: Use backslashes for Windows systems
+- vector: Windows Path Traversal
+  payload: ..\..\..\windows\win.ini
+  description: Use backslashes for Windows systems
 
-  - vector: "Mixed Slash Path Traversal"
-    payload: "..\\../etc/passwd"
-    description: Mix forward and backslashes
+- vector: Mixed Slash Path Traversal
+  payload: ..\../etc/passwd
+  description: Mix forward and backslashes
 
 llm_prompts:
   analyze: |

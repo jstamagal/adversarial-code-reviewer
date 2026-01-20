@@ -14,9 +14,9 @@
 
 """Circular dependency detection for Python imports."""
 
-from typing import Dict, List, Set, Tuple
 from dataclasses import dataclass
 from pathlib import Path
+from typing import Dict, List, Set
 
 from acr.core.ast_parser import ASTParser
 
