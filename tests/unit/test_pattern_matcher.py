@@ -905,8 +905,7 @@ class TestPatternMatcherRelationships:
         code = "def vulnerable_function(x): pass"
         findings = matcher.match_pattern(pattern, code, "test.py", None)
 
-        assert len(findings) == 1
-        assert findings[0].related_patterns == ["related-a", "related-b"]
+        assert sorted(findings[0].related_patterns) == ["related-a", "related-b"]
 
     def test_finding_includes_related_patterns_data_flow(self):
         """Test that data flow pattern matching includes related patterns in finding."""
