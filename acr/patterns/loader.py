@@ -32,9 +32,38 @@ from acr.patterns.schema import (
 class PatternLoader:
     """Load and manage attack patterns."""
 
-    def __init__(self):
-        """Initialize pattern loader."""
+    _cache: Dict[str, Dict[str, Pattern]] = {}
+    _cache_enabled: bool = True
+
+    def __init__(self, cache_enabled: bool = True):
+        """Initialize pattern loader.
+
+        Args:
+            cache_enabled: Whether to use pattern caching (default: True)
+        """
         self.patterns: Dict[str, Pattern] = {}
+        self._cache_enabled = cache_enabled
+
+    @classmethod
+    def clear_cache(cls):
+        """Clear the pattern cache."""
+        cls._cache.clear()
+
+    def _get_cache_key(
+        self, pattern_dir: Optional[Path], custom_patterns_dir: Optional[Path]
+    ) -> str:
+        """Generate cache key for pattern directories.
+
+        Args:
+            pattern_dir: Directory containing pattern YAML files
+            custom_patterns_dir: Optional directory for custom patterns
+
+        Returns:
+            Cache key string
+        """
+        pattern_path = str(pattern_dir.absolute()) if pattern_dir else "default"
+        custom_path = str(custom_patterns_dir.absolute()) if custom_patterns_dir else "none"
+        return f"{pattern_path}|{custom_path}"
 
     def load_patterns(
         self, pattern_dir: Optional[Path] = None, custom_patterns_dir: Optional[Path] = None
@@ -52,6 +81,12 @@ class PatternLoader:
             pattern_dir = Path(__file__).parent / "library"
 
         pattern_dir = Path(pattern_dir)
+
+        if self._cache_enabled:
+            cache_key = self._get_cache_key(pattern_dir, custom_patterns_dir)
+            if cache_key in self._cache:
+                return self._cache[cache_key].copy()
+
         patterns: Dict[str, Pattern] = {}
 
         if pattern_dir.exists():
@@ -67,6 +102,10 @@ class PatternLoader:
                     pattern = self.load_pattern(pattern_file)
                     if pattern:
                         patterns[pattern.id] = pattern
+
+        if self._cache_enabled and patterns:
+            cache_key = self._get_cache_key(pattern_dir, custom_patterns_dir)
+            self._cache[cache_key] = patterns.copy()
 
         return patterns
 
@@ -165,16 +204,16 @@ class PatternLoader:
         static_patterns = detection_data.get("static", [])
         for pattern_data in static_patterns:
             try:
-                template = StaticPatternTemplate(**pattern_data)
-                templates.append(template)
+                static_template = StaticPatternTemplate(**pattern_data)
+                templates.append(static_template)
             except Exception:
                 pass
 
         data_flow_patterns = detection_data.get("data_flow", [])
         for pattern_data in data_flow_patterns:
             try:
-                template = DataFlowPatternTemplate(**pattern_data)
-                templates.append(template)
+                data_flow_template = DataFlowPatternTemplate(**pattern_data)
+                templates.append(data_flow_template)
             except Exception:
                 pass
 

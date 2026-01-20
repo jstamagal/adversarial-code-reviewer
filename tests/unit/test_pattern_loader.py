@@ -413,7 +413,7 @@ class TestPatternLoader:
         loader = PatternLoader()
         patterns = loader.load_patterns()
 
-        for pattern_id, pattern in patterns.items():
+        for _pattern_id, pattern in patterns.items():
             assert isinstance(pattern, Pattern)
             assert isinstance(pattern.id, str)
             assert isinstance(pattern.name, str)
@@ -1052,3 +1052,136 @@ detection:
 
             assert "custom-disabled-pattern" in patterns
             assert patterns["custom-disabled-pattern"].enabled is False
+
+    def test_pattern_caching_enabled(self):
+        """Test that patterns are cached when caching is enabled."""
+        PatternLoader.clear_cache()
+
+        loader = PatternLoader(cache_enabled=True)
+
+        patterns1 = loader.load_patterns()
+        patterns2 = loader.load_patterns()
+
+        assert patterns1 == patterns2
+        assert len(PatternLoader._cache) == 1
+
+    def test_pattern_caching_disabled(self):
+        """Test that patterns are not cached when caching is disabled."""
+        PatternLoader.clear_cache()
+
+        loader = PatternLoader(cache_enabled=False)
+
+        patterns1 = loader.load_patterns()
+        patterns2 = loader.load_patterns()
+
+        assert patterns1 == patterns2
+        assert len(PatternLoader._cache) == 0
+
+    def test_cache_different_directories(self):
+        """Test that different directories have separate cache entries."""
+        PatternLoader.clear_cache()
+
+        loader = PatternLoader(cache_enabled=True)
+
+        patterns1 = loader.load_patterns()
+
+        with tempfile.TemporaryDirectory() as tmpdir:
+            custom_dir = Path(tmpdir)
+
+            custom_pattern_content = """id: custom-cache-test
+name: Custom Cache Test Pattern
+description: A pattern for testing caching
+category: test
+severity: medium
+cwe: CWE-000
+owasp: A00:2021-Test
+affected_languages:
+  - python
+attack_vector: Custom attack
+remediation:
+  description: Fix it
+  code_before: bad_code()
+  code_after: good_code()
+detection:
+  static:
+    - type: regex
+      pattern: custom_cache_test\\(\\)
+      description: Cache test pattern
+      confidence: high
+"""
+            pattern_file = custom_dir / "custom-cache-test.yaml"
+            pattern_file.write_text(custom_pattern_content)
+
+            patterns2 = loader.load_patterns(custom_patterns_dir=custom_dir)
+
+        assert "custom-cache-test" not in patterns1
+        assert "custom-cache-test" in patterns2
+        assert len(PatternLoader._cache) == 2
+
+    def test_cache_clear(self):
+        """Test that cache can be cleared."""
+        PatternLoader.clear_cache()
+
+        loader = PatternLoader(cache_enabled=True)
+
+        patterns1 = loader.load_patterns()
+
+        assert len(PatternLoader._cache) == 1
+
+        PatternLoader.clear_cache()
+
+        assert len(PatternLoader._cache) == 0
+
+        patterns2 = loader.load_patterns()
+
+        assert len(PatternLoader._cache) == 1
+        assert patterns1 == patterns2
+
+    def test_cache_key_includes_custom_directory(self):
+        """Test that cache key includes custom directory."""
+        PatternLoader.clear_cache()
+
+        loader = PatternLoader(cache_enabled=True)
+
+        with tempfile.TemporaryDirectory() as tmpdir:
+            custom_dir1 = Path(tmpdir) / "custom1"
+            custom_dir2 = Path(tmpdir) / "custom2"
+            custom_dir1.mkdir()
+            custom_dir2.mkdir()
+
+            custom_pattern_content = """id: custom-key-test
+name: Custom Key Test Pattern
+description: A pattern for testing cache keys
+category: test
+severity: medium
+cwe: CWE-000
+owasp: A00:2021-Test
+affected_languages:
+  - python
+attack_vector: Custom attack
+remediation:
+  description: Fix it
+  code_before: bad_code()
+  code_after: good_code()
+detection:
+  static:
+    - type: regex
+      pattern: custom_key_test\\(\\)
+      description: Key test pattern
+      confidence: high
+"""
+            (custom_dir1 / "custom-key-test.yaml").write_text(custom_pattern_content)
+            (custom_dir2 / "custom-key-test.yaml").write_text(custom_pattern_content)
+
+            patterns1 = loader.load_patterns(custom_patterns_dir=custom_dir1)
+            patterns2 = loader.load_patterns(custom_patterns_dir=custom_dir2)
+
+            assert len(PatternLoader._cache) == 2
+            assert "custom-key-test" in patterns1
+            assert "custom-key-test" in patterns2
+
+    def test_default_cache_enabled(self):
+        """Test that caching is enabled by default."""
+        loader = PatternLoader()
+
+        assert loader._cache_enabled is True
