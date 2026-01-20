@@ -412,13 +412,13 @@ Agent 1: Your task is to REVIEW, SCRUTINIZE, and REFINE this TODO.md and PRD.md 
     - [x] Monitor LLM outputs for injection
     - [x] Add rate limiting for prompts (via max_calls_per_scan)
     - [x] Add tests for prompt injection protection (23 tests, 72% pass rate)
-  - [ ] Implement model abuse prevention
-    - [ ] Limit LLM calls per scan (already done - max_calls_per_scan)
-    - [ ] Add LLM cost estimation
-    - [ ] Warn users about potential costs
-    - [ ] Implement prompt optimization
-    - [ ] Detect recursive LLM calls
-    - [ ] Add tests for abuse prevention
+  - [x] Implement model abuse prevention
+     - [x] Limit LLM calls per scan (already done - max_calls_per_scan)
+     - [x] Add LLM cost estimation
+     - [x] Warn users about potential costs
+     - [x] Implement prompt optimization
+     - [x] Detect recursive LLM calls
+     - [x] Add tests for abuse prevention
   - [ ] Enhance sensitive data redaction
     - [ ] Add multiple regex patterns
     - [ ] Add entropy-based detection
