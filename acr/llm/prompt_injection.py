@@ -46,11 +46,13 @@ class PromptInjectorDetector:
             r"(?:reveal|show)\s+(?:your|my|me)?\s*(?:internal\s+)?(?:instructions|guidelines)",
             r"(?:print|output|show)\s+(?:your|my|me)?\s*(?:internal\s+)?(?:prompt|instructions|guidelines|reasoning)",
             r"(?:show|explain|tell)\s+(?:me\s+)?(?:how\s+)?(?:you\s+)?(?:were\s+)?(?:programmed|configured|built|operate|work)",
+            r"show.*system\s+prompt",
         ],
         "code_execution_bypass": [
             r"(?:directly|immediately|force)\s+(?:execute|run)\s+this",
-            r"(?:execute|run)\s+(?:this\s+)?(?:without|directly|immediately)\s+(?:any\s+)?(?:validation|sanitization|checks|delay|security)",
-            r"bypass\s+(?:all\s+)?(?:checks|validation|security)",
+            r"(?:execute|run)\s+(?:this\s+)?(?:without|directly|immediately)\s+(?:any\s+)?(?:validation|sanitization|checks|delay)",
+            r"bypass\s+(?:all\s+)?checks",
+            r"execute.*without.*checks",
         ],
         "suspicious_comments": [
             r"#\s*TODO:\s*(?:inject|bypass|exploit|hack|attack)",
