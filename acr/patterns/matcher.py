@@ -110,7 +110,7 @@ class PatternMatcher:
             elif isinstance(template, ControlFlowPatternTemplate):
                 if ast_data:
                     matches = self._match_control_flow_pattern(
-                        template, source_code, ast_data, file_path, pattern, lines
+                        template, ast_data, file_path, pattern, lines
                     )
                     findings.extend(matches)
 
@@ -266,19 +266,6 @@ class PatternMatcher:
             sink_regex = re.compile(sink_pattern)
             sanitizer_regexes = [re.compile(s) for s in sanitizers if s] if sanitizers else []
 
-            functions = ast_data.get("functions", [])
-            function_calls = ast_data.get("call_sites", [])
-
-            for call_site in function_calls:
-                sink_match = sink_regex.search(call_site.get("name", ""))
-
-                if sink_match:
-                    line_num = call_site.get("line", 0)
-
-                    source_detected = False
-
-                    if source_detected and not False:
-                        functions = ast_data.get("functions", [])
             function_calls = ast_data.get("call_sites", [])
 
             for call_site in function_calls:
@@ -612,9 +599,20 @@ class PatternMatcher:
         return severity_map.get(severity, "low")
 
     def _check_for_source(self, source_regex: re.Pattern, lines: List[str], sink_line: int) -> bool:
-        pass
+        """Check if taint source exists before sink.
 
-    def _check_for_sanitizers(
-        self, sanitizer_regexes: List[re.Pattern], lines: List[str], sink_line: int
-    ) -> bool:
-        pass
+        Args:
+            source_regex: Compiled regex pattern for taint source
+            lines: Source code lines
+            sink_line: Line number of sink (1-indexed)
+
+        Returns:
+            True if source pattern found before sink, False otherwise
+        """
+        start_line = max(0, sink_line - 100)
+
+        for i in range(start_line, sink_line):
+            if i < len(lines) and source_regex.search(lines[i]):
+                return True
+
+        return False
