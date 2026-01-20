@@ -31,15 +31,9 @@ class FindingLocation(BaseModel):
 class FindingImpact(BaseModel):
     """Impact assessment of a finding."""
 
-    confidentiality: Literal["none", "low", "medium", "high", "critical"] = Field(
-        description="Confidentiality impact"
-    )
-    integrity: Literal["none", "low", "medium", "high", "critical"] = Field(
-        description="Integrity impact"
-    )
-    availability: Literal["none", "low", "medium", "high", "critical"] = Field(
-        description="Availability impact"
-    )
+    confidentiality: str = Field(description="Confidentiality impact")
+    integrity: str = Field(description="Integrity impact")
+    availability: str = Field(description="Availability impact")
 
 
 class FindingRemediation(BaseModel):
@@ -56,10 +50,8 @@ class Finding(BaseModel):
     id: str = Field(description="Unique finding ID")
     title: str = Field(description="Finding title")
 
-    severity: Literal["critical", "high", "medium", "low", "info"] = Field(
-        description="Severity level"
-    )
-    confidence: Literal["high", "medium", "low"] = Field(description="Confidence level")
+    severity: str = Field(description="Severity level")
+    confidence: str = Field(description="Confidence level")
     category: str = Field(description="Vulnerability category")
 
     cwe_id: Optional[str] = Field(default=None, description="CWE identifier")
@@ -76,9 +68,7 @@ class Finding(BaseModel):
     references: List[str] = Field(default_factory=list, description="Reference links")
     related_findings: List[str] = Field(default_factory=list, description="Related finding IDs")
 
-    state: Literal["open", "in-progress", "fixed", "won't-fix", "false-positive"] = Field(
-        default="open", description="Finding state"
-    )
+    state: str = Field(default="open", description="Finding state")
 
     created_at: str = Field(default_factory=lambda: "", description="Creation timestamp")
     updated_at: str = Field(default_factory=lambda: "", description="Last update timestamp")
