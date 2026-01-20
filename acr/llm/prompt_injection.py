@@ -33,20 +33,23 @@ class PromptInjectorDetector:
             r"from\s+now\s+on",
             r"act\s+as\s+(?:if\s+you\s+are\s+)?(?:a\s+)?(?:security\s+)?(?:researcher|hacker|developer|doctor|ai|assistant|bot)",
             r"you\s+are\s+(?:now\s+)?a\s+new\s+(?:ai|assistant|bot)",
+            r"you\s+are\s+(?:now\s+)?a\s+(?:developer|hacker|doctor|ai|assistant|bot)",
         ],
         "jailbreak": [
             r"(?:developer|admin|root|privileged)\s+mode",
             r"(?:enable|activate)\s+(?:developer|admin|root|privileged)\s+mode",
             r"bypass\s+(?:all\s+)?(?:safety|security|ethical|moral)",
+            r"override\s+security\s+measures",
         ],
         "output_manipulation": [
-            r"(?:print|output|reveal|show)\s+(?:the\s+)?(?:your|my)?\s*(?:system\s+)?prompt",
-            r"(?:reveal|show)\s+(?:your\s+)?(?:internal\s+)?(?:instructions|guidelines)",
-            r"(?:print|output|show)\s+(?:the\s+)?(?:your|my)?\s*(?:internal\s+)?(?:prompt|instructions|guidelines|reasoning)",
+            r"(?:print|output|reveal|show)\s+(?:the\s+)?(?:your|my|me)?\s*(?:system\s+)?prompt",
+            r"(?:reveal|show)\s+(?:your|my|me)?\s*(?:internal\s+)?(?:instructions|guidelines)",
+            r"(?:print|output|show)\s+(?:your|my|me)?\s*(?:internal\s+)?(?:prompt|instructions|guidelines|reasoning)",
+            r"(?:show|explain|tell)\s+(?:me\s+)?(?:how\s+)?(?:you\s+)?(?:were\s+)?(?:programmed|configured|built|operate|work)",
         ],
         "code_execution_bypass": [
             r"(?:directly|immediately|force)\s+(?:execute|run)\s+this",
-            r"(?:execute|run)\s+(?:this\s+)?(?:without|directly)\s+(?:any\s+)?(?:validation|sanitization|checks|delay)",
+            r"(?:execute|run)\s+(?:this\s+)?(?:without|directly|immediately)\s+(?:any\s+)?(?:validation|sanitization|checks|delay|security)",
             r"bypass\s+(?:all\s+)?(?:checks|validation|security)",
         ],
         "suspicious_comments": [
@@ -54,11 +57,12 @@ class PromptInjectorDetector:
             r"//\s*TODO:\s*(?:inject|bypass|exploit|hack|attack)",
             r"#\s*(?:HACK|EXPLOIT|INJECT)",
             r"//\s*(?:HACK|EXPLOIT|INJECT)",
-            r"/\*\s*(?:TODO|HACK|EXPLOIT|INJECT)\s*(?:.*?inject|.*?bypass|.*?exploit|.*?hack|.*?attack)\s*\*/",
+            r"/\*\s*(?:TODO|HACK|EXPLOIT|INJECT)[^*]*\*/",
         ],
         "base64_payloads": [
             r"eval\s*\(\s*base64\.(?:decode|b64decode)\s*\(",
             r"exec\s*\(\s*base64\.(?:decode|b64decode)\s*\(",
+            r"base64\.(?:decode|b64decode)\s*\(\s*[^)]*\)\s*\+\s*(?:eval|exec)\s*\(",
         ],
         "obfuscation_patterns": [
             r"__import__\s*\(\s*[\"']",
@@ -108,9 +112,10 @@ class PromptInjectorDetector:
                 if pattern.search(text):
                     if category not in detected_categories:
                         detected_categories.append(category)
-                    self.detection_count += 1
-                    logger.warning(f"Prompt injection detected in category '{category}'")
-                    break
+                        logger.warning(f"Prompt injection detected in category '{category}'")
+
+        if len(detected_categories) > 0:
+            self.detection_count += 1
 
         result = len(detected_categories) > 0
         return result, detected_categories
@@ -243,7 +248,7 @@ class OutputMonitor:
 
     SUSPICIOUS_OUTPUT_PATTERNS = [
         r"i\s+(?:will|can|am\s+able\s+to)\s*(?:ignore|bypass|override)",
-        r"i\s+(?:understand|acknowledge)\s*your\s*(?:request|instruction)\s*to\s*ignore",
+        r"i\s+(?:understand|acknowledge)\s*your\s*(?:request|instruction)\s*to\s*(?:ignore|bypass)",
         r"(?:sure|certainly|of\s+course),\s*i\s+will\s*(?:ignore|bypass)",
         r"here\s+(?:is|are)?\s*(?:my\s+)?(?:system\s+)?(?:prompt|instructions)",
         r"let\s+me\s*(?:explain|show)\s+(?:you\s+)?(?:how\s+)?i\s+(?:work|operate)",
