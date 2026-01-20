@@ -14,7 +14,6 @@
 
 """Tests for pattern matcher functionality."""
 
-from acr.patterns.loader import PatternLoader
 from acr.patterns.matcher import PatternMatcher
 from acr.patterns.schema import (
     ControlFlowPatternTemplate,

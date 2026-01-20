@@ -387,12 +387,11 @@ class PatternMatcher:
         except re.error:
             pass
 
-        return findings
+            return findings
 
     def _match_control_flow_pattern(
         self,
         template: ControlFlowPatternTemplate,
-        source_code: str,
         ast_data: Dict,
         file_path: str,
         pattern: Pattern,
@@ -402,7 +401,6 @@ class PatternMatcher:
 
         Args:
             template: Control flow template with check/operation patterns
-            source_code: Source code to analyze
             ast_data: AST data from parser
             file_path: Path to source file
             pattern: Attack pattern metadata
@@ -449,17 +447,15 @@ class PatternMatcher:
                     if template.check_before_operation:
                         start_line = max(0, line_idx - check_dist)
                         end_line = line_idx
-                        for i in range(start_line, end_line):
-                            if check_regex.search(lines[i]):
-                                check_found = True
-                                break
+                        check_found = any(
+                            check_regex.search(lines[i]) for i in range(start_line, end_line)
+                        )
                     else:
                         start_line = line_idx + 1
                         end_line = min(len(lines), line_idx + 1 + check_dist)
-                        for i in range(start_line, end_line):
-                            if check_regex.search(lines[i]):
-                                check_found = True
-                                break
+                        check_found = any(
+                            check_regex.search(lines[i]) for i in range(start_line, end_line)
+                        )
 
                 should_report = not template.require_check or (
                     template.require_check and not check_found
@@ -511,85 +507,6 @@ class PatternMatcher:
 
         return findings
 
-        try:
-            sensitive_regex = re.compile(sensitive_operation_pattern)
-            check_regex = re.compile(template.check_pattern) if template.check_pattern else None
-
-            cfg_data = ast_data.get("cfg", {})
-            basic_blocks = cfg_data.get("basic_blocks", [])
-
-            for block in basic_blocks:
-                block_id = block.get("id", "")
-                start_line = block.get("start_line", 0)
-                end_line = block.get("end_line", 0)
-
-                for line_idx in range(start_line, min(end_line + 1, len(lines))):
-                    line_content = lines[line_idx]
-                    op_match = sensitive_regex.search(line_content)
-
-                    if op_match:
-                        col_num = op_match.start()
-
-                        check_found = False
-                        if template.require_check and check_regex:
-                            check_found = self._check_for_control_flow_check(
-                                check_regex,
-                                lines,
-                                line_idx + 1,
-                                template.check_before_operation,
-                                template.check_distance or 50,
-                            )
-
-                        should_report = not template.require_check or (
-                            template.require_check and not check_found
-                        )
-
-                        if should_report:
-                            finding_id = self._generate_finding_id(
-                                file_path, line_idx + 1, pattern.id, op_match.group()
-                            )
-
-                            location = FindingLocation(
-                                file=file_path,
-                                line=line_idx + 1,
-                                column=col_num,
-                            )
-
-                            impact = FindingImpact(
-                                confidentiality=self._severity_to_impact(pattern.severity),
-                                integrity=self._severity_to_impact(pattern.severity),
-                                availability="low",
-                            )
-
-                            remediation = FindingRemediation(
-                                description=pattern.remediation.description,
-                                code_before=pattern.remediation.code_before,
-                                code_after=pattern.remediation.code_after,
-                            )
-
-                            finding = Finding(
-                                id=finding_id,
-                                title=pattern.name,
-                                severity=pattern.severity,
-                                confidence=template.confidence or "medium",
-                                category=pattern.category,
-                                cwe_id=pattern.cwe_id,
-                                owasp_id=pattern.owasp_id,
-                                location=location,
-                                description=pattern.description,
-                                attack_vector=f"Control flow violation: {template.description}",
-                                impact=impact,
-                                remediation=remediation,
-                                references=pattern.references,
-                            )
-
-                            findings.append(finding)
-
-        except re.error:
-            pass
-
-        return findings
-
     def _check_for_control_flow_check(
         self,
         check_regex: re.Pattern,
@@ -612,39 +529,12 @@ class PatternMatcher:
         """
         if check_before:
             start_line = max(0, operation_line - check_distance)
-            end_line = operation_line - 1
+            end_line = operation_line
+            return any(check_regex.search(lines[i]) for i in range(start_line, end_line))
         else:
             start_line = operation_line + 1
-            end_line = min(len(lines), operation_line + check_distance)
-
-        if start_line >= end_line:
-            return False
-
-        for i in range(start_line, end_line):
-            if check_regex.search(lines[i]):
-                return True
-
-        return False
-
-    def _check_for_source(self, source_regex: re.Pattern, lines: List[str], sink_line: int) -> bool:
-        """Check if source pattern exists before sink.
-
-        Args:
-            source_regex: Compiled regex for source
-            lines: Source code lines
-            sink_line: Line number of sink
-
-        Returns:
-            True if source pattern found
-        """
-        context_lines = 50
-        start_line = max(0, sink_line - context_lines)
-
-        for i in range(start_line, sink_line):
-            if source_regex.search(lines[i]):
-                return True
-
-        return False
+            end_line = min(len(lines), operation_line + 1 + check_distance)
+            return any(check_regex.search(lines[i]) for i in range(start_line, end_line))
 
     def _check_for_sanitizers(
         self, sanitizer_regexes: List[re.Pattern], lines: List[str], sink_line: int
