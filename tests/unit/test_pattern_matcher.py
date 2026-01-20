@@ -17,6 +17,7 @@
 from acr.patterns.loader import PatternLoader
 from acr.patterns.matcher import PatternMatcher
 from acr.patterns.schema import (
+    ControlFlowPatternTemplate,
     DataFlowPatternTemplate,
     Pattern,
     PatternRemediation,
@@ -441,3 +442,294 @@ dangerous_function()
 """
         findings = matcher.match_all(code, "test.py")
         assert len(findings) == 3
+
+
+class TestPatternMatcherControlFlow:
+    """Test control flow pattern matching."""
+
+    def test_control_flow_pattern_finds_missing_check(self):
+        """Test that missing checks before sensitive operations are found."""
+        custom_patterns = [
+            Pattern(
+                id="test-missing-check",
+                name="Missing Check Test",
+                description="Test",
+                severity=SeverityLevel.HIGH,
+                category="test",
+                templates=[
+                    ControlFlowPatternTemplate(
+                        check_pattern=r"if\s+authenticated",
+                        sensitive_operation_pattern=r"\.delete_user\(",
+                        require_check=True,
+                        check_before_operation=True,
+                        check_distance=10,
+                        confidence="high",
+                    )
+                ],
+                attack_vector="Test attack vector",
+                remediation=PatternRemediation(description="Test remediation"),
+            )
+        ]
+        matcher = PatternMatcher(patterns=custom_patterns)
+        code = """
+def delete_user(user_id):
+    api.delete_user(user_id)
+"""
+        ast_data = {
+            "cfg": {
+                "basic_blocks": [
+                    {"id": "block_1", "start_line": 0, "end_line": 0},
+                    {"id": "block_2", "start_line": 1, "end_line": 1},
+                    {"id": "block_3", "start_line": 2, "end_line": 2},
+                ]
+            }
+        }
+        findings = matcher.match_all(code, "test.py", ast_data)
+        assert len(findings) > 0
+
+    def test_control_flow_pattern_with_check_passes(self):
+        """Test that checks before sensitive operations prevent findings."""
+        custom_patterns = [
+            Pattern(
+                id="test-with-check",
+                name="With Check Test",
+                description="Test",
+                severity=SeverityLevel.HIGH,
+                category="test",
+                templates=[
+                    ControlFlowPatternTemplate(
+                        check_pattern=r"if\s+authenticated",
+                        sensitive_operation_pattern=r"\.delete_user\(",
+                        require_check=True,
+                        check_before_operation=True,
+                        check_distance=10,
+                        confidence="high",
+                    )
+                ],
+                attack_vector="Test attack vector",
+                remediation=PatternRemediation(description="Test remediation"),
+            )
+        ]
+        matcher = PatternMatcher(patterns=custom_patterns)
+        code = """
+def delete_user(user_id):
+    if authenticated:
+        api.delete_user(user_id)
+"""
+        ast_data = {
+            "cfg": {
+                "basic_blocks": [
+                    {"id": "block_1", "start_line": 0, "end_line": 0},
+                    {"id": "block_2", "start_line": 1, "end_line": 1},
+                    {"id": "block_3", "start_line": 2, "end_line": 2},
+                ]
+            }
+        }
+        findings = matcher.match_all(code, "test.py", ast_data)
+        assert len(findings) == 0
+
+    def test_control_flow_pattern_check_distance(self):
+        """Test that check distance limit is respected."""
+        custom_patterns = [
+            Pattern(
+                id="test-distance",
+                name="Distance Test",
+                description="Test",
+                severity=SeverityLevel.HIGH,
+                category="test",
+                templates=[
+                    ControlFlowPatternTemplate(
+                        check_pattern=r"if\s+authenticated",
+                        sensitive_operation_pattern=r"delete_user\(",
+                        require_check=True,
+                        check_before_operation=True,
+                        check_distance=5,
+                        confidence="high",
+                    )
+                ],
+                attack_vector="Test attack vector",
+                remediation=PatternRemediation(description="Test remediation"),
+            )
+        ]
+        matcher = PatternMatcher(patterns=custom_patterns)
+        code = """
+def delete_user(user_id):
+    if authenticated:
+        pass
+    pass
+    pass
+    pass
+    pass
+    pass
+    pass
+    delete_user(user_id)
+"""
+        ast_data = {"cfg": {"basic_blocks": [{"id": "block_1", "start_line": 1, "end_line": 8}]}}
+        findings = matcher.match_all(code, "test.py", ast_data)
+        assert len(findings) > 0
+
+    def test_control_flow_pattern_check_after_operation(self):
+        """Test that checks after operation don't prevent findings when check_before=True."""
+        custom_patterns = [
+            Pattern(
+                id="test-check-after",
+                name="Check After Test",
+                description="Test",
+                severity=SeverityLevel.HIGH,
+                category="test",
+                templates=[
+                    ControlFlowPatternTemplate(
+                        check_pattern=r"if\s+authenticated",
+                        sensitive_operation_pattern=r"delete_user\(",
+                        require_check=True,
+                        check_before_operation=True,
+                        check_distance=10,
+                        confidence="high",
+                    )
+                ],
+                attack_vector="Test attack vector",
+                remediation=PatternRemediation(description="Test remediation"),
+            )
+        ]
+        matcher = PatternMatcher(patterns=custom_patterns)
+        code = """
+def delete_user(user_id):
+    delete_user(user_id)
+    if authenticated:
+        pass
+"""
+        ast_data = {"cfg": {"basic_blocks": [{"id": "block_1", "start_line": 1, "end_line": 3}]}}
+        findings = matcher.match_all(code, "test.py", ast_data)
+        assert len(findings) > 0
+
+    def test_control_flow_pattern_without_check(self):
+        """Test that patterns without require_check always report."""
+        custom_patterns = [
+            Pattern(
+                id="test-no-require",
+                name="No Require Test",
+                description="Test",
+                severity=SeverityLevel.HIGH,
+                category="test",
+                templates=[
+                    ControlFlowPatternTemplate(
+                        check_pattern=None,
+                        sensitive_operation_pattern=r"admin_operation\(",
+                        require_check=False,
+                        confidence="high",
+                    )
+                ],
+                attack_vector="Test attack vector",
+                remediation=PatternRemediation(description="Test remediation"),
+            )
+        ]
+        matcher = PatternMatcher(patterns=custom_patterns)
+        code = """
+def process():
+    admin_operation()
+"""
+        ast_data = {"cfg": {"basic_blocks": [{"id": "block_1", "start_line": 1, "end_line": 2}]}}
+        findings = matcher.match_all(code, "test.py", ast_data)
+        assert len(findings) > 0
+
+    def test_control_flow_pattern_without_ast_data(self):
+        """Test that control flow patterns require AST data."""
+        custom_patterns = [
+            Pattern(
+                id="test-no-ast-cf",
+                name="No AST CF Test",
+                description="Test",
+                severity=SeverityLevel.HIGH,
+                category="test",
+                templates=[
+                    ControlFlowPatternTemplate(
+                        check_pattern=r"check_auth",
+                        sensitive_operation_pattern=r"sensitive_op",
+                        require_check=True,
+                        confidence="high",
+                    )
+                ],
+                attack_vector="Test attack vector",
+                remediation=PatternRemediation(description="Test remediation"),
+            )
+        ]
+        matcher = PatternMatcher(patterns=custom_patterns)
+        code = """
+def process():
+    sensitive_op()
+"""
+        findings = matcher.match_all(code, "test.py", ast_data=None)
+        assert len(findings) == 0
+
+    def test_control_flow_pattern_empty_cfg(self):
+        """Test that empty CFG returns no findings."""
+        custom_patterns = [
+            Pattern(
+                id="test-empty-cfg",
+                name="Empty CFG Test",
+                description="Test",
+                severity=SeverityLevel.HIGH,
+                category="test",
+                templates=[
+                    ControlFlowPatternTemplate(
+                        check_pattern=r"check",
+                        sensitive_operation_pattern=r"op",
+                        require_check=True,
+                        confidence="high",
+                    )
+                ],
+                attack_vector="Test attack vector",
+                remediation=PatternRemediation(description="Test remediation"),
+            )
+        ]
+        matcher = PatternMatcher(patterns=custom_patterns)
+        code = "def process(): pass"
+        ast_data = {"cfg": {"basic_blocks": []}}
+        findings = matcher.match_all(code, "test.py", ast_data)
+        assert len(findings) == 0
+
+    def test_control_flow_pattern_generates_finding_with_correct_fields(self):
+        """Test that control flow findings have all required fields."""
+        custom_patterns = [
+            Pattern(
+                id="test-cf-fields",
+                name="CF Fields Test",
+                description="Test",
+                severity=SeverityLevel.CRITICAL,
+                category="test",
+                templates=[
+                    ControlFlowPatternTemplate(
+                        check_pattern=r"if\s+auth",
+                        sensitive_operation_pattern=r"delete_file",
+                        require_check=True,
+                        confidence="high",
+                        description="Missing authorization check",
+                    )
+                ],
+                attack_vector="Test attack vector",
+                remediation=PatternRemediation(description="Add auth check"),
+            )
+        ]
+        matcher = PatternMatcher(patterns=custom_patterns)
+        code = """
+def process():
+    delete_file()
+"""
+        ast_data = {
+            "cfg": {
+                "basic_blocks": [
+                    {"id": "block_1", "start_line": 0, "end_line": 0},
+                    {"id": "block_2", "start_line": 1, "end_line": 1},
+                    {"id": "block_3", "start_line": 2, "end_line": 2},
+                ]
+            }
+        }
+        findings = matcher.match_all(code, "test.py", ast_data)
+        assert len(findings) > 0
+        finding = findings[0]
+        assert finding.id is not None
+        assert finding.severity == "critical"
+        assert finding.confidence == "high"
+        assert finding.location.file == "test.py"
+        assert finding.location.line == 3
+        assert "control flow violation" in finding.attack_vector.lower()

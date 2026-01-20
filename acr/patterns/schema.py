@@ -100,6 +100,39 @@ class DataFlowPatternTemplate(BaseModel):
     )
 
 
+class ControlFlowPatternTemplate(BaseModel):
+    """Control flow pattern template for CFG analysis."""
+
+    type: Literal["control_flow"] = Field(default="control_flow", description="Template type")
+    entry_point_pattern: Optional[str] = Field(
+        default=None,
+        description="Regex pattern for identifying entry points (functions, routes, methods)",
+    )
+    check_pattern: Optional[str] = Field(
+        default=None,
+        description="Regex pattern for identifying security checks (if statements, guards)",
+    )
+    sensitive_operation_pattern: str = Field(
+        description="Regex pattern for identifying sensitive operations requiring protection"
+    )
+    require_check: bool = Field(
+        default=True,
+        description="Whether a security check is required before sensitive operation",
+    )
+    check_before_operation: bool = Field(
+        default=True, description="Whether check must appear before the operation (False = after)"
+    )
+    check_distance: Optional[int] = Field(
+        default=50, description="Maximum lines between check and operation"
+    )
+    description: Optional[str] = Field(
+        default=None, description="Description of this control flow pattern"
+    )
+    confidence: Optional[str] = Field(
+        default="medium", description="Confidence level (high, medium, low)"
+    )
+
+
 class PatternRemediation(BaseModel):
     """Remediation information for a pattern."""
 
@@ -124,9 +157,9 @@ class Pattern(BaseModel):
     )
     affected_frameworks: List[str] = Field(default_factory=list, description="Affected frameworks")
 
-    templates: List[Union[StaticPatternTemplate, DataFlowPatternTemplate]] = Field(
-        default_factory=list, description="Pattern templates for matching"
-    )
+    templates: List[
+        Union[StaticPatternTemplate, DataFlowPatternTemplate, ControlFlowPatternTemplate]
+    ] = Field(default_factory=list, description="Pattern templates for matching")
 
     attack_vector: str = Field(description="Description of attack vector")
     example_payload: Optional[str] = Field(default=None, description="Example attack payload")
